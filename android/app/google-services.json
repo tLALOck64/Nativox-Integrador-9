@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "1080795187806",
+    "project_id": "nativox-4f45c",
+    "storage_bucket": "nativox-4f45c.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1080795187806:android:cb738d45511b531f9702cf",
+        "android_client_info": {
+          "package_name": "com.example.integrador"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1080795187806-fk152dds83srapj2sslbq4154n5k4ejq.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDS_0D8EMw9zkZjeGK3ALo7B4p6DY1qLrs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1080795187806-fk152dds83srapj2sslbq4154n5k4ejq.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
