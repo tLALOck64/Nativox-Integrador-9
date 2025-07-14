@@ -146,7 +146,7 @@ class _SplashScreenState extends State<SplashScreen> {
             ),
             const SizedBox(height: 8),
             const Text(
-              'Aprendiendo Náhuatl',
+              'Aprendiendo Zapoteco',
               style: TextStyle(
                 fontSize: 16,
                 color: Colors.white70,
