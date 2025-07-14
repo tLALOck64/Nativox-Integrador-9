@@ -19,8 +19,8 @@ class LessonService {
   Map<String, String> get _headers => {
     'Content-Type': 'application/json',
     'Accept': 'application/json',
+    'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NTI1NDczODcsImlhdCI6MTc1MjQ2MDk4N30.vF2Qs1lxBYelkt3NyVxeAHH0x_5-tZBsiHGFECcEhYI',
   };
-
   // ✅ OBTENER TODAS LAS LECCIONES (SOLO API)
   Future<List<LessonModel>> getAllLessons() async {
     try {
@@ -33,23 +33,28 @@ class LessonService {
 
       // Llamar a la API
       final response = await http.get(
-        Uri.parse('$_baseUrl/lecciones'),
+        Uri.parse('$_baseUrl/lecciones/lecciones'),
         headers: _headers,
       ).timeout(const Duration(seconds: 30));
 
       if (response.statusCode == 200) {
-        final List<dynamic> jsonList = json.decode(response.body);
-        
-        final lessons = jsonList
-            .map((json) => LessonModel.fromApiResponse(json as Map<String, dynamic>))
-            .toList();
+        final Map<String, dynamic> decoded = json.decode(response.body);
+        final List<dynamic> jsonList = decoded['data'];
 
-        // Actualizar cache
+        final lessons =
+            jsonList
+                .map(
+                  (json) =>
+                      LessonModel.fromApiResponse(json as Map<String, dynamic>),
+                )
+                .toList();
+
         _cachedLessons = lessons;
         _lastFetch = DateTime.now();
 
         return _applyProgressLogic(lessons);
-      } else {
+      }
+ else {
         throw Exception('Error HTTP: ${response.statusCode}');
       }
     } catch (e) {

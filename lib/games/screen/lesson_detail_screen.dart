@@ -34,6 +34,7 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
   void initState() {
     super.initState();
     _loadLesson();
+    print("llego a lesson detail screen con id: ${widget.lessonId}");
   }
 
   Future<void> _loadLesson() async {
