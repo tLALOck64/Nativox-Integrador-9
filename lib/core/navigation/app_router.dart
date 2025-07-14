@@ -13,7 +13,7 @@ import 'package:integrador/screens/lesson_screen.dart';
 import 'package:integrador/screens/practice_screen.dart';
 class AppRouter {
   static final GoRouter _router = GoRouter(
-    initialLocation: '/practice',
+    initialLocation: '/lessons',
     routes: [
       // Splash
       GoRoute(
