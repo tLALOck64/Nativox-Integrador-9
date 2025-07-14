@@ -1,33 +1,30 @@
 import 'package:integrador/perfil/data/datasource/profile_datasource.dart';
-import 'package:integrador/perfil/data/models/achievement_model.dart';
 import 'package:integrador/perfil/data/models/user_profile_model.dart';
+import 'package:integrador/perfil/data/models/achievement_model.dart';
 import 'package:integrador/perfil/domain/entities/sentting_item.dart';
-
 
 class LocalProfileDataSource implements ProfileDataSource {
   @override
   Future<UserProfileModel> getUserProfile() async {
-    // Simular datos locales o de API
     await Future.delayed(const Duration(milliseconds: 500));
     
     return const UserProfileModel(
       id: '1',
-      name: 'María González',
-      title: 'Estudiante de Náhuatl',
+      name: 'Andrea Isabella Trejo Morales',
+      title: 'Estudiante de zapoteco',
       avatarUrl: '',
-      level: 5,
-      activeDays: 128,
-      totalXP: 2345,
-      badges: 15,
-      currentXP: 1650,
-      nextLevelXP: 2500,
-      vocabularyCount: 89,
-      vocabularyGoal: 200,
+      level: 0,
+      activeDays: 0,
+      totalXP: 0,
+      badges: 0,
+      currentXP: 0,
+      nextLevelXP: 0,
+      vocabularyCount: 0,
+      vocabularyGoal: 0,
     );
   }
 
   @override
-  // ignore: override_on_non_overriding_member
   Future<List<AchievementModel>> getAchievements() async {
     await Future.delayed(const Duration(milliseconds: 300));
     

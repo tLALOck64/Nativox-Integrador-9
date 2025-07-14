@@ -1,18 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:integrador/firebase_options.dart'; // ← AGREGAR ESTE IMPORT
 import 'package:integrador/core/di/injection_container.dart' as di;
 import 'package:integrador/core/services/storage_service.dart';
 import 'package:integrador/core/services/notifications_service.dart';
 import 'package:integrador/core/navigation/app_router.dart';
 import 'package:integrador/login/presentation/viewmodels/login_viewmodel.dart';
-import 'package:integrador/profile/presentation/viewmodels/profile_viewmodel.dart';
+import 'package:integrador/perfil/presentation/viewmodels/profile_viewmodel.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
-  // Initialize Firebase
-  await Firebase.initializeApp();
+  // ✅ CAMBIAR ESTA LÍNEA - Usar las opciones configuradas
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   
   // Initialize Core Services
   await StorageService.init();
@@ -31,7 +34,6 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        // ViewModels using GetIt
         ChangeNotifierProvider<LoginViewModel>(
           create: (_) => di.sl<LoginViewModel>(),
         ),
@@ -40,7 +42,7 @@ class MyApp extends StatelessWidget {
         ),
       ],
       child: MaterialApp.router(
-        title: 'Yoloxóchitl',
+        title: 'Nativox',
         debugShowCheckedModeBanner: false,
         routerConfig: AppRouter.router,
         theme: ThemeData(

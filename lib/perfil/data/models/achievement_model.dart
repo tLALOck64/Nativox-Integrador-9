@@ -27,6 +27,17 @@ class AchievementModel {
     );
   }
 
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'title': title,
+      'icon': icon,
+      'isUnlocked': isUnlocked,
+      'unlockedDate': unlockedDate?.toIso8601String(),
+    };
+  }
+
+  // ✅ MÉTODO toEntity() QUE NECESITAS
   Achievement toEntity() {
     return Achievement(
       id: id,
@@ -35,5 +46,10 @@ class AchievementModel {
       isUnlocked: isUnlocked,
       unlockedDate: unlockedDate,
     );
+  }
+
+  @override
+  String toString() {
+    return 'AchievementModel(id: $id, title: $title, icon: $icon, isUnlocked: $isUnlocked)';
   }
 }

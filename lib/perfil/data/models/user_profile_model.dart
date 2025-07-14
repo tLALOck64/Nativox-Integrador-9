@@ -46,6 +46,7 @@ class UserProfileModel {
     );
   }
 
+  // ✅ MÉTODO toEntity() QUE NECESITAS
   UserProfile toEntity() {
     return UserProfile(
       id: id,

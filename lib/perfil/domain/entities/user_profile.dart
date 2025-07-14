@@ -30,4 +30,6 @@ class UserProfile {
   double get levelProgress => currentXP / nextLevelXP;
   double get vocabularyProgress => vocabularyCount / vocabularyGoal;
   int get xpToNextLevel => nextLevelXP - currentXP;
+
+  toEntity() {}
 }

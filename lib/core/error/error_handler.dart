@@ -1,17 +1,47 @@
+import 'dart:async';
+import 'dart:io';
+
 import 'package:dio/dio.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:integrador/core/error/failure.dart';
-import 'package:integrador/core/network/exceptions/network_exceptions.dart';
 
 class ErrorHandler {
   static Failure handleError(dynamic error) {
-    if (error is DioException) {
+    if (error is Failure) {
+      return error;
+    } else if (error is FirebaseAuthException) {
+      return _handleFirebaseAuthException(error);
+    } else if (error is DioException) {
       return _handleDioError(error);
-    } else if (error is NetworkException) {
-      return _handleNetworkException(error);
-    } else if (error is Exception) {
-      return ServerFailure(error.toString());
+    } else if (error is SocketException) {
+      return NetworkFailure.noInternet();
+    } else if (error is TimeoutException) {
+      return NetworkFailure.timeout();
+    } else if (error is FormatException) {
+      return ValidationFailure('Formato de datos inválido');
     } else {
-      return const ServerFailure('Error desconocido');
+      return ServerFailure('Error inesperado: ${error.toString()}');
+    }
+  }
+
+  static Failure _handleFirebaseAuthException(FirebaseAuthException e) {
+    switch (e.code) {
+      case 'user-not-found':
+        return AuthFailure.userNotFound();
+      case 'wrong-password':
+        return AuthFailure.invalidCredentials();
+      case 'invalid-email':
+        return ValidationFailure.invalidEmail();
+      case 'user-disabled':
+        return AuthFailure.accountDisabled();
+      case 'too-many-requests':
+        return AuthFailure.tooManyRequests();
+      case 'email-already-in-use':
+        return AuthFailure.emailAlreadyExists();
+      case 'weak-password':
+        return ValidationFailure.weakPassword();
+      default:
+        return AuthFailure(e.message ?? 'Error de autenticación');
     }
   }
 
@@ -20,15 +50,15 @@ class ErrorHandler {
       case DioExceptionType.connectionTimeout:
       case DioExceptionType.sendTimeout:
       case DioExceptionType.receiveTimeout:
-        return const NetworkFailure('Tiempo de conexión agotado');
+        return NetworkFailure.timeout();
       case DioExceptionType.badResponse:
         return _handleBadResponse(error);
       case DioExceptionType.cancel:
-        return const NetworkFailure('Petición cancelada');
+        return NetworkFailure('Petición cancelada');
       case DioExceptionType.connectionError:
-        return const NetworkFailure('Sin conexión a internet');
+        return NetworkFailure.noInternet();
       default:
-        return const ServerFailure('Error del servidor');
+        return ServerFailure('Error de red: ${error.message}');
     }
   }
 
@@ -38,21 +68,17 @@ class ErrorHandler {
     
     switch (statusCode) {
       case 400:
-        return ServerFailure('Petición incorrecta: $message');
+        return ServerFailure.badRequest();
       case 401:
         return AuthFailure('No autorizado: $message');
       case 403:
         return AuthFailure('Prohibido: $message');
       case 404:
-        return ServerFailure('No encontrado: $message');
+        return ServerFailure.notFound();
       case 500:
-        return ServerFailure('Error interno del servidor');
+        return ServerFailure.internalError();
       default:
-        return ServerFailure('Error del servidor: $message');
+        return ServerFailure('Error del servidor ($statusCode): $message');
     }
-  }
-
-  static Failure _handleNetworkException(NetworkException error) {
-    return NetworkFailure(error.message);
   }
 }

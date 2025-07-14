@@ -21,22 +21,18 @@ import 'package:integrador/login/domain/usecases/sign_out_usecase.dart';
 import 'package:integrador/login/presentation/viewmodels/login_viewmodel.dart';
 
 // Profile imports
-// import 'package:integrador/profile/data/datasource/profile_datasource.dart';
-// import 'package:integrador/profile/data/datasource/local_profile_datasource.dart';
-// import 'package:integrador/profile/data/repository/profile_repository_impl.dart';
-// import 'package:integrador/profile/domain/repository/profile_repository.dart';
-// import 'package:integrador/profile/domain/usecases/get_user_profile_usecase.dart';
-// import 'package:integrador/profile/domain/usecases/get_achievements_usecase.dart';
-// import 'package:integrador/profile/domain/usecases/get_settings_usecase.dart';
-// import 'package:integrador/profile/presentation/viewmodels/profile_viewmodel.dart';
+import 'package:integrador/perfil/data/datasource/profile_datasource.dart';
+import 'package:integrador/perfil/data/datasource/local_profile_datasource.dart';
+import 'package:integrador/perfil/data/repository/profile_repository_impl.dart';
+import 'package:integrador/perfil/domain/repository/profile_repository.dart';
+import 'package:integrador/perfil/domain/usecases/get_user_profile_usecase.dart';
+import 'package:integrador/perfil/domain/usecases/get_achievements_usecase.dart';
+import 'package:integrador/perfil/domain/usecases/get_settings_usecase.dart';
+import 'package:integrador/perfil/presentation/viewmodels/profile_viewmodel.dart';
 
 final GetIt sl = GetIt.instance;
 
 Future<void> initializeDependencies() async {
-  // ==========================================
-  // CORE DEPENDENCIES
-  // ==========================================
-  
   // External
   sl.registerLazySingleton(() => Connectivity());
   sl.registerLazySingleton(() => FirebaseAuth.instance);
@@ -49,54 +45,48 @@ Future<void> initializeDependencies() async {
   sl.registerLazySingleton<CacheService>(() => CacheService());
   sl.registerLazySingleton<NotificationService>(() => NotificationService());
   
-  // ==========================================
   // LOGIN FEATURE
-  // ==========================================
-  
-  // DataSources
   sl.registerLazySingleton<AuthDataSource>(
     () => FirebaseAuthDataSource(sl(), sl()),
   );
   
-  // Repositories
   sl.registerLazySingleton<AuthRepository>(
-    () => AuthRepositoryImpl(sl()),
+    () => AuthRepositoryImpl(sl(), sl<NetworkInfo>()),
   );
   
-  // Use Cases
   sl.registerLazySingleton(() => SignInWithEmailUseCase(sl()));
-  sl.registerLazySingleton(() => SignInWithGoogleUsecase(sl()));
-  sl.registerLazySingleton(() => GetCurrentUserUseCase(sl()));
-  sl.registerLazySingleton(() => SignOutUseCase(sl()));
+  sl.registerLazySingleton(() => SignInWithGoogleUseCase(sl()));
+  sl.registerLazySingleton(() => GetCurrentUserUseCase(sl(), sl<StorageService>()));
+  sl.registerLazySingleton(() => SignOutUseCase(sl(), sl<StorageService>()));
   
-  // ViewModels
   sl.registerFactory(() => LoginViewModel(
     signInWithEmailUseCase: sl(),
     signInWithGoogleUseCase: sl(),
     getCurrentUserUseCase: sl(),
     signOutUseCase: sl(),
+    storageService: sl<StorageService>(),
   ));
   
-  // ==========================================
   // PROFILE FEATURE
-  // ==========================================
-  
-  // DataSources
+  // ✅ CORREGIDO: Faltaba ProfileDataSource
   sl.registerLazySingleton<ProfileDataSource>(
     () => LocalProfileDataSource(),
   );
   
-  // Repositories
   sl.registerLazySingleton<ProfileRepository>(
-    () => ProfileRepositoryImpl(sl()),
+    () => ProfileRepositoryImpl(
+      sl(), 
+      sl<NetworkInfo>(), 
+      sl<CacheService>(),
+      sl<StorageService>(),
+    ),
   );
   
-  // Use Cases
-  sl.registerLazySingleton(() => GetUserProfileUseCase(sl()));
-  sl.registerLazySingleton(() => GetAchievementsUseCase(sl()));
-  sl.registerLazySingleton(() => GetSettingsUseCase(sl()));
+  // ✅ CORREGIDO: Nombres de clases (Case no case)
+  sl.registerLazySingleton(() => GetUserProfileUsecase(sl()));
+  sl.registerLazySingleton(() => GetAchievementsUsecase(sl()));
+  sl.registerLazySingleton(() => GetSettingsUsecase(sl()));
   
-  // ViewModels
   sl.registerFactory(() => ProfileViewModel(
     getUserProfileUseCase: sl(),
     getAchievementsUseCase: sl(),
