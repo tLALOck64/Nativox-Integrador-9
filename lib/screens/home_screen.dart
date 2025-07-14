@@ -224,7 +224,7 @@ class _HomeScreenState extends State<HomeScreen> {
       child: Column(
         children: [
           const Text(
-            'Tu progreso en Náhuatl',
+            'Tu progreso Actual',
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.w600,
