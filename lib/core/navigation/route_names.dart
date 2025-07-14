@@ -13,6 +13,7 @@ class RouteNames {
   static const String lessons = '/lessons';
   static const String practice = '/practice';
   static const String achievements = '/achievements';
+  static const String traductor = '/traductor';
   
   // Utility routes
   static const String splash = '/splash';

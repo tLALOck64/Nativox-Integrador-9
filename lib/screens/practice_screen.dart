@@ -1,12 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import '../models/practice_mode_model.dart';
-import '../models/challenge_model.dart';
-import '../models/practice_stats_model.dart';
 import '../services/practice_service.dart';
-import '../widgets/animated_header_widget.dart';
-import '../widgets/practice_stats_widget.dart';
-import '../widgets/practice_mode_card_widget.dart';
-import '../widgets/challenge_card_widget.dart';
 import '../widgets/custom_bottom_nav_widget.dart';
 
 class PracticeScreen extends StatefulWidget {
@@ -21,8 +16,6 @@ class _PracticeScreenState extends State<PracticeScreen> {
   
   int _selectedIndex = 2; // Practice tab is selected
   List<PracticeModeModel> _practiceModes = [];
-  List<ChallengeModel> _challenges = [];
-  PracticeStatsModel? _practiceStats;
   bool _isLoading = true;
 
   @override
@@ -35,22 +28,36 @@ class _PracticeScreenState extends State<PracticeScreen> {
     try {
       setState(() => _isLoading = true);
       
-      // Cargar datos en paralelo
-      final results = await Future.wait([
-        _practiceService.getPracticeModes(),
-        _practiceService.getChallenges(),
-        _practiceService.getPracticeStats(),
-      ]);
+      // Crear solo los dos modos que necesitamos: Traductor y Memorama
+      _practiceModes = [
+        PracticeModeModel(
+          id: 'translator',
+          icon: '🔄', // Emoji como string
+          title: 'Traductor',
+          subtitle: 'Practica traduciendo palabras y frases',
+          difficulty: PracticeDifficulty.easy,
+          completedSessions: 7,
+          totalSessions: 10,
+          isUnlocked: true,
+        ),
+        PracticeModeModel(
+          id: 'memory_game',
+          icon: '🧠', // Emoji como string
+          title: 'Memorama',
+          subtitle: 'Encuentra las parejas de palabras',
+          difficulty: PracticeDifficulty.medium,
+          completedSessions: 4,
+          totalSessions: 10,
+          isUnlocked: true,
+        ),
+      ];
       
       setState(() {
-        _practiceModes = results[0] as List<PracticeModeModel>;
-        _challenges = results[1] as List<ChallengeModel>;
-        _practiceStats = results[2] as PracticeStatsModel;
         _isLoading = false;
       });
     } catch (e) {
       setState(() => _isLoading = false);
-      _showError('Error al cargar los datos de práctica');
+      _showError('Error al cargar los modos de práctica');
     }
   }
 
@@ -102,80 +109,27 @@ class _PracticeScreenState extends State<PracticeScreen> {
       return;
     }
     
-    _showMessage('Iniciando modo: ${mode.title}');
+    _showMessage('Iniciando ${mode.title}...');
     _startPracticeSession(mode);
   }
 
   Future<void> _startPracticeSession(PracticeModeModel mode) async {
-    final success = await _practiceService.startPracticeSession(mode.id);
-    if (success) {
-      // Aquí navegarías a la pantalla de práctica específica
-      _showMessage('Sesión de ${mode.title} iniciada');
-      
-      // Simular completar una sesión después de un delay
-      Future.delayed(const Duration(seconds: 2), () {
-        _completePracticeSession(mode.id);
-      });
-    } else {
-      _showError('No se pudo iniciar la sesión de práctica');
-    }
-  }
-
-  Future<void> _completePracticeSession(String modeId) async {
-    // Simular datos de una sesión completada
-    final success = await _practiceService.completePracticeSession(
-      modeId,
-      wordsCorrect: 8,
-      totalWords: 10,
-      durationMinutes: 5,
-    );
+    // Simular inicio de sesión
+    await Future.delayed(const Duration(milliseconds: 500));
     
-    if (success) {
-      _showMessage('¡Sesión completada! +8/10 palabras correctas');
-      _loadData(); // Recargar datos para mostrar el progreso actualizado
+    try {
+      if (mode.id == 'translator') {
+        _showMessage('¡Iniciando Traductor!');
+        // Navegar usando GoRouter
+        context.go('/traductor');
+      } else if (mode.id == 'memory_game') {
+        _showMessage('¡Iniciando Memorama!');
+        // Navegar usando GoRouter
+        context.go('/memorama');
+      }
+    } catch (e) {
+      _showError('Error al navegar a ${mode.title}');
     }
-  }
-
-  void _onChallengeTapped(ChallengeModel challenge) {
-    if (challenge.status == ChallengeStatus.locked) {
-      _showMessage('Este desafío está bloqueado.');
-      return;
-    }
-    
-    if (challenge.status == ChallengeStatus.completed) {
-      _showMessage('Ya completaste este desafío. ¡Bien hecho!');
-      return;
-    }
-    
-    _showMessage('Iniciando desafío: ${challenge.title}');
-    _startChallenge(challenge);
-  }
-
-  Future<void> _startChallenge(ChallengeModel challenge) async {
-    final success = await _practiceService.startChallenge(challenge.id);
-    if (success) {
-      _showMessage('Desafío "${challenge.title}" iniciado');
-      
-      // Simular progreso del desafío
-      Future.delayed(const Duration(seconds: 3), () {
-        _updateChallengeProgress(challenge.id, challenge.target);
-      });
-    } else {
-      _showError('No se pudo iniciar el desafío');
-    }
-  }
-
-  Future<void> _updateChallengeProgress(String challengeId, int progress) async {
-    final success = await _practiceService.updateChallengeProgress(challengeId, progress);
-    if (success) {
-      _showMessage('¡Desafío completado! 🏆');
-      _loadData(); // Recargar datos
-    }
-  }
-
-  void _onGoalTapped() {
-    _showMessage('Aquí podrías ajustar tu meta semanal');
-    // Aquí podrías mostrar un dialog para cambiar la meta
   }
 
   @override
@@ -210,7 +164,7 @@ class _PracticeScreenState extends State<PracticeScreen> {
           ),
           SizedBox(height: 16),
           Text(
-            'Cargando datos de práctica...',
+            'Cargando modos de práctica...',
             style: TextStyle(
               fontSize: 16,
               color: Color(0xFF666666),
@@ -236,21 +190,18 @@ class _PracticeScreenState extends State<PracticeScreen> {
               physics: const AlwaysScrollableScrollPhysics(),
               child: Column(
                 children: [
-                  // Practice Stats
-                  if (_practiceStats != null)
-                    PracticeStatsWidget(
-                      stats: _practiceStats!,
-                      onGoalTap: _onGoalTapped,
-                    ),
+                  const SizedBox(height: 40),
+                  
+                  // Welcome message
+                  _buildWelcomeSection(),
+                  
+                  const SizedBox(height: 40),
                   
                   // Practice Modes
                   _buildPracticeModesSection(),
                   
-                  // Challenges
-                  _buildChallengesSection(),
-                  
                   // Bottom padding for safe area
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 40),
                 ],
               ),
             ),
@@ -310,7 +261,7 @@ class _PracticeScreenState extends State<PracticeScreen> {
                 ),
                 SizedBox(height: 4),
                 Text(
-                  'Refuerza tu aprendizaje',
+                  'Elige tu modo de práctica',
                   style: TextStyle(
                     fontSize: 14,
                     color: Colors.white70,
@@ -322,6 +273,51 @@ class _PracticeScreenState extends State<PracticeScreen> {
           
           // Spacer for symmetry
           const SizedBox(width: 40),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildWelcomeSection() {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 20),
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 15,
+            offset: const Offset(0, 5),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          const Text(
+            '🎯',
+            style: TextStyle(fontSize: 48),
+          ),
+          const SizedBox(height: 16),
+          const Text(
+            '¡Es hora de practicar!',
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.w600,
+              color: Color(0xFF2C2C2C),
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Mejora tus habilidades con nuestros ejercicios interactivos',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 14,
+              color: Colors.grey[600],
+              height: 1.4,
+            ),
+          ),
         ],
       ),
     );
@@ -345,86 +341,186 @@ class _PracticeScreenState extends State<PracticeScreen> {
             ),
           ),
           
-          // Practice modes grid
-          GridView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
-              childAspectRatio: 0.8,
-              crossAxisSpacing: 15,
-              mainAxisSpacing: 15,
-            ),
-            itemCount: _practiceModes.length,
-            itemBuilder: (context, index) {
-              final mode = _practiceModes[index];
-              return PracticeModeCardWidget(
-                practiceMode: mode,
-                onTap: () => _onPracticeModeTapped(mode),
-                shouldAnimate: index % 2 == 0, // Animar las tarjetas impares
+          // Practice modes - solo 2 modos en diseño vertical
+          Column(
+            children: _practiceModes.map((mode) {
+              return Container(
+                margin: const EdgeInsets.only(bottom: 16),
+                child: _buildPracticeModeCard(mode),
               );
-            },
+            }).toList(),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildChallengesSection() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Padding(
-            padding: EdgeInsets.symmetric(vertical: 10, horizontal: 5),
-            child: Text(
-              'Desafíos diarios',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
-                color: Color(0xFF2C2C2C),
-              ),
-            ),
+  Widget _buildPracticeModeCard(PracticeModeModel mode) {
+    // Definir colores según el tipo de modo
+    Color modeColor;
+    IconData iconData;
+    
+    switch (mode.id) {
+      case 'translator':
+        modeColor = const Color(0xFF6B73FF);
+        iconData = Icons.translate;
+        break;
+      case 'memory_game':
+        modeColor = const Color(0xFFFF6B9D);
+        iconData = Icons.psychology;
+        break;
+      default:
+        modeColor = const Color(0xFFD4A574);
+        iconData = Icons.school;
+    }
+
+    return Container(
+      height: 120,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 15,
+            offset: const Offset(0, 5),
           ),
-          
-          // Challenges list
-          if (_challenges.isEmpty)
-            const Center(
-              child: Padding(
-                padding: EdgeInsets.all(40),
-                child: Column(
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(20),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(20),
+          onTap: () => _onPracticeModeTapped(mode),
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Row(
+              children: [
+                // Icon container
+                Container(
+                  width: 60,
+                  height: 60,
+                  decoration: BoxDecoration(
+                    color: modeColor.withOpacity(0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    iconData,
+                    color: modeColor,
+                    size: 28,
+                  ),
+                ),
+                
+                const SizedBox(width: 16),
+                
+                // Content
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        mode.title,
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFF2C2C2C),
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        mode.subtitle,
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Colors.grey[600],
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              color: modeColor.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Text(
+                              mode.difficultyText,
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: modeColor,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.grey[100],
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Text(
+                              '${mode.completedSessions}/${mode.totalSessions}',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.grey[600],
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                
+                // Progress and arrow
+                Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text(
-                      '🎯',
-                      style: TextStyle(fontSize: 48),
+                    // Progress circle
+                    SizedBox(
+                      width: 40,
+                      height: 40,
+                      child: CircularProgressIndicator(
+                        value: mode.progress,
+                        backgroundColor: Colors.grey[200],
+                        valueColor: AlwaysStoppedAnimation<Color>(modeColor),
+                        strokeWidth: 4,
+                      ),
                     ),
-                    SizedBox(height: 16),
+                    const SizedBox(height: 8),
                     Text(
-                      'No hay desafíos disponibles',
+                      '${(mode.progress * 100).toInt()}%',
                       style: TextStyle(
-                        fontSize: 16,
-                        color: Color(0xFF666666),
+                        fontSize: 12,
+                        color: Colors.grey[600],
+                        fontWeight: FontWeight.w500,
                       ),
                     ),
                   ],
                 ),
-              ),
-            )
-          else
-            ListView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: _challenges.length,
-              itemBuilder: (context, index) {
-                final challenge = _challenges[index];
-                return ChallengeCardWidget(
-                  challenge: challenge,
-                  onTap: () => _onChallengeTapped(challenge),
-                );
-              },
+                
+                const SizedBox(width: 8),
+                
+                // Arrow icon
+                Icon(
+                  Icons.arrow_forward_ios,
+                  color: Colors.grey[400],
+                  size: 16,
+                ),
+              ],
             ),
-        ],
+          ),
+        ),
       ),
     );
   }

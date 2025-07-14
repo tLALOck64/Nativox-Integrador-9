@@ -11,6 +11,7 @@ class ExerciseResultModel {
     required this.timestamp,
   });
 }
+//verdadero o falso,ordenar,
 
 class LessonProgressModel {
   final String lessonId;

@@ -5,18 +5,24 @@ import 'package:integrador/core/navigation/route_names.dart';
 import 'package:integrador/core/navigation/guards/auth_guard.dart';
 import 'package:integrador/core/services/storage_service.dart';
 import 'package:integrador/games/screen/lesson_detail_screen.dart';
+import 'package:integrador/games/screen/traductor_screen.dart';
 import 'package:integrador/login/presentation/screens/login_activity.dart';
 import 'package:integrador/perfil/presentation/screens/profile_activity.dart';
 import 'package:integrador/screens/lesson_screen.dart';
+import 'package:integrador/screens/practice_screen.dart';
 class AppRouter {
   static final GoRouter _router = GoRouter(
-    initialLocation: '/lessons',
+    initialLocation: '/practice',
     routes: [
       // Splash
       GoRoute(
         path: RouteNames.splash,
         builder: (context, state) => const SplashScreen(),
       ),
+     GoRoute(path: RouteNames.practice
+        , builder: (context, state) => const PracticeScreen()),
+   GoRoute(path: RouteNames.traductor
+        , builder: (context, state) => const TraductorScreen()),
 
       GoRoute(path: RouteNames.lessons
         , builder: (context, state) => const LessonsScreen()),
