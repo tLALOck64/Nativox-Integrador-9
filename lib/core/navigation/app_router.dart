@@ -10,13 +10,14 @@ import 'package:integrador/perfil/presentation/screens/profile_activity.dart';
 import 'package:integrador/screens/lesson_screen.dart';
 class AppRouter {
   static final GoRouter _router = GoRouter(
-    initialLocation: RouteNames.splash,
+    initialLocation: '/lessons',
     routes: [
       // Splash
       GoRoute(
         path: RouteNames.splash,
         builder: (context, state) => const SplashScreen(),
       ),
+
       GoRoute(path: RouteNames.lessons
         , builder: (context, state) => const LessonsScreen()),
 

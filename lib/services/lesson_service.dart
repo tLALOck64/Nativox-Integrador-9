@@ -7,7 +7,7 @@ class LessonService {
   factory LessonService() => _instance;
   LessonService._internal();
 
-  // ✅ NUEVA: URL de tu API
+  // URL de tu API
   static const String _baseUrl = 'https://a3pl892azf.execute-api.us-east-1.amazonaws.com/micro-learning/api_learning';
   
   // Cache para mejorar performance
@@ -15,109 +15,13 @@ class LessonService {
   DateTime? _lastFetch;
   static const Duration _cacheValidDuration = Duration(minutes: 10);
 
-  // Datos locales como fallback (tus datos actuales)
-  List<LessonModel> _localLessons = [
-    LessonModel(
-      id: '1',
-      icon: '🌅',
-      title: 'Saludos básicos',
-      subtitle: 'Básico • 5 min',
-      progress: 1.0,
-      difficulty: 'Básico',
-      duration: 5,
-      isCompleted: true,
-      isLocked: false,
-      lessonNumber: 1,
-      level: 'Básico',
-      wordCount: 8,
-    ),
-    LessonModel(
-      id: '2',
-      icon: '🔢',
-      title: 'Números 1-10',
-      subtitle: 'Básico • 7 min',
-      progress: 1.0,
-      difficulty: 'Básico',
-      duration: 7,
-      isCompleted: true,
-      isLocked: false,
-      lessonNumber: 2,
-      level: 'Básico',
-      wordCount: 10,
-    ),
-    LessonModel(
-      id: '3',
-      icon: '👨‍👩‍👧‍👦',
-      title: 'La familia',
-      subtitle: 'Básico • 8 min',
-      progress: 0.45,
-      difficulty: 'Básico',
-      duration: 8,
-      isCompleted: false,
-      isLocked: false,
-      lessonNumber: 3,
-      level: 'Básico',
-      wordCount: 12,
-    ),
-    LessonModel(
-      id: '4',
-      icon: '🎨',
-      title: 'Colores',
-      subtitle: 'Básico • 6 min',
-      progress: 0.0,
-      difficulty: 'Básico',
-      duration: 6,
-      isCompleted: false,
-      isLocked: true,
-      lessonNumber: 4,
-      level: 'Básico',
-      wordCount: 9,
-    ),
-    LessonModel(
-      id: '5',
-      icon: '🌽',
-      title: 'Comida tradicional',
-      subtitle: 'Intermedio • 12 min',
-      progress: 0.0,
-      difficulty: 'Intermedio',
-      duration: 12,
-      isCompleted: false,
-      isLocked: true,
-      lessonNumber: 5,
-      level: 'Intermedio',
-      wordCount: 15,
-    ),
-    LessonModel(
-      id: '6',
-      icon: '🏔️',
-      title: 'Naturaleza',
-      subtitle: 'Intermedio • 10 min',
-      progress: 0.0,
-      difficulty: 'Intermedio',
-      duration: 10,
-      isCompleted: false,
-      isLocked: true,
-      lessonNumber: 6,
-      level: 'Intermedio',
-      wordCount: 18,
-    ),
-    LessonModel(
-      id: '7',
-      icon: '🎭',
-      title: 'Ceremonias',
-      subtitle: 'Avanzado • 15 min',
-      progress: 0.0,
-      difficulty: 'Avanzado',
-      duration: 15,
-      isCompleted: false,
-      isLocked: true,
-      lessonNumber: 7,
-      level: 'Avanzado',
-      wordCount: 20,
-    ),
-  ];
+  // Headers comunes
+  Map<String, String> get _headers => {
+    'Content-Type': 'application/json',
+    'Accept': 'application/json',
+  };
 
-  // ✅ ACTUALIZADO: Obtener todas las lecciones (API first)
+  // ✅ OBTENER TODAS LAS LECCIONES (SOLO API)
   Future<List<LessonModel>> getAllLessons() async {
     try {
       // Verificar cache
@@ -130,7 +34,7 @@ class LessonService {
       // Llamar a la API
       final response = await http.get(
         Uri.parse('$_baseUrl/lecciones'),
-        headers: {'Content-Type': 'application/json'},
+        headers: _headers,
       ).timeout(const Duration(seconds: 30));
 
       if (response.statusCode == 200) {
@@ -151,30 +55,49 @@ class LessonService {
     } catch (e) {
       print('Error fetching lessons from API: $e');
       
-      // Fallback a cache si existe
+      // Solo usar cache si existe
       if (_cachedLessons != null) {
+        print('Using cached lessons');
         return _applyProgressLogic(List.from(_cachedLessons!));
       }
       
-      // Fallback final a datos locales
-      await Future.delayed(const Duration(milliseconds: 500));
-      return _applyProgressLogic(List.from(_localLessons));
+      // Si no hay cache, lanzar error
+      throw Exception('No se pudieron cargar las lecciones. Verifica tu conexión a internet.');
     }
   }
 
-  // ✅ ACTUALIZADO: Obtener lección por ID (API first)
+  // ✅ OBTENER LECCIÓN POR ID (SOLO API)
   Future<LessonModel?> getLessonById(String id) async {
     try {
-      // Primero intentar de la lista cacheada
+      // Intentar obtener de la lista cacheada primero
       final lessons = await getAllLessons();
-      return lessons.firstWhere((lesson) => lesson.id == id);
+      return lessons.firstWhere(
+        (lesson) => lesson.id == id,
+        orElse: () => throw Exception('Lección no encontrada'),
+      );
     } catch (e) {
-      print('Error fetching lesson by ID: $e');
+      print('Error fetching lesson by ID $id: $e');
+      
+      // Si falla, intentar llamada directa a API (si tienes endpoint específico)
+      try {
+        final response = await http.get(
+          Uri.parse('$_baseUrl/lecciones/$id'),
+          headers: _headers,
+        ).timeout(const Duration(seconds: 15));
+
+        if (response.statusCode == 200) {
+          final Map<String, dynamic> json = jsonDecode(response.body);
+          return LessonModel.fromApiResponse(json);
+        }
+      } catch (e) {
+        print('Error fetching single lesson from API: $e');
+      }
+      
       return null;
     }
   }
 
-  // ✅ ACTUALIZADO: Obtener lecciones agrupadas por nivel (API first)
+  // ✅ OBTENER LECCIONES AGRUPADAS POR NIVEL (SOLO API)
   Future<Map<String, List<LessonModel>>> getLessonsByLevel() async {
     try {
       final lessons = await getAllLessons();
@@ -196,27 +119,11 @@ class LessonService {
       return groupedLessons;
     } catch (e) {
       print('Error grouping lessons by level: $e');
-      
-      // Fallback a datos locales
-      await Future.delayed(const Duration(milliseconds: 500));
-      final Map<String, List<LessonModel>> groupedLessons = {};
-      
-      for (final lesson in _localLessons) {
-        if (!groupedLessons.containsKey(lesson.level)) {
-          groupedLessons[lesson.level] = [];
-        }
-        groupedLessons[lesson.level]!.add(lesson);
-      }
-      
-      groupedLessons.forEach((level, lessons) {
-        lessons.sort((a, b) => a.lessonNumber.compareTo(b.lessonNumber));
-      });
-      
-      return groupedLessons;
+      throw Exception('Error al agrupar lecciones por nivel: ${e.toString()}');
     }
   }
 
-  // ✅ ACTUALIZADO: Obtener estadísticas de lecciones (API first)
+  // ✅ OBTENER ESTADÍSTICAS DE LECCIONES (SOLO API)
   Future<Map<String, int>> getLessonStats() async {
     try {
       final lessons = await getAllLessons();
@@ -238,27 +145,146 @@ class LessonService {
     } catch (e) {
       print('Error getting lesson stats: $e');
       
-      // Fallback a datos locales
-      await Future.delayed(const Duration(milliseconds: 300));
-      
-      final completedLessons = _localLessons.where((lesson) => lesson.isCompleted).length;
-      final inProgressLessons = _localLessons.where(
-        (lesson) => lesson.progress > 0 && lesson.progress < 1.0
-      ).length;
-      final totalWords = _localLessons.fold<int>(
-        0,
-        (sum, lesson) => sum + (lesson.wordCount * lesson.progress).round(),
-      );
-      
+      // Retornar estadísticas vacías si falla
       return {
-        'completed': completedLessons,
-        'inProgress': inProgressLessons,
-        'totalWords': totalWords,
+        'completed': 0,
+        'inProgress': 0,
+        'totalWords': 0,
       };
     }
   }
 
-  // ✅ NUEVO: Aplicar lógica de progreso y bloqueos
+  // ✅ OBTENER LECCIONES POR DIFICULTAD (SOLO API)
+  Future<List<LessonModel>> getLessonsByDifficulty(String difficulty) async {
+    final lessons = await getAllLessons();
+    return lessons.where((lesson) => lesson.difficulty == difficulty).toList();
+  }
+
+  // ✅ OBTENER SIGUIENTE LECCIÓN DISPONIBLE (SOLO API)
+  Future<LessonModel?> getNextLesson() async {
+    try {
+      final lessons = await getAllLessons();
+      return lessons.firstWhere(
+        (lesson) => !lesson.isCompleted && !lesson.isLocked,
+      );
+    } catch (e) {
+      return null;
+    }
+  }
+
+  // ✅ OBTENER ESTADÍSTICAS DE PROGRESO (SOLO API)
+  Future<Map<String, dynamic>> getProgressStats() async {
+    try {
+      final lessons = await getAllLessons();
+      
+      final completedLessons = lessons.where((lesson) => lesson.isCompleted).length;
+      final totalLessons = lessons.length;
+      final averageProgress = totalLessons > 0 
+          ? lessons.fold<double>(0.0, (sum, lesson) => sum + lesson.progress) / totalLessons
+          : 0.0;
+
+      return {
+        'completedLessons': completedLessons,
+        'totalLessons': totalLessons,
+        'averageProgress': averageProgress,
+        'completionRate': totalLessons > 0 ? completedLessons / totalLessons : 0.0,
+      };
+    } catch (e) {
+      print('Error getting progress stats: $e');
+      
+      // Retornar estadísticas vacías si falla
+      return {
+        'completedLessons': 0,
+        'totalLessons': 0,
+        'averageProgress': 0.0,
+        'completionRate': 0.0,
+      };
+    }
+  }
+
+  // ✅ ACTUALIZAR PROGRESO DE LECCIÓN (CACHE LOCAL)
+  Future<bool> updateLessonProgress(String lessonId, double progress) async {
+    try {
+      // Actualizar en cache si existe
+      if (_cachedLessons != null) {
+        final index = _cachedLessons!.indexWhere((lesson) => lesson.id == lessonId);
+        if (index != -1) {
+          _cachedLessons![index] = _cachedLessons![index].copyWith(
+            progress: progress,
+            isCompleted: progress >= 1.0,
+          );
+          
+          // Aplicar lógica de bloqueo/desbloqueo
+          _cachedLessons = _applyProgressLogic(_cachedLessons!);
+          
+          return true;
+        }
+      }
+      
+      // TODO: Aquí podrías enviar el progreso a tu API si tienes endpoint para eso
+      // await _sendProgressToAPI(lessonId, progress);
+      
+      return false;
+    } catch (e) {
+      print('Error updating lesson progress: $e');
+      return false;
+    }
+  }
+
+  // ✅ COMPLETAR LECCIÓN (CACHE LOCAL)
+  Future<bool> completeLesson(String lessonId) async {
+    try {
+      // Actualizar en cache
+      if (_cachedLessons != null) {
+        final index = _cachedLessons!.indexWhere((lesson) => lesson.id == lessonId);
+        if (index != -1) {
+          _cachedLessons![index] = _cachedLessons![index].copyWith(
+            progress: 1.0,
+            isCompleted: true,
+          );
+          
+          // Desbloquear la siguiente lección
+          if (index + 1 < _cachedLessons!.length) {
+            _cachedLessons![index + 1] = _cachedLessons![index + 1].copyWith(isLocked: false);
+          }
+          
+          // TODO: Enviar completion a API
+          // await _sendCompletionToAPI(lessonId);
+          
+          return true;
+        }
+      }
+      
+      return false;
+    } catch (e) {
+      print('Error completing lesson: $e');
+      return false;
+    }
+  }
+
+  // ✅ RESETEAR PROGRESO (CACHE LOCAL)
+  Future<void> resetProgress() async {
+    try {
+      // Reset cache
+      if (_cachedLessons != null) {
+        for (int i = 0; i < _cachedLessons!.length; i++) {
+          _cachedLessons![i] = _cachedLessons![i].copyWith(
+            progress: 0.0,
+            isCompleted: false,
+            isLocked: i > 0, // Solo la primera lección desbloqueada
+          );
+        }
+      }
+      
+      // TODO: Enviar reset a API si tienes endpoint
+      // await _sendResetToAPI();
+      
+    } catch (e) {
+      print('Error resetting progress: $e');
+    }
+  }
+
+  // ✅ APLICAR LÓGICA DE PROGRESO Y BLOQUEOS
   List<LessonModel> _applyProgressLogic(List<LessonModel> lessons) {
     // Ordenar por número de lección
     lessons.sort((a, b) => a.lessonNumber.compareTo(b.lessonNumber));
@@ -277,155 +303,110 @@ class LessonService {
     return lessons;
   }
 
-  // ✅ NUEVO: Limpiar cache
+  // ✅ LIMPIAR CACHE
   void clearCache() {
     _cachedLessons = null;
     _lastFetch = null;
+    print('Cache cleared');
   }
 
-  // Métodos existentes (sin cambios, pero usando la nueva lógica)
-  Future<List<LessonModel>> getLessonsByDifficulty(String difficulty) async {
-    final lessons = await getAllLessons();
-    return lessons.where((lesson) => lesson.difficulty == difficulty).toList();
-  }
-
-  Future<bool> updateLessonProgress(String lessonId, double progress) async {
-    await Future.delayed(const Duration(milliseconds: 300));
+  // ✅ VERIFICAR CONECTIVIDAD CON API
+  Future<bool> checkApiConnectivity() async {
     try {
-      // Actualizar en cache si existe
-      if (_cachedLessons != null) {
-        final index = _cachedLessons!.indexWhere((lesson) => lesson.id == lessonId);
-        if (index != -1) {
-          _cachedLessons![index] = _cachedLessons![index].copyWith(
-            progress: progress,
-            isCompleted: progress >= 1.0,
-          );
-        }
-      }
+      final response = await http.get(
+        Uri.parse('$_baseUrl/lecciones'),
+        headers: _headers,
+      ).timeout(const Duration(seconds: 5));
       
-      // Actualizar en datos locales también
-      final index = _localLessons.indexWhere((lesson) => lesson.id == lessonId);
-      if (index != -1) {
-        _localLessons[index] = _localLessons[index].copyWith(
-          progress: progress,
-          isCompleted: progress >= 1.0,
-        );
-        return true;
-      }
-      return false;
+      return response.statusCode == 200;
     } catch (e) {
+      print('API connectivity check failed: $e');
       return false;
     }
   }
 
-  Future<bool> completeLesson(String lessonId) async {
-    await Future.delayed(const Duration(milliseconds: 300));
-    try {
-      // Actualizar en cache
-      if (_cachedLessons != null) {
-        final index = _cachedLessons!.indexWhere((lesson) => lesson.id == lessonId);
-        if (index != -1) {
-          _cachedLessons![index] = _cachedLessons![index].copyWith(
-            progress: 1.0,
-            isCompleted: true,
-          );
-          
-          // Desbloquear la siguiente lección
-          if (index + 1 < _cachedLessons!.length) {
-            _cachedLessons![index + 1] = _cachedLessons![index + 1].copyWith(isLocked: false);
-          }
-        }
-      }
-      
-      // Actualizar en datos locales
-      final index = _localLessons.indexWhere((lesson) => lesson.id == lessonId);
-      if (index != -1) {
-        _localLessons[index] = _localLessons[index].copyWith(
-          progress: 1.0,
-          isCompleted: true,
-        );
-        
-        if (index + 1 < _localLessons.length) {
-          _localLessons[index + 1] = _localLessons[index + 1].copyWith(isLocked: false);
-        }
-        
-        return true;
-      }
-      return false;
-    } catch (e) {
-      return false;
-    }
+  // ✅ FORZAR RECARGA DESDE API
+  Future<List<LessonModel>> forceRefresh() async {
+    clearCache();
+    return await getAllLessons();
   }
 
-  Future<LessonModel?> getNextLesson() async {
+  // ✅ OBTENER INFORMACIÓN DEL CACHE
+  Map<String, dynamic> getCacheInfo() {
+    return {
+      'hasCachedData': _cachedLessons != null,
+      'cacheSize': _cachedLessons?.length ?? 0,
+      'lastFetch': _lastFetch?.toIso8601String(),
+      'cacheValidUntil': _lastFetch?.add(_cacheValidDuration).toIso8601String(),
+      'isCacheValid': _cachedLessons != null && 
+          _lastFetch != null && 
+          DateTime.now().difference(_lastFetch!) < _cacheValidDuration,
+    };
+  }
+
+  // TODO: Métodos para enviar datos a la API (implementar cuando tengas endpoints)
+  /*
+  Future<void> _sendProgressToAPI(String lessonId, double progress) async {
     try {
-      final lessons = await getAllLessons();
-      return lessons.firstWhere(
-        (lesson) => !lesson.isCompleted && !lesson.isLocked,
+      await http.put(
+        Uri.parse('$_baseUrl/progreso/$lessonId'),
+        headers: _headers,
+        body: json.encode({'progress': progress}),
       );
     } catch (e) {
-      return null;
+      print('Error sending progress to API: $e');
     }
   }
 
-  Future<Map<String, dynamic>> getProgressStats() async {
+  Future<void> _sendCompletionToAPI(String lessonId) async {
     try {
-      final lessons = await getAllLessons();
-      
-      final completedLessons = lessons.where((lesson) => lesson.isCompleted).length;
-      final totalLessons = lessons.length;
-      final averageProgress = lessons.fold<double>(
-        0.0,
-        (sum, lesson) => sum + lesson.progress,
-      ) / totalLessons;
-
-      return {
-        'completedLessons': completedLessons,
-        'totalLessons': totalLessons,
-        'averageProgress': averageProgress,
-        'completionRate': completedLessons / totalLessons,
-      };
-    } catch (e) {
-      // Fallback
-      await Future.delayed(const Duration(milliseconds: 200));
-      
-      final completedLessons = _localLessons.where((lesson) => lesson.isCompleted).length;
-      final totalLessons = _localLessons.length;
-      final averageProgress = _localLessons.fold<double>(
-        0.0,
-        (sum, lesson) => sum + lesson.progress,
-      ) / totalLessons;
-
-      return {
-        'completedLessons': completedLessons,
-        'totalLessons': totalLessons,
-        'averageProgress': averageProgress,
-        'completionRate': completedLessons / totalLessons,
-      };
-    }
-  }
-
-  Future<void> resetProgress() async {
-    await Future.delayed(const Duration(milliseconds: 300));
-    
-    // Reset cache
-    if (_cachedLessons != null) {
-      for (int i = 0; i < _cachedLessons!.length; i++) {
-        _cachedLessons![i] = _cachedLessons![i].copyWith(
-          progress: 0.0,
-          isCompleted: false,
-          isLocked: i > 0,
-        );
-      }
-    }
-    
-    // Reset datos locales
-    for (int i = 0; i < _localLessons.length; i++) {
-      _localLessons[i] = _localLessons[i].copyWith(
-        progress: 0.0,
-        isCompleted: false,
-        isLocked: i > 0,
+      await http.post(
+        Uri.parse('$_baseUrl/completar/$lessonId'),
+        headers: _headers,
       );
+    } catch (e) {
+      print('Error sending completion to API: $e');
     }
   }
+
+  Future<void> _sendResetToAPI() async {
+    try {
+      await http.delete(
+        Uri.parse('$_baseUrl/progreso'),
+        headers: _headers,
+      );
+    } catch (e) {
+      print('Error sending reset to API: $e');
+    }
+  }
+  */
+}
+
+// ============================================
+// MANEJO DE ERRORES MEJORADO
+// ============================================
+
+// lessons/services/lesson_service_exceptions.dart
+class LessonServiceException implements Exception {
+  final String message;
+  final String? code;
+  final dynamic originalError;
+
+  const LessonServiceException(this.message, {this.code, this.originalError});
+
+  @override
+  String toString() => 'LessonServiceException: $message';
+}
+
+class NoInternetException extends LessonServiceException {
+  const NoInternetException() : super('Sin conexión a internet');
+}
+
+class ApiServerException extends LessonServiceException {
+  const ApiServerException(String message) : super(message);
+}
+
+class LessonNotFoundException extends LessonServiceException {
+  const LessonNotFoundException(String lessonId) 
+      : super('Lección no encontrada: $lessonId');
 }

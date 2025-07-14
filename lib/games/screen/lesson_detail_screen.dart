@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:integrador/games/models/exercise_detail_model.dart';
 import 'package:integrador/games/models/lesson_detail_model.dart';
 import 'package:integrador/games/services/lesson_detail_service.dart';
 
@@ -22,8 +21,12 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
   LessonDetailModel? _lesson;
   LessonProgressModel? _progress;
   bool _isLoading = true;
+  bool _isSubmittingAnswer = false; // Para mostrar loading al enviar respuesta
   int _currentExerciseIndex = 0;
   List<ExerciseResultModel> _results = [];
+  
+  // ✅ NUEVO: ID de usuario (en una app real vendría del authentication)
+  final String _usuarioId = 'e62539c6-bdcb-4ef2-bd93-9d7cc85fa630'; // Hardcoded por ahora
 
   @override
   void initState() {
@@ -35,48 +38,97 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
     setState(() => _isLoading = true);
     
     try {
+      print('🔄 Loading lesson: ${widget.lessonId}');
+      
       final lesson = await _service.getLessonById(widget.lessonId);
       if (lesson != null) {
+        final progress = await _service.getProgress(widget.lessonId);
+        
         setState(() {
           _lesson = lesson;
-          _progress = LessonProgressModel.empty(widget.lessonId);
+          _progress = progress ?? LessonProgressModel.empty(widget.lessonId);
           _isLoading = false;
         });
+        
+        print('✅ Lesson loaded: ${lesson.titulo}');
       } else {
         _showError('Lección no encontrada');
       }
+    } on LessonDetailException catch (e) {
+      _showError(e.message);
     } catch (e) {
-      _showError('Error al cargar la lección');
+      _showError('Error al cargar la lección: ${e.toString()}');
     }
   }
 
   void _showError(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message), backgroundColor: Colors.red),
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.red,
+        action: SnackBarAction(
+          label: 'Reintentar',
+          textColor: Colors.white,
+          onPressed: _loadLesson,
+        ),
+      ),
     );
     setState(() => _isLoading = false);
   }
 
-  void _submitAnswer(dynamic answer) {
-    if (_lesson == null || _currentExerciseIndex >= _lesson!.ejercicios.length) {
+  void _submitAnswer(dynamic answer) async {
+    if (_lesson == null || 
+        _currentExerciseIndex >= _lesson!.ejercicios.length ||
+        _isSubmittingAnswer) {
       return;
     }
 
     final exercise = _lesson!.ejercicios[_currentExerciseIndex];
-    final isCorrect = _service.validateAnswer(exercise, answer);
     
-    final result = ExerciseResultModel(
-      exerciseIndex: _currentExerciseIndex,
-      userAnswer: answer,
-      isCorrect: isCorrect,
-      timestamp: DateTime.now(),
-    );
-
     setState(() {
-      _results.add(result);
+      _isSubmittingAnswer = true;
     });
 
-    _showResult(isCorrect);
+    try {
+      // ✅ NUEVO: Enviar respuesta a la API
+      final success = await _service.resolverEjercicio(
+        lessonId: widget.lessonId,
+        ejercicioId: exercise.id,
+        usuarioId: _usuarioId,
+        respuesta: answer,
+      );
+
+      if (!success) {
+        _showError('Error al enviar la respuesta. Intenta nuevamente.');
+        setState(() {
+          _isSubmittingAnswer = false;
+        });
+        return;
+      }
+
+      // Validar respuesta localmente también
+      final isCorrect = _service.validateAnswer(exercise, answer);
+      
+      final result = ExerciseResultModel(
+        exerciseIndex: _currentExerciseIndex,
+        userAnswer: answer,
+        isCorrect: isCorrect,
+        timestamp: DateTime.now(),
+      );
+
+      setState(() {
+        _results.add(result);
+        _isSubmittingAnswer = false;
+      });
+
+      _showResult(isCorrect);
+      
+    } catch (e) {
+      setState(() {
+        _isSubmittingAnswer = false;
+      });
+      _showError('Error al procesar la respuesta: ${e.toString()}');
+    }
   }
 
   void _showResult(bool isCorrect) {
@@ -89,19 +141,32 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
             Icon(
               isCorrect ? Icons.check_circle : Icons.cancel,
               color: isCorrect ? Colors.green : Colors.red,
+              size: 32,
             ),
-            const SizedBox(width: 8),
-            Text(isCorrect ? '¡Correcto!' : 'Incorrecto'),
+            const SizedBox(width: 12),
+            Text(
+              isCorrect ? '¡Correcto!' : 'Incorrecto',
+              style: TextStyle(
+                color: isCorrect ? Colors.green : Colors.red,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
           ],
         ),
         content: Text(
           isCorrect 
-            ? '¡Bien hecho! Continúa con el siguiente ejercicio.'
-            : 'No te preocupes, sigue practicando.',
+            ? '¡Excelente! Has respondido correctamente.'
+            : 'No te preocupes, sigue practicando para mejorar.',
+          style: const TextStyle(fontSize: 16),
         ),
         actions: [
           ElevatedButton(
             onPressed: _nextExercise,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFD4A574),
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+            ),
             child: const Text('Continuar'),
           ),
         ],
@@ -121,7 +186,7 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
     }
   }
 
-  void _finishLesson() {
+  void _finishLesson() async {
     final score = _service.calculateScore(_results);
     final progress = LessonProgressModel(
       lessonId: widget.lessonId,
@@ -131,38 +196,61 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
       score: score,
     );
 
-    _service.saveProgress(progress);
-
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => AlertDialog(
-        title: const Text('¡Lección completada!'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text('Puntuación: $score%'),
-            const SizedBox(height: 16),
-            LinearProgressIndicator(
-              value: score / 100,
-              backgroundColor: Colors.grey[300],
-              valueColor: AlwaysStoppedAnimation<Color>(
-                score >= 70 ? Colors.green : Colors.orange,
-              ),
+    try {
+      await _service.saveProgress(progress);
+      
+      if (mounted) {
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (context) => AlertDialog(
+            title: const Text(
+              '🎉 ¡Lección completada!',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-              context.go('/lessons'); // Volver a lecciones
-            },
-            child: const Text('Volver a lecciones'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  'Puntuación: $score%',
+                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+                ),
+                const SizedBox(height: 16),
+                LinearProgressIndicator(
+                  value: score / 100,
+                  backgroundColor: Colors.grey[300],
+                  valueColor: AlwaysStoppedAnimation<Color>(
+                    score >= 70 ? Colors.green : score >= 50 ? Colors.orange : Colors.red,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  score >= 70 ? '¡Excelente trabajo!' : 
+                  score >= 50 ? 'Buen trabajo, sigue practicando' : 
+                  'Intenta nuevamente para mejorar',
+                  style: TextStyle(
+                    color: score >= 70 ? Colors.green : 
+                           score >= 50 ? Colors.orange : Colors.red,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  context.go('/lessons'); // Volver a lecciones
+                },
+                child: const Text('Volver a lecciones'),
+              ),
+            ],
           ),
-        ],
-      ),
-    );
+        );
+      }
+    } catch (e) {
+      _showError('Error al guardar el progreso: ${e.toString()}');
+    }
   }
 
   @override
@@ -178,8 +266,21 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
             ),
           ),
           child: const Center(
-            child: CircularProgressIndicator(
-              valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFD4A574)),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                CircularProgressIndicator(
+                  valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFD4A574)),
+                ),
+                SizedBox(height: 16),
+                Text(
+                  'Cargando lección...',
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Color(0xFF666666),
+                  ),
+                ),
+              ],
             ),
           ),
         ),
@@ -188,9 +289,23 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
 
     if (_lesson == null) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Error')),
+        appBar: AppBar(
+          title: const Text('Error'),
+          backgroundColor: Colors.red,
+          foregroundColor: Colors.white,
+        ),
         body: const Center(
-          child: Text('No se pudo cargar la lección'),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.error_outline, size: 64, color: Colors.red),
+              SizedBox(height: 16),
+              Text(
+                'No se pudo cargar la lección',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+              ),
+            ],
+          ),
         ),
       );
     }
@@ -273,8 +388,14 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('Ejercicio ${_currentExerciseIndex + 1} de ${_lesson!.ejercicios.length}'),
-              Text('${(progress * 100).toInt()}%'),
+              Text(
+                'Ejercicio ${_currentExerciseIndex + 1} de ${_lesson!.ejercicios.length}',
+                style: const TextStyle(fontWeight: FontWeight.w600),
+              ),
+              Text(
+                '${(progress * 100).toInt()}%',
+                style: const TextStyle(fontWeight: FontWeight.w600),
+              ),
             ],
           ),
           const SizedBox(height: 8),
@@ -339,26 +460,32 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
   Widget _buildExerciseWidget(ExerciseModel exercise) {
     switch (exercise.tipo) {
       case 'selección':
-      case 'completar':
         return _buildSelectionExercise(exercise);
+      case 'completar':
+        return _buildSelectionExercise(exercise); // Similar a selección
       case 'traducción':
         return _buildTranslationExercise(exercise);
       case 'emparejamiento':
         return _buildMatchingExercise(exercise);
       default:
-        return const Text('Tipo de ejercicio no soportado');
+        return Center(
+          child: Text(
+            'Tipo de ejercicio "${exercise.tipo}" no soportado',
+            style: const TextStyle(color: Colors.red, fontSize: 16),
+          ),
+        );
     }
   }
 
   Widget _buildSelectionExercise(ExerciseModel exercise) {
     return Column(
       children: [
-        ...exercise.opcionesString.map((option) {
+        ...exercise.contenido.opciones.map((option) {
           return Container(
             width: double.infinity,
             margin: const EdgeInsets.only(bottom: 12),
             child: ElevatedButton(
-              onPressed: () => _submitAnswer(option),
+              onPressed: _isSubmittingAnswer ? null : () => _submitAnswer(option),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.white,
                 foregroundColor: const Color(0xFF2C2C2C),
@@ -368,10 +495,19 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
                   side: BorderSide(color: Colors.grey[300]!),
                 ),
               ),
-              child: Text(
-                option,
-                style: const TextStyle(fontSize: 16),
-              ),
+              child: _isSubmittingAnswer 
+                ? const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFD4A574)),
+                    ),
+                  )
+                : Text(
+                    option,
+                    style: const TextStyle(fontSize: 16),
+                  ),
             ),
           );
         }).toList(),
@@ -386,22 +522,45 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
       children: [
         TextField(
           controller: controller,
-          decoration: const InputDecoration(
+          enabled: !_isSubmittingAnswer,
+          decoration: InputDecoration(
             hintText: 'Escribe tu respuesta aquí...',
-            border: OutlineInputBorder(),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            filled: true,
+            fillColor: _isSubmittingAnswer ? Colors.grey[100] : Colors.white,
           ),
           style: const TextStyle(fontSize: 16),
+          maxLines: 3,
         ),
         const SizedBox(height: 24),
         SizedBox(
           width: double.infinity,
           child: ElevatedButton(
-            onPressed: () => _submitAnswer(controller.text),
+            onPressed: _isSubmittingAnswer ? null : () => _submitAnswer(controller.text),
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFFD4A574),
+              foregroundColor: Colors.white,
               padding: const EdgeInsets.all(16),
             ),
-            child: const Text('Enviar respuesta'),
+            child: _isSubmittingAnswer
+              ? const Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                      ),
+                    ),
+                    SizedBox(width: 12),
+                    Text('Enviando...'),
+                  ],
+                )
+              : const Text('Enviar respuesta'),
           ),
         ),
       ],
@@ -412,20 +571,70 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
     // Implementación simplificada para emparejamiento
     return Column(
       children: [
-        Text(
-          'Toca para emparejar (implementación simplificada)',
-          style: TextStyle(color: Colors.grey[600]),
+        Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.blue[50],
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Colors.blue[200]!),
+          ),
+          child: Text(
+            'Ejercicio de emparejamiento - Implementación simplificada',
+            style: TextStyle(
+              color: Colors.blue[700],
+              fontWeight: FontWeight.w500,
+            ),
+          ),
         ),
         const SizedBox(height: 20),
+        
+        // Mostrar opciones de emparejamiento si las hay
+        if (exercise.contenido.opciones.isNotEmpty) ...[
+          ...exercise.contenido.opciones.map((option) {
+            return Container(
+              width: double.infinity,
+              margin: const EdgeInsets.only(bottom: 8),
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.grey[100],
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.grey[300]!),
+              ),
+              child: Text(
+                option,
+                style: const TextStyle(fontSize: 14),
+              ),
+            );
+          }).toList(),
+          const SizedBox(height: 20),
+        ],
+        
         SizedBox(
           width: double.infinity,
           child: ElevatedButton(
-            onPressed: () => _submitAnswer(exercise.respuestaCorrecta),
+            onPressed: _isSubmittingAnswer ? null : () => _submitAnswer(exercise.respuestaCorrecta),
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFFD4A574),
+              foregroundColor: Colors.white,
               padding: const EdgeInsets.all(16),
             ),
-            child: const Text('Continuar (Auto-correcto)'),
+            child: _isSubmittingAnswer
+              ? const Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                      ),
+                    ),
+                    SizedBox(width: 12),
+                    Text('Enviando...'),
+                  ],
+                )
+              : const Text('Continuar (Auto-correcto)'),
           ),
         ),
       ],
