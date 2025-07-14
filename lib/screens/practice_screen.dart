@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../models/practice_mode_model.dart';
 import '../services/practice_service.dart';
-import '../widgets/custom_bottom_nav_widget.dart';
 
 class PracticeScreen extends StatefulWidget {
   const PracticeScreen({super.key});
@@ -14,7 +13,6 @@ class PracticeScreen extends StatefulWidget {
 class _PracticeScreenState extends State<PracticeScreen> {
   final PracticeService _practiceService = PracticeService();
   
-  int _selectedIndex = 2; // Practice tab is selected
   List<PracticeModeModel> _practiceModes = [];
   bool _isLoading = true;
 
@@ -81,28 +79,6 @@ class _PracticeScreenState extends State<PracticeScreen> {
     );
   }
 
-  void _onBottomNavTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
-    
-    // Navegar según el índice
-    switch (index) {
-      case 0:
-        Navigator.of(context).pop(); // Volver a Home
-        break;
-      case 1:
-        _showMessage('Navegando a Lecciones...');
-        break;
-      case 2:
-        // Ya estamos en Práctica
-        break;
-      case 3:
-        _showMessage('Navegando a Perfil...');
-        break;
-    }
-  }
-
   void _onPracticeModeTapped(PracticeModeModel mode) {
     if (!mode.isUnlocked) {
       _showMessage('Este modo está bloqueado. Completa más lecciones para desbloquearlo.');
@@ -146,10 +122,6 @@ class _PracticeScreenState extends State<PracticeScreen> {
         child: SafeArea(
           child: _isLoading ? _buildLoadingState() : _buildMainContent(),
         ),
-      ),
-      bottomNavigationBar: CustomBottomNavWidget(
-        selectedIndex: _selectedIndex,
-        onItemTapped: _onBottomNavTapped,
       ),
     );
   }
@@ -375,7 +347,6 @@ class _PracticeScreenState extends State<PracticeScreen> {
     }
 
     return Container(
-      height: 120,
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
@@ -395,127 +366,107 @@ class _PracticeScreenState extends State<PracticeScreen> {
           onTap: () => _onPracticeModeTapped(mode),
           child: Padding(
             padding: const EdgeInsets.all(20),
-            child: Row(
+            child: Column(
               children: [
-                // Icon container
-                Container(
-                  width: 60,
-                  height: 60,
-                  decoration: BoxDecoration(
-                    color: modeColor.withOpacity(0.1),
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(
-                    iconData,
-                    color: modeColor,
-                    size: 28,
-                  ),
-                ),
-                
-                const SizedBox(width: 16),
-                
-                // Content
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        mode.title,
-                        style: const TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w600,
-                          color: Color(0xFF2C2C2C),
-                        ),
+                // Primera fila: Icon, título y arrow
+                Row(
+                  children: [
+                    // Icon container
+                    Container(
+                      width: 50,
+                      height: 50,
+                      decoration: BoxDecoration(
+                        color: modeColor.withOpacity(0.1),
+                        shape: BoxShape.circle,
                       ),
-                      const SizedBox(height: 4),
-                      Text(
-                        mode.subtitle,
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Colors.grey[600],
-                        ),
+                      child: Icon(
+                        iconData,
+                        color: modeColor,
+                        size: 24,
                       ),
-                      const SizedBox(height: 8),
-                      Row(
+                    ),
+                    
+                    const SizedBox(width: 16),
+                    
+                    // Título - Expandido para tomar el espacio disponible
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 8,
-                              vertical: 4,
-                            ),
-                            decoration: BoxDecoration(
-                              color: modeColor.withOpacity(0.1),
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: Text(
-                              mode.difficultyText,
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: modeColor,
-                                fontWeight: FontWeight.w500,
-                              ),
+                          Text(
+                            mode.title,
+                            style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w600,
+                              color: Color(0xFF2C2C2C),
                             ),
                           ),
-                          const SizedBox(width: 8),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 8,
-                              vertical: 4,
+                          const SizedBox(height: 4),
+                          Text(
+                            mode.subtitle,
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: Colors.grey[600],
                             ),
-                            decoration: BoxDecoration(
-                              color: Colors.grey[100],
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: Text(
-                              '${mode.completedSessions}/${mode.totalSessions}',
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: Colors.grey[600],
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ],
                       ),
-                    ],
-                  ),
-                ),
-                
-                // Progress and arrow
-                Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    // Progress circle
-                    SizedBox(
-                      width: 40,
-                      height: 40,
-                      child: CircularProgressIndicator(
-                        value: mode.progress,
-                        backgroundColor: Colors.grey[200],
-                        valueColor: AlwaysStoppedAnimation<Color>(modeColor),
-                        strokeWidth: 4,
-                      ),
                     ),
-                    const SizedBox(height: 8),
-                    Text(
-                      '${(mode.progress * 100).toInt()}%',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.grey[600],
-                        fontWeight: FontWeight.w500,
-                      ),
+                    
+                    // Arrow icon
+                    Icon(
+                      Icons.arrow_forward_ios,
+                      color: Colors.grey[400],
+                      size: 16,
                     ),
                   ],
                 ),
                 
-                const SizedBox(width: 8),
+                const SizedBox(height: 16),
                 
-                // Arrow icon
-                Icon(
-                  Icons.arrow_forward_ios,
-                  color: Colors.grey[400],
-                  size: 16,
+                // Segunda fila: Badges solamente
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: modeColor.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        mode.difficultyText,
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: modeColor,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.grey[100],
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        '${mode.completedSessions}/${mode.totalSessions}',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey[600],
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -524,4 +475,6 @@ class _PracticeScreenState extends State<PracticeScreen> {
       ),
     );
   }
+
+
 }

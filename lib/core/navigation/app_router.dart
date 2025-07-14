@@ -4,31 +4,32 @@ import 'package:integrador/core/di/injection_container.dart' as di;
 import 'package:integrador/core/navigation/route_names.dart';
 import 'package:integrador/core/navigation/guards/auth_guard.dart';
 import 'package:integrador/core/services/storage_service.dart';
+import 'package:integrador/core/layouts/main_layout.dart';
 import 'package:integrador/games/screen/lesson_detail_screen.dart';
 import 'package:integrador/games/screen/memorama_menu_screen.dart';
 import 'package:integrador/games/screen/traductor_screen.dart';
 import 'package:integrador/login/presentation/screens/login_activity.dart';
 import 'package:integrador/perfil/presentation/screens/profile_activity.dart';
+import 'package:integrador/screens/home_screen.dart';
 import 'package:integrador/screens/lesson_screen.dart';
 import 'package:integrador/screens/practice_screen.dart';
+
 class AppRouter {
   static final GoRouter _router = GoRouter(
-    initialLocation: '/lessons',
+    initialLocation: '/home',
     routes: [
-      // Splash
+      // Rutas sin navbar
       GoRoute(
         path: RouteNames.splash,
         builder: (context, state) => const SplashScreen(),
       ),
-     GoRoute(path: RouteNames.practice
-        , builder: (context, state) => const PracticeScreen()),
-   GoRoute(path: RouteNames.traductor
-        , builder: (context, state) => const TraductorScreen()),
-
-      GoRoute(path: RouteNames.lessons
-        , builder: (context, state) => const LessonsScreen()),
-
-         GoRoute(
+      
+      GoRoute(
+        path: RouteNames.login,
+        builder: (context, state) => const LoginActivity(),
+      ),
+      
+      GoRoute(
         path: '/lessons/:lessonId',
         builder: (context, state) {
           final lessonId = state.pathParameters['lessonId']!;
@@ -36,29 +37,7 @@ class AppRouter {
         },
         redirect: AuthGuard.redirectIfNotAuthenticated,
       ),
-      // Auth routes
-      GoRoute(
-        path: RouteNames.login,
-        builder: (context, state) => const LoginActivity(),
-      ),
-       GoRoute(
-        path: RouteNames.profile,
-        builder: (context, state) => const ProfileActivity(),
-        redirect: AuthGuard.redirectIfNotAuthenticated,
-      ),
       
-      GoRoute(path: RouteNames.game
-        , builder: (context, state) => const MemoramaMenuScreen()),
-      // Protected routes
-      GoRoute(
-        path: RouteNames.home,
-        builder: (context, state) => const HomeScreen(),
-        redirect: AuthGuard.redirectIfNotAuthenticated,
-      ),
-      
-     
-      
-      // Settings with nested routes
       GoRoute(
         path: RouteNames.settings,
         builder: (context, state) => const SettingsScreen(),
@@ -74,6 +53,47 @@ class AppRouter {
           ),
         ],
       ),
+
+      // Rutas con navbar usando ShellRoute
+      ShellRoute(
+        builder: (context, state, child) {
+          return MainLayout(
+            location: state.matchedLocation,
+            child: child,
+          );
+        },
+        routes: [
+          GoRoute(
+            path: RouteNames.home,
+            builder: (context, state) => const HomeScreen(),
+          ),
+          
+          GoRoute(
+            path: RouteNames.lessons,
+            builder: (context, state) => const LessonsScreen(),
+          ),
+          
+          GoRoute(
+            path: RouteNames.practice,
+            builder: (context, state) => const PracticeScreen(),
+          ),
+          
+          GoRoute(
+            path: RouteNames.traductor,
+            builder: (context, state) => const TraductorScreen(),
+          ),
+          
+          GoRoute(
+            path: RouteNames.game,
+            builder: (context, state) => const MemoramaMenuScreen(),
+          ),
+          
+          GoRoute(
+            path: RouteNames.profile,
+            builder: (context, state) => const ProfileActivity(),
+          ),
+        ],
+      ),
     ],
     errorBuilder: (context, state) => const NotFoundScreen(),
   );
@@ -81,7 +101,7 @@ class AppRouter {
   static GoRouter get router => _router;
 }
 
-// Placeholder screens (replace with actual implementations)
+// Screens placeholder
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
 
@@ -97,19 +117,15 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   Future<void> _checkAuthStatus() async {
-    // Simular carga inicial
     await Future.delayed(const Duration(seconds: 2));
     
-    // Verificar si hay usuario logueado
     final storageService = di.sl<StorageService>();
     final userData = await storageService.getUserData();
     
     if (mounted) {
       if (userData != null) {
-        // Usuario logueado, ir a home o profile
-        context.go(RouteNames.profile); // o RouteNames.home
+        context.go(RouteNames.home);
       } else {
-        // No hay usuario, ir a login
         context.go(RouteNames.login);
       }
     }
@@ -123,7 +139,6 @@ class _SplashScreenState extends State<SplashScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // Logo o icono de tu app
             Container(
               width: 120,
               height: 120,
@@ -165,12 +180,6 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 }
 
-
-class HomeScreen extends StatelessWidget {
-  const HomeScreen({super.key});
-  @override
-  Widget build(BuildContext context) => const Scaffold(body: Center(child: Text('Home')));
-}
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});

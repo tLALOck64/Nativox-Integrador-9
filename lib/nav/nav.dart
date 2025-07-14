@@ -8,7 +8,7 @@ class CustomBottomNavBar extends StatelessWidget {
   final Color? backgroundColor;
   final Color? activeColor;
   final Color? inactiveColor;
-  final double height;
+  final double? height;
 
   const CustomBottomNavBar({
     super.key,
@@ -18,14 +18,15 @@ class CustomBottomNavBar extends StatelessWidget {
     this.backgroundColor,
     this.activeColor,
     this.inactiveColor,
-    this.height = 80,
+    this.height,
   });
 
   @override
   Widget build(BuildContext context) {
+    final bottomPadding = MediaQuery.of(context).padding.bottom;
+    
     return Container(
-      height: height,
-      padding: const EdgeInsets.only(bottom: 20),
+      height: (height ?? 70) + bottomPadding,
       decoration: BoxDecoration(
         color: backgroundColor ?? Colors.white,
         border: const Border(
@@ -39,21 +40,28 @@ class CustomBottomNavBar extends StatelessWidget {
           ),
         ],
       ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: items.asMap().entries.map((entry) {
-          final index = entry.key;
-          final item = entry.value;
-          final isActive = currentIndex == index;
-          
-          return _NavBarItemWidget(
-            item: item,
-            isActive: isActive,
-            activeColor: activeColor ?? const Color(0xFFD4A574),
-            inactiveColor: inactiveColor ?? const Color(0xFF888888),
-            onTap: () => onTap(index),
-          );
-        }).toList(),
+      child: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: items.asMap().entries.map((entry) {
+              final index = entry.key;
+              final item = entry.value;
+              final isActive = currentIndex == index;
+              
+              return Expanded(
+                child: _NavBarItemWidget(
+                  item: item,
+                  isActive: isActive,
+                  activeColor: activeColor ?? const Color(0xFFD4A574),
+                  inactiveColor: inactiveColor ?? const Color(0xFF888888),
+                  onTap: () => onTap(index),
+                ),
+              );
+            }).toList(),
+          ),
+        ),
       ),
     );
   }
@@ -64,7 +72,7 @@ class CustomBottomNavBar extends StatelessWidget {
 // ============================================
 
 class NavBarItem {
-  final String icon;
+  final IconData icon;
   final String label;
   final String? route;
   final VoidCallback? onTap;
@@ -78,7 +86,7 @@ class NavBarItem {
 }
 
 // ============================================
-// WIDGET INTERNO PARA CADA ITEM
+// WIDGET INTERNO PARA CADA ITEM - CORREGIDO
 // ============================================
 
 class _NavBarItemWidget extends StatelessWidget {
@@ -102,41 +110,39 @@ class _NavBarItemWidget extends StatelessWidget {
       color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-          decoration: BoxDecoration(
-            color: isActive 
-                ? activeColor.withOpacity(0.1) 
-                : Colors.transparent,
-            borderRadius: BorderRadius.circular(12),
-          ),
+        borderRadius: BorderRadius.circular(8),
+        child: SizedBox(
+          height: 56,
           child: Column(
             mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              // Icono con animación de escala
-              AnimatedScale(
-                scale: isActive ? 1.1 : 1.0,
+              AnimatedContainer(
                 duration: const Duration(milliseconds: 200),
-                child: Text(
+                padding: const EdgeInsets.all(6),
+                decoration: BoxDecoration(
+                  color: isActive 
+                      ? activeColor.withOpacity(0.1) 
+                      : Colors.transparent,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Icon(
                   item.icon,
-                  style: TextStyle(
-                    fontSize: 20,
-                    color: isActive ? activeColor : inactiveColor,
-                  ),
+                  size: 20,
+                  color: isActive ? activeColor : inactiveColor,
                 ),
               ),
               const SizedBox(height: 4),
-              // Label con animación de color
-              AnimatedDefaultTextStyle(
-                duration: const Duration(milliseconds: 200),
+              Text(
+                item.label,
                 style: TextStyle(
                   fontSize: 10,
                   fontWeight: isActive ? FontWeight.w600 : FontWeight.w500,
                   color: isActive ? activeColor : inactiveColor,
                 ),
-                child: Text(item.label),
+                textAlign: TextAlign.center,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
             ],
           ),
@@ -147,55 +153,31 @@ class _NavBarItemWidget extends StatelessWidget {
 }
 
 // ============================================
-// CONFIGURACIONES PREDEFINIDAS
+// CONFIGURACIONES PREDEFINIDAS - CORREGIDAS
 // ============================================
 
 class NavBarConfigs {
   // Configuración para la app Yoloxóchitl
   static List<NavBarItem> get yoloxochitlItems => [
     const NavBarItem(
-      icon: '🏠',
+      icon: Icons.home_outlined,
       label: 'Inicio',
       route: '/home',
     ),
     const NavBarItem(
-      icon: '📚',
+      icon: Icons.menu_book_outlined,
       label: 'Lecciones',
       route: '/lessons',
     ),
     const NavBarItem(
-      icon: '🎯',
+      icon: Icons.sports_esports_outlined,
       label: 'Práctica',
       route: '/practice',
     ),
     const NavBarItem(
-      icon: '👤',
+      icon: Icons.person_outline,
       label: 'Perfil',
       route: '/profile',
-    ),
-  ];
-
-  // Configuración alternativa con diferentes iconos
-  static List<NavBarItem> get alternativeItems => [
-    const NavBarItem(
-      icon: '🌟',
-      label: 'Inicio',
-      route: '/home',
-    ),
-    const NavBarItem(
-      icon: '📖',
-      label: 'Estudiar',
-      route: '/study',
-    ),
-    const NavBarItem(
-      icon: '🏆',
-      label: 'Logros',
-      route: '/achievements',
-    ),
-    const NavBarItem(
-      icon: '⚙️',
-      label: 'Ajustes',
-      route: '/settings',
     ),
   ];
 
@@ -206,285 +188,91 @@ class NavBarConfigs {
 }
 
 // ============================================
-// VERSIÓN CON NAVEGACIÓN AUTOMÁTICA
+// VERSIÓN SIMPLIFICADA Y OPTIMIZADA - CORREGIDA
 // ============================================
 
-class SmartBottomNavBar extends StatelessWidget {
-  final int currentIndex;
-  final List<NavBarItem> items;
-  final Color? backgroundColor;
-  final Color? activeColor;
-  final Color? inactiveColor;
-  final double height;
-  final bool useRouteNavigation;
-
-  const SmartBottomNavBar({
-    super.key,
-    required this.currentIndex,
-    required this.items,
-    this.backgroundColor,
-    this.activeColor,
-    this.inactiveColor,
-    this.height = 80,
-    this.useRouteNavigation = true,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return CustomBottomNavBar(
-      currentIndex: currentIndex,
-      items: items,
-      backgroundColor: backgroundColor,
-      activeColor: activeColor,
-      inactiveColor: inactiveColor,
-      height: height,
-      onTap: (index) => _handleNavigation(context, index),
-    );
-  }
-
-  void _handleNavigation(BuildContext context, int index) {
-    if (index == currentIndex) return; // Ya estamos en esa pantalla
-
-    final item = items[index];
-    
-    if (useRouteNavigation && item.route != null) {
-      // Navegar usando rutas
-      Navigator.of(context).pushReplacementNamed(item.route!);
-    } else if (item.onTap != null) {
-      // Usar callback personalizado
-      item.onTap!();
-    }
-  }
-}
-
-// ============================================
-// VERSIÓN CON NOTIFICACIONES (BADGES)
-// ============================================
-
-class BadgeNavBarItem extends NavBarItem {
-  final int? badgeCount;
-  final bool showBadge;
-  final Color badgeColor;
-
-  const BadgeNavBarItem({
-    required super.icon,
-    required super.label,
-    super.route,
-    super.onTap,
-    this.badgeCount,
-    this.showBadge = false,
-    this.badgeColor = Colors.red,
-  });
-}
-
-class BadgeBottomNavBar extends StatelessWidget {
+class SimpleBottomNavBar extends StatelessWidget {
   final int currentIndex;
   final Function(int) onTap;
-  final List<BadgeNavBarItem> items;
-  final Color? backgroundColor;
-  final Color? activeColor;
-  final Color? inactiveColor;
 
-  const BadgeBottomNavBar({
+  const SimpleBottomNavBar({
     super.key,
     required this.currentIndex,
     required this.onTap,
-    required this.items,
-    this.backgroundColor,
-    this.activeColor,
-    this.inactiveColor,
   });
 
   @override
   Widget build(BuildContext context) {
+    final items = [
+      {'icon': Icons.home_outlined, 'label': 'Inicio'},
+      {'icon': Icons.menu_book_outlined, 'label': 'Lecciones'},
+      {'icon': Icons.sports_esports_outlined, 'label': 'Práctica'},
+      {'icon': Icons.person_outline, 'label': 'Perfil'},
+    ];
+
     return Container(
       height: 80,
-      padding: const EdgeInsets.only(bottom: 20),
       decoration: BoxDecoration(
-        color: backgroundColor ?? Colors.white,
-        border: const Border(
-          top: BorderSide(color: Color(0xFFF0F0F0), width: 1),
+        color: Colors.white,
+        border: Border(
+          top: BorderSide(color: Colors.grey.shade200, width: 1),
         ),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: items.asMap().entries.map((entry) {
-          final index = entry.key;
-          final item = entry.value;
-          final isActive = currentIndex == index;
-          
-          return _BadgeNavItemWidget(
-            item: item,
-            isActive: isActive,
-            activeColor: activeColor ?? const Color(0xFFD4A574),
-            inactiveColor: inactiveColor ?? const Color(0xFF888888),
-            onTap: () => onTap(index),
-          );
-        }).toList(),
-      ),
-    );
-  }
-}
-
-class _BadgeNavItemWidget extends StatelessWidget {
-  final BadgeNavBarItem item;
-  final bool isActive;
-  final Color activeColor;
-  final Color inactiveColor;
-  final VoidCallback onTap;
-
-  const _BadgeNavItemWidget({
-    required this.item,
-    required this.isActive,
-    required this.activeColor,
-    required this.inactiveColor,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-          decoration: BoxDecoration(
-            color: isActive 
-                ? activeColor.withOpacity(0.1) 
-                : Colors.transparent,
-            borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, -2),
           ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // Icono con badge
-              Stack(
-                children: [
-                  AnimatedScale(
-                    scale: isActive ? 1.1 : 1.0,
-                    duration: const Duration(milliseconds: 200),
-                    child: Text(
-                      item.icon,
-                      style: TextStyle(
-                        fontSize: 20,
-                        color: isActive ? activeColor : inactiveColor,
-                      ),
+        ],
+      ),
+      child: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          child: Row(
+            children: items.asMap().entries.map((entry) {
+              final index = entry.key;
+              final item = entry.value;
+              final isActive = currentIndex == index;
+              
+              return Expanded(
+                child: InkWell(
+                  onTap: () => onTap(index),
+                  borderRadius: BorderRadius.circular(8),
+                  child: SizedBox(
+                    height: 56,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          item['icon'] as IconData,
+                          size: 20,
+                          color: isActive 
+                              ? const Color(0xFFD4A574) 
+                              : const Color(0xFF888888),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          item['label'] as String,
+                          style: TextStyle(
+                            fontSize: 10,
+                            fontWeight: isActive ? FontWeight.w600 : FontWeight.w500,
+                            color: isActive 
+                                ? const Color(0xFFD4A574) 
+                                : const Color(0xFF888888),
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
                     ),
                   ),
-                  // Badge
-                  if (item.showBadge)
-                    Positioned(
-                      right: 0,
-                      top: 0,
-                      child: Container(
-                        padding: const EdgeInsets.all(2),
-                        decoration: BoxDecoration(
-                          color: item.badgeColor,
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        constraints: const BoxConstraints(
-                          minWidth: 16,
-                          minHeight: 16,
-                        ),
-                        child: Text(
-                          item.badgeCount != null && item.badgeCount! > 0 
-                              ? item.badgeCount.toString() 
-                              : '',
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 10,
-                            fontWeight: FontWeight.bold,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                      ),
-                    ),
-                ],
-              ),
-              const SizedBox(height: 4),
-              // Label
-              AnimatedDefaultTextStyle(
-                duration: const Duration(milliseconds: 200),
-                style: TextStyle(
-                  fontSize: 10,
-                  fontWeight: isActive ? FontWeight.w600 : FontWeight.w500,
-                  color: isActive ? activeColor : inactiveColor,
                 ),
-                child: Text(item.label),
-              ),
-            ],
+              );
+            }).toList(),
           ),
         ),
       ),
     );
   }
 }
-
-// ============================================
-// EJEMPLOS DE USO
-// ============================================
-
-/*
-// 1. USO BÁSICO
-CustomBottomNavBar(
-  currentIndex: _currentIndex,
-  items: NavBarConfigs.yoloxochitlItems,
-  onTap: (index) {
-    setState(() {
-      _currentIndex = index;
-    });
-  },
-)
-
-// 2. USO CON NAVEGACIÓN AUTOMÁTICA
-SmartBottomNavBar(
-  currentIndex: _currentIndex,
-  items: NavBarConfigs.yoloxochitlItems,
-)
-
-// 3. USO CON BADGES
-BadgeBottomNavBar(
-  currentIndex: _currentIndex,
-  items: [
-    BadgeNavBarItem(
-      icon: '🏠',
-      label: 'Inicio',
-      route: '/home',
-    ),
-    BadgeNavBarItem(
-      icon: '📚',
-      label: 'Lecciones',
-      route: '/lessons',
-      showBadge: true,
-      badgeCount: 3,
-    ),
-    BadgeNavBarItem(
-      icon: '👤',
-      label: 'Perfil',
-      route: '/profile',
-      showBadge: true,
-    ),
-  ],
-  onTap: (index) => _handleNavigation(index),
-)
-
-// 4. USO PERSONALIZADO
-CustomBottomNavBar(
-  currentIndex: _currentIndex,
-  items: [
-    NavBarItem(
-      icon: '🌟',
-      label: 'Custom',
-      onTap: () => print('Custom action'),
-    ),
-  ],
-  backgroundColor: Colors.blue[50],
-  activeColor: Colors.blue,
-  inactiveColor: Colors.grey,
-  height: 90,
-  onTap: (index) => _customHandler(index),
-)
-*/

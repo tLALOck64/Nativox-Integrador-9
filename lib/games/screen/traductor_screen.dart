@@ -217,7 +217,7 @@ class _TraductorScreenState extends State<TraductorScreen>
             ],
           ),
         ),
-      ),
+      ),  
     );
   }
 
