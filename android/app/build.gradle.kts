@@ -7,7 +7,7 @@ plugins {
 android {
     namespace = "com.example.integrador"
     compileSdk = flutter.compileSdkVersion
-    ndkVersion = "27.0.12077973"
+    ndkVersion = flutter.ndkVersion
 
     compileOptions {
         // ✅ CAMBIAR ESTA LÍNEA - Sintaxis correcta para Kotlin DSL
