@@ -13,7 +13,7 @@ class LessonsScreen extends StatefulWidget {
 }
 
 class _LessonsScreenState extends State<LessonsScreen> {
-  final LessonService _lessonService = LessonService();
+  final LessonService _lessonService = LessonService(); 
   
   int _selectedIndex = 1; // Lessons tab is selected
   Map<String, List<LessonModel>> _lessonsByLevel = {};
@@ -29,14 +29,15 @@ class _LessonsScreenState extends State<LessonsScreen> {
     _loadData();
   }
 
+  // ✅ EXACTAMENTE IGUAL - Ahora carga desde API automáticamente
   Future<void> _loadData() async {
     try {
       setState(() => _isLoading = true);
       
-      // Cargar datos en paralelo
+      // Cargar datos en paralelo - MISMOS MÉTODOS
       final results = await Future.wait([
-        _lessonService.getLessonsByLevel(),
-        _lessonService.getLessonStats(),
+        _lessonService.getLessonsByLevel(), // Ahora usa API
+        _lessonService.getLessonStats(),    // Ahora usa API
       ]);
       
       setState(() {
@@ -108,16 +109,20 @@ class _LessonsScreenState extends State<LessonsScreen> {
     _startLesson(lesson);
   }
 
+  // ✅ PUEDES ACTUALIZAR ESTE MÉTODO para navegar a lección individual
   Future<void> _startLesson(LessonModel lesson) async {
     // Simular inicio de lección
     _showMessage('Cargando lección "${lesson.title}"...');
     
-    // Aquí podrías navegar a la pantalla de la lección individual
+    // ✅ NUEVA NAVEGACIÓN: Navegar a la lección individual
     // Navigator.of(context).push(
     //   MaterialPageRoute(
-    //     builder: (context) => LessonDetailScreen(lesson: lesson),
+    //     builder: (context) => LessonDetailScreen(lessonId: lesson.id),
     //   ),
     // );
+    
+    // O usando GoRouter:
+    // context.push('/lessons/${lesson.id}');
   }
 
   void _onStatsBoxTapped() {
@@ -183,7 +188,7 @@ class _LessonsScreenState extends State<LessonsScreen> {
         // Content
         Expanded(
           child: RefreshIndicator(
-            onRefresh: _loadData,
+            onRefresh: _loadData, // ✅ Pull to refresh carga desde API
             color: const Color(0xFFD4A574),
             child: _buildLevelSections(),
           ),

@@ -27,7 +27,29 @@ class LessonModel {
     required this.wordCount,
   });
 
-  // Factory constructor para crear desde JSON
+  // ✅ NUEVO: Factory constructor para crear desde la respuesta de tu API
+  factory LessonModel.fromApiResponse(Map<String, dynamic> json) {
+    final nivel = json['nivel']?['value'] ?? 'basico';
+    final levelCapitalized = _capitalizeLevel(nivel);
+    final exerciseCount = (json['ejercicios'] as List?)?.length ?? 0;
+    
+    return LessonModel(
+      id: json['id'] ?? '',
+      icon: _getIconForLevel(nivel),
+      title: json['titulo'] ?? '',
+      subtitle: '$levelCapitalized • ${_estimateDuration(exerciseCount)} min',
+      progress: 0.0, // Se carga desde storage local
+      difficulty: levelCapitalized,
+      duration: _estimateDuration(exerciseCount),
+      isCompleted: false, // Se carga desde storage local
+      isLocked: false, // Se determina por lógica de negocio
+      lessonNumber: _extractLessonNumber(json['titulo'] ?? ''),
+      level: levelCapitalized,
+      wordCount: exerciseCount * 3, // Estimación: 3 palabras por ejercicio
+    );
+  }
+
+  // Factory constructor original (mantener para compatibilidad)
   factory LessonModel.fromJson(Map<String, dynamic> json) {
     return LessonModel(
       id: json['id'],
@@ -45,7 +67,43 @@ class LessonModel {
     );
   }
 
-  // Método para convertir a JSON
+  // Helpers estáticos para conversión API
+  static String _getIconForLevel(String nivel) {
+    switch (nivel.toLowerCase()) {
+      case 'basico':
+        return '🌅';
+      case 'intermedio':
+        return '🌽';
+      case 'avanzado':
+        return '🏔️';
+      default:
+        return '📚';
+    }
+  }
+
+  static String _capitalizeLevel(String nivel) {
+    switch (nivel.toLowerCase()) {
+      case 'basico':
+        return 'Básico';
+      case 'intermedio':
+        return 'Intermedio';
+      case 'avanzado':
+        return 'Avanzado';
+      default:
+        return nivel;
+    }
+  }
+
+  static int _estimateDuration(int exerciseCount) {
+    return (exerciseCount * 2).clamp(5, 20); // 2 min por ejercicio, min 5, max 20
+  }
+
+  static int _extractLessonNumber(String titulo) {
+    final match = RegExp(r'\d+').firstMatch(titulo);
+    return match != null ? int.parse(match.group(0)!) : 1;
+  }
+
+  // Método para convertir a JSON (sin cambios)
   Map<String, dynamic> toJson() {
     return {
       'id': id,
@@ -63,7 +121,7 @@ class LessonModel {
     };
   }
 
-  // Método para crear una copia con modificaciones
+  // Método para crear una copia con modificaciones (sin cambios)
   LessonModel copyWith({
     String? id,
     String? icon,
@@ -94,7 +152,7 @@ class LessonModel {
     );
   }
 
-  // Getters útiles
+  // Getters útiles (sin cambios)
   String get statusIcon {
     if (isCompleted) return '✅';
     if (isLocked) return '🔒';
