@@ -7,10 +7,7 @@ import '../widgets/animated_header_widget.dart';
 import '../widgets/progress_circle_widget.dart';
 import '../widgets/lesson_card_widget.dart';
 import '../widgets/streak_banner_widget.dart';
-import '../widgets/custom_bottom_nav_widget.dart';
 import '../widgets/custom_floating_button_widget.dart';
-import 'practice_screen.dart';
-import 'lesson_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -23,7 +20,6 @@ class _HomeScreenState extends State<HomeScreen> {
   final LessonService _lessonService = LessonService();
   final UserProgressService _userProgressService = UserProgressService();
 
-  int _selectedIndex = 0;
   List<LessonModel> _lessons = [];
   UserProgressModel? _userProgress;
   bool _isLoading = true;
@@ -63,35 +59,6 @@ class _HomeScreenState extends State<HomeScreen> {
         behavior: SnackBarBehavior.floating,
       ),
     );
-  }
-
-  void _onBottomNavTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
-    
-    // Aquí puedes navegar a diferentes pantallas según el índice
-    switch (index) {
-      case 0:
-        // Ya estamos en Home
-        break;
-      case 1:
-        // Navegar a Lecciones
-        Navigator.of(context).push(
-          MaterialPageRoute(builder: (context) => const LessonsScreen()),
-        );
-        break;
-      case 2:
-        // Navegar a Práctica
-        Navigator.of(context).push(
-          MaterialPageRoute(builder: (context) => const PracticeScreen()),
-        );
-        break;
-      case 3:
-        // Navegar a Perfil
-        _showMessage('Navegando a Perfil...');
-        break;
-    }
   }
 
   void _showMessage(String message) {
@@ -148,10 +115,6 @@ class _HomeScreenState extends State<HomeScreen> {
               tooltip: 'Continuar aprendiendo',
             )
           : null,
-      bottomNavigationBar: CustomBottomNavWidget(
-        selectedIndex: _selectedIndex,
-        onItemTapped: _onBottomNavTapped,
-      ),
     );
   }
 

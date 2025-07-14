@@ -1,6 +1,5 @@
 // profile/presentation/screens/profile_activity.dart
 import 'package:flutter/material.dart';
-import 'package:integrador/nav/nav.dart';
 import 'package:integrador/perfil/domain/entities/sentting_item.dart';
 import 'package:integrador/perfil/presentation/states/profile_state.dart';
 import 'package:integrador/perfil/presentation/viewmodels/profile_viewmodel.dart';
@@ -54,10 +53,7 @@ class _ProfileActivityState extends State<ProfileActivity> {
                       const SizedBox(height: 16),
                       Text(
                         'Error: ${viewModel.state.errorMessage}',
-                        style: TextStyle(
-                          color: Colors.red[600],
-                          fontSize: 16,
-                        ),
+                        style: TextStyle(color: Colors.red[600], fontSize: 16),
                         textAlign: TextAlign.center,
                       ),
                       const SizedBox(height: 24),
@@ -71,7 +67,7 @@ class _ProfileActivityState extends State<ProfileActivity> {
               }
 
               final profile = viewModel.state.userProfile!;
-              
+
               return Column(
                 children: [
                   // Status Bar
@@ -81,9 +77,18 @@ class _ProfileActivityState extends State<ProfileActivity> {
                     child: const Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text('9:41', style: TextStyle(fontWeight: FontWeight.w600)),
-                        Text('••• ○○', style: TextStyle(fontWeight: FontWeight.w600)),
-                        Text('100%', style: TextStyle(fontWeight: FontWeight.w600)),
+                        Text(
+                          '9:41',
+                          style: TextStyle(fontWeight: FontWeight.w600),
+                        ),
+                        Text(
+                          '••• ○○',
+                          style: TextStyle(fontWeight: FontWeight.w600),
+                        ),
+                        Text(
+                          '100%',
+                          style: TextStyle(fontWeight: FontWeight.w600),
+                        ),
                       ],
                     ),
                   ),
@@ -101,9 +106,7 @@ class _ProfileActivityState extends State<ProfileActivity> {
                       children: [
                         // Patrón cultural
                         Positioned.fill(
-                          child: CustomPaint(
-                            painter: CulturalPatternPainter(),
-                          ),
+                          child: CustomPaint(painter: CulturalPatternPainter()),
                         ),
                         Padding(
                           padding: const EdgeInsets.fromLTRB(20, 20, 20, 40),
@@ -118,7 +121,10 @@ class _ProfileActivityState extends State<ProfileActivity> {
                                     decoration: BoxDecoration(
                                       shape: BoxShape.circle,
                                       gradient: const LinearGradient(
-                                        colors: [Colors.white, Color(0xFFF8F8F8)],
+                                        colors: [
+                                          Colors.white,
+                                          Color(0xFFF8F8F8),
+                                        ],
                                       ),
                                       border: Border.all(
                                         color: Colors.white.withOpacity(0.3),
@@ -133,7 +139,10 @@ class _ProfileActivityState extends State<ProfileActivity> {
                                       ],
                                     ),
                                     child: const Center(
-                                      child: Text('👤', style: TextStyle(fontSize: 40)),
+                                      child: Text(
+                                        '👤',
+                                        style: TextStyle(fontSize: 40),
+                                      ),
                                     ),
                                   ),
                                   Positioned(
@@ -144,13 +153,21 @@ class _ProfileActivityState extends State<ProfileActivity> {
                                       height: 40,
                                       decoration: BoxDecoration(
                                         gradient: const LinearGradient(
-                                          colors: [Color(0xFF4CAF50), Color(0xFF45A049)],
+                                          colors: [
+                                            Color(0xFF4CAF50),
+                                            Color(0xFF45A049),
+                                          ],
                                         ),
                                         shape: BoxShape.circle,
-                                        border: Border.all(color: Colors.white, width: 3),
+                                        border: Border.all(
+                                          color: Colors.white,
+                                          width: 3,
+                                        ),
                                         boxShadow: [
                                           BoxShadow(
-                                            color: Colors.black.withOpacity(0.2),
+                                            color: Colors.black.withOpacity(
+                                              0.2,
+                                            ),
                                             blurRadius: 15,
                                             offset: const Offset(0, 4),
                                           ),
@@ -200,7 +217,8 @@ class _ProfileActivityState extends State<ProfileActivity> {
                                   borderRadius: BorderRadius.circular(20),
                                 ),
                                 child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceAround,
                                   children: [
                                     _QuickStat(
                                       value: '${profile.activeDays}',
@@ -243,22 +261,21 @@ class _ProfileActivityState extends State<ProfileActivity> {
                           const SizedBox(height: 30),
 
                           // Progreso
-                          const _SectionTitle(
-                            icon: '📊',
-                            title: 'Progreso',
-                          ),
+                          const _SectionTitle(icon: '📊', title: 'Progreso'),
                           const SizedBox(height: 15),
                           ProgressCardWidget(
                             title: 'Nivel actual',
                             value: 'Nivel ${profile.level}',
                             progress: profile.levelProgress,
-                            subtitle: '${profile.currentXP} / ${profile.nextLevelXP} XP para nivel ${profile.level + 1}',
+                            subtitle:
+                                '${profile.currentXP} / ${profile.nextLevelXP} XP para nivel ${profile.level + 1}',
                           ),
                           ProgressCardWidget(
                             title: 'Vocabulario',
                             value: '${profile.vocabularyCount} palabras',
                             progress: profile.vocabularyProgress,
-                            subtitle: 'Meta: ${profile.vocabularyGoal} palabras',
+                            subtitle:
+                                'Meta: ${profile.vocabularyGoal} palabras',
                           ),
                           const SizedBox(height: 30),
 
@@ -281,17 +298,25 @@ class _ProfileActivityState extends State<ProfileActivity> {
                               ],
                             ),
                             child: Column(
-                              children: viewModel.state.settings.map((setting) {
-                                final isLast = setting == viewModel.state.settings.last;
-                                return _SettingItem(
-                                  setting: setting,
-                                  isLast: isLast,
-                                  onTap: () => viewModel.onSettingTapped(setting),
-                                );
-                              }).toList(),
+                              children:
+                                  viewModel.state.settings.map((setting) {
+                                    final isLast =
+                                        setting ==
+                                        viewModel.state.settings.last;
+                                    return _SettingItem(
+                                      setting: setting,
+                                      isLast: isLast,
+                                      onTap:
+                                          () => viewModel.onSettingTapped(
+                                            setting,
+                                          ),
+                                    );
+                                  }).toList(),
                             ),
                           ),
-                          const SizedBox(height: 100), // Espacio para bottom nav
+                          const SizedBox(
+                            height: 100,
+                          ), // Espacio para bottom nav
                         ],
                       ),
                     ),
@@ -303,29 +328,7 @@ class _ProfileActivityState extends State<ProfileActivity> {
         ),
       ),
       // ✅ NAVBAR PERSONALIZADO IMPORTADO
-      bottomNavigationBar: CustomBottomNavBar(
-        currentIndex: 3, // Perfil está en índice 3
-        items: NavBarConfigs.yoloxochitlItems,
-        onTap: _handleNavigation,
-      ),
     );
-  }
-
-  // 🎯 FUNCIÓN PARA MANEJAR LA NAVEGACIÓN
-  void _handleNavigation(int index) {
-    if (index == 3) return; // Ya estamos en perfil
-
-    switch (index) {
-      case 0: // Inicio
-        Navigator.pushReplacementNamed(context, '/home');
-        break;
-      case 1: // Lecciones
-        Navigator.pushReplacementNamed(context, '/lessons');
-        break;
-      case 2: // Práctica
-        Navigator.pushReplacementNamed(context, '/practice');
-        break;
-    }
   }
 }
 
@@ -336,13 +339,14 @@ class _ProfileActivityState extends State<ProfileActivity> {
 class CulturalPatternPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = const Color(0xFFD4A574).withOpacity(0.05)
-      ..strokeWidth = 2
-      ..style = PaintingStyle.stroke;
+    final paint =
+        Paint()
+          ..color = const Color(0xFFD4A574).withOpacity(0.05)
+          ..strokeWidth = 2
+          ..style = PaintingStyle.stroke;
 
     const double spacing = 20;
-    
+
     // Líneas diagonales para crear patrón cultural
     for (double i = -size.height; i < size.width + size.height; i += spacing) {
       canvas.drawLine(
@@ -365,10 +369,7 @@ class _QuickStat extends StatelessWidget {
   final String value;
   final String label;
 
-  const _QuickStat({
-    required this.value,
-    required this.label,
-  });
+  const _QuickStat({required this.value, required this.label});
 
   @override
   Widget build(BuildContext context) {
@@ -386,10 +387,7 @@ class _QuickStat extends StatelessWidget {
         const SizedBox(height: 4),
         Text(
           label,
-          style: TextStyle(
-            fontSize: 11,
-            color: Colors.white.withOpacity(0.8),
-          ),
+          style: TextStyle(fontSize: 11, color: Colors.white.withOpacity(0.8)),
         ),
       ],
     );
@@ -400,10 +398,7 @@ class _SectionTitle extends StatelessWidget {
   final String icon;
   final String title;
 
-  const _SectionTitle({
-    required this.icon,
-    required this.title,
-  });
+  const _SectionTitle({required this.icon, required this.title});
 
   @override
   Widget build(BuildContext context) {
@@ -455,19 +450,22 @@ class _SettingItem extends StatelessWidget {
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.vertical(
-          top: setting.id == '1' // Primer elemento
-              ? const Radius.circular(20) 
-              : Radius.zero,
+          top:
+              setting.id ==
+                      '1' // Primer elemento
+                  ? const Radius.circular(20)
+                  : Radius.zero,
           bottom: isLast ? const Radius.circular(20) : Radius.zero,
         ),
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
           decoration: BoxDecoration(
-            border: isLast 
-                ? null 
-                : const Border(
-                    bottom: BorderSide(color: Color(0xFFF0F0F0), width: 1),
-                  ),
+            border:
+                isLast
+                    ? null
+                    : const Border(
+                      bottom: BorderSide(color: Color(0xFFF0F0F0), width: 1),
+                    ),
           ),
           child: Row(
             children: [
@@ -529,10 +527,7 @@ class _SettingItem extends StatelessWidget {
 class AchievementGridWidget extends StatelessWidget {
   final List<Achievement> achievements;
 
-  const AchievementGridWidget({
-    super.key,
-    required this.achievements,
-  });
+  const AchievementGridWidget({super.key, required this.achievements});
 
   @override
   Widget build(BuildContext context) {
@@ -567,7 +562,10 @@ class _AchievementItem extends StatelessWidget {
         color: achievement.isUnlocked ? Colors.white : Colors.grey[100],
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: achievement.isUnlocked ? const Color(0xFFD4A574) : Colors.transparent,
+          color:
+              achievement.isUnlocked
+                  ? const Color(0xFFD4A574)
+                  : Colors.transparent,
           width: 2,
         ),
         boxShadow: [
@@ -601,7 +599,10 @@ class _AchievementItem extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 10,
                     fontWeight: FontWeight.w600,
-                    color: achievement.isUnlocked ? const Color(0xFF2C2C2C) : Colors.grey,
+                    color:
+                        achievement.isUnlocked
+                            ? const Color(0xFF2C2C2C)
+                            : Colors.grey,
                   ),
                   textAlign: TextAlign.center,
                   maxLines: 2,
@@ -695,10 +696,7 @@ class ProgressCardWidget extends StatelessWidget {
             const SizedBox(height: 10),
             Text(
               subtitle,
-              style: const TextStyle(
-                fontSize: 12,
-                color: Color(0xFF888888),
-              ),
+              style: const TextStyle(fontSize: 12, color: Color(0xFF888888)),
             ),
           ],
         ),

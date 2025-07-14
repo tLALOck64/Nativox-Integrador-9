@@ -3,7 +3,6 @@ import '../models/lesson_model.dart';
 import '../services/lesson_service.dart';
 import '../widgets/lesson_stats_widget.dart';
 import '../widgets/level_section_widget.dart';
-import '../widgets/custom_bottom_nav_widget.dart';
 
 class LessonsScreen extends StatefulWidget {
   const LessonsScreen({super.key});
@@ -15,7 +14,6 @@ class LessonsScreen extends StatefulWidget {
 class _LessonsScreenState extends State<LessonsScreen> {
   final LessonService _lessonService = LessonService(); 
   
-  int _selectedIndex = 1; // Lessons tab is selected
   Map<String, List<LessonModel>> _lessonsByLevel = {};
   Map<String, int> _lessonStats = {};
   bool _isLoading = true;
@@ -71,28 +69,6 @@ class _LessonsScreenState extends State<LessonsScreen> {
     );
   }
 
-  void _onBottomNavTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
-    
-    // Navegar según el índice
-    switch (index) {
-      case 0:
-        Navigator.of(context).pop(); // Volver a Home
-        break;
-      case 1:
-        // Ya estamos en Lecciones
-        break;
-      case 2:
-        _showMessage('Navegando a Práctica...');
-        break;
-      case 3:
-        _showMessage('Navegando a Perfil...');
-        break;
-    }
-  }
-
   void _onLessonTapped(LessonModel lesson) {
     if (lesson.isLocked) {
       _showMessage('Esta lección está bloqueada. Completa las anteriores primero.');
@@ -143,10 +119,6 @@ class _LessonsScreenState extends State<LessonsScreen> {
         child: SafeArea(
           child: _isLoading ? _buildLoadingState() : _buildMainContent(),
         ),
-      ),
-      bottomNavigationBar: CustomBottomNavWidget(
-        selectedIndex: _selectedIndex,
-        onItemTapped: _onBottomNavTapped,
       ),
     );
   }
