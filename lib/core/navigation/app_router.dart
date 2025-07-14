@@ -5,12 +5,13 @@ import 'package:integrador/core/navigation/route_names.dart';
 import 'package:integrador/core/navigation/guards/auth_guard.dart';
 import 'package:integrador/core/services/storage_service.dart';
 import 'package:integrador/games/screen/lesson_detail_screen.dart';
+import 'package:integrador/games/screen/memorama_menu_screen.dart';
 import 'package:integrador/login/presentation/screens/login_activity.dart';
 import 'package:integrador/perfil/presentation/screens/profile_activity.dart';
 import 'package:integrador/screens/lesson_screen.dart';
 class AppRouter {
   static final GoRouter _router = GoRouter(
-    initialLocation: RouteNames.splash,
+    initialLocation: RouteNames.memorama,
     routes: [
       // Splash
       GoRoute(
@@ -39,7 +40,6 @@ class AppRouter {
         redirect: AuthGuard.redirectIfNotAuthenticated,
       ),
       
-      
       // Protected routes
       GoRoute(
         path: RouteNames.home,
@@ -47,7 +47,11 @@ class AppRouter {
         redirect: AuthGuard.redirectIfNotAuthenticated,
       ),
       
-     
+      // Games routes
+      GoRoute(
+        path: '/games/memorama',
+        builder: (context, state) => const MemoramaMenuScreen(),
+      ),
       
       // Settings with nested routes
       GoRoute(

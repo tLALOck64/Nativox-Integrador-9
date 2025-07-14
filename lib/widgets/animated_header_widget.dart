@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 class AnimatedHeaderWidget extends StatefulWidget {
   final String title;
   final String subtitle;
+  final bool showGameButton;
   
   const AnimatedHeaderWidget({
     super.key,
     required this.title,
     required this.subtitle,
+    this.showGameButton = true,
   });
 
   @override
@@ -31,6 +34,37 @@ class _AnimatedHeaderWidgetState extends State<AnimatedHeaderWidget>
   void dispose() {
     _rotationController.dispose();
     super.dispose();
+  }
+
+  Widget _buildMemoramaButton() {
+    return Container(
+      width: 50,
+      height: 50,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: Colors.white.withOpacity(0.2),
+        border: Border.all(
+          color: Colors.white.withOpacity(0.3),
+          width: 1,
+        ),
+      ),
+      child: Material(
+        color: Colors.transparent,
+        shape: const CircleBorder(),
+        child: InkWell(
+          customBorder: const CircleBorder(),
+          onTap: () => context.push('/games/memorama'),
+          child: const Padding(
+            padding: EdgeInsets.all(8.0),
+            child: Icon(
+              Icons.memory,
+              color: Colors.white,
+              size: 24,
+            ),
+          ),
+        ),
+      ),
+    );
   }
 
   @override
@@ -86,6 +120,14 @@ class _AnimatedHeaderWidgetState extends State<AnimatedHeaderWidget>
               ),
             ),
           ),
+          
+          // Memorama Game Button
+          if (widget.showGameButton)
+            Positioned(
+              top: 0,
+              right: 0,
+              child: _buildMemoramaButton(),
+            ),
           
           // Title content
           Column(

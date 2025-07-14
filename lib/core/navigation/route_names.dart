@@ -18,4 +18,8 @@ class RouteNames {
   static const String splash = '/splash';
   static const String onboarding = '/onboarding';
   static const String noInternet = '/no-internet';
+  
+
+  // Games routes
+  static const String memorama = '/games/memorama';
 }
