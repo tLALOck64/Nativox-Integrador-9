@@ -1,4 +1,4 @@
-// core/di/injection_container.dart
+
 import 'package:get_it/get_it.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -11,7 +11,8 @@ import 'package:integrador/core/services/notifications_service.dart';
 
 // Login imports
 import 'package:integrador/login/data/datasource/auth_datasource.dart';
-import 'package:integrador/login/data/datasource/firebase_auth_datasource.dart';
+// ❌ REMOVER ESTA LÍNEA:
+// import 'package:integrador/login/data/datasource/firebase_auth_datasource.dart';
 import 'package:integrador/login/data/repository/auth_repository_impl.dart';
 import 'package:integrador/login/domain/repository/auth_repository.dart';
 import 'package:integrador/login/domain/usecases/sign_in_with_email_usecase.dart';
@@ -45,30 +46,46 @@ Future<void> initializeDependencies() async {
   sl.registerLazySingleton<CacheService>(() => CacheService());
   sl.registerLazySingleton<NotificationService>(() => NotificationService());
   
-  // LOGIN FEATURE
+  // ✅ LOGIN FEATURE - CORREGIDO
   sl.registerLazySingleton<AuthDataSource>(
-    () => FirebaseAuthDataSource(sl(), sl()),
+    () {
+      print('🎯 DI: Registering AuthDataSourceImpl (API + Firebase hybrid)');
+      return AuthDataSourceImpl(sl(), sl()); // ← CAMBIO CRÍTICO
+    },
   );
   
   sl.registerLazySingleton<AuthRepository>(
-    () => AuthRepositoryImpl(sl(), sl<NetworkInfo>()),
+    () {
+      print('🎯 DI: Registering AuthRepositoryImpl');
+      return AuthRepositoryImpl(sl(), sl<NetworkInfo>());
+    },
   );
   
-  sl.registerLazySingleton(() => SignInWithEmailUseCase(sl()));
-  sl.registerLazySingleton(() => SignInWithGoogleUseCase(sl()));
+  sl.registerLazySingleton(() {
+    print('🎯 DI: Registering SignInWithEmailUseCase');
+    return SignInWithEmailUseCase(sl());
+  });
+  
+  sl.registerLazySingleton(() {
+    print('🎯 DI: Registering SignInWithGoogleUseCase');
+    return SignInWithGoogleUseCase(sl());
+  });
+  
   sl.registerLazySingleton(() => GetCurrentUserUseCase(sl(), sl<StorageService>()));
   sl.registerLazySingleton(() => SignOutUseCase(sl(), sl<StorageService>()));
   
-  sl.registerFactory(() => LoginViewModel(
-    signInWithEmailUseCase: sl(),
-    signInWithGoogleUseCase: sl(),
-    getCurrentUserUseCase: sl(),
-    signOutUseCase: sl(),
-    storageService: sl<StorageService>(),
-  ));
+  sl.registerFactory(() {
+    print('🎯 DI: Creating LoginViewModel instance');
+    return LoginViewModel(
+      signInWithEmailUseCase: sl(),
+      signInWithGoogleUseCase: sl(),
+      getCurrentUserUseCase: sl(),
+      signOutUseCase: sl(),
+      storageService: sl<StorageService>(),
+    );
+  });
   
   // PROFILE FEATURE
-  // ✅ CORREGIDO: Faltaba ProfileDataSource
   sl.registerLazySingleton<ProfileDataSource>(
     () => LocalProfileDataSource(),
   );
@@ -82,7 +99,6 @@ Future<void> initializeDependencies() async {
     ),
   );
   
-  // ✅ CORREGIDO: Nombres de clases (Case no case)
   sl.registerLazySingleton(() => GetUserProfileUsecase(sl()));
   sl.registerLazySingleton(() => GetAchievementsUsecase(sl()));
   sl.registerLazySingleton(() => GetSettingsUsecase(sl()));
@@ -92,4 +108,37 @@ Future<void> initializeDependencies() async {
     getAchievementsUseCase: sl(),
     getSettingsUseCase: sl(),
   ));
+
+  // ✅ NUEVO: Logging de inicialización
+  print('🎯 DI: All dependencies initialized successfully');
+  print('🎯 DI: AuthDataSource -> AuthDataSourceImpl (API for email, Firebase for Google)');
+  print('🎯 DI: Ready for login operations');
+}
+
+// ============================================
+// VERIFICACIÓN DE DEPENDENCIAS (OPCIONAL)
+// ============================================
+
+// Función opcional para verificar que las dependencias están bien registradas
+void verifyDependencies() {
+  try {
+    print('🔍 DI Verification:');
+    
+    final authDataSource = sl<AuthDataSource>();
+    print('✅ AuthDataSource: ${authDataSource.runtimeType}');
+    
+    final authRepository = sl<AuthRepository>();
+    print('✅ AuthRepository: ${authRepository.runtimeType}');
+    
+    final emailUseCase = sl<SignInWithEmailUseCase>();
+    print('✅ SignInWithEmailUseCase: ${emailUseCase.runtimeType}');
+    
+    final googleUseCase = sl<SignInWithGoogleUseCase>();
+    print('✅ SignInWithGoogleUseCase: ${googleUseCase.runtimeType}');
+    
+    print('✅ All login dependencies verified successfully');
+    
+  } catch (e) {
+    print('❌ DI Verification failed: $e');
+  }
 }
