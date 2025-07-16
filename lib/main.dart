@@ -12,16 +12,13 @@ import 'package:integrador/perfil/presentation/viewmodels/profile_viewmodel.dart
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
-  // ✅ CAMBIAR ESTA LÍNEA - Usar las opciones configuradas
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
   
-  // Initialize Core Services
   await StorageService.init();
   await di.initializeDependencies();
   
-  // Initialize Notification Service
   await di.sl<NotificationService>().init();
   
   runApp(const MyApp());
