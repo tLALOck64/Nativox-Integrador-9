@@ -49,79 +49,6 @@ class MemoramaMenuScreen extends StatelessWidget {
                 
                 const SizedBox(height: 32),
                 
-                // Descripción del juego
-                Container(
-                  padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(16),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.1),
-                        blurRadius: 10,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Container(
-                            width: 50,
-                            height: 50,
-                            decoration: const BoxDecoration(
-                              color: Color(0xFFD4A574),
-                              shape: BoxShape.circle,
-                            ),
-                            child: const Icon(
-                              Icons.memory,
-                              color: Colors.white,
-                              size: 30,
-                            ),
-                          ),
-                          const SizedBox(width: 16),
-                          const Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'Memorama de Vocabulario',
-                                  style: TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold,
-                                    color: Color(0xFF2C2C2C),
-                                  ),
-                                ),
-                                Text(
-                                  'Aprende palabras en zapoteco',
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    color: Color(0xFF666666),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                      
-                      const SizedBox(height: 16),
-                      
-                      const Text(
-                        'Encuentra las parejas de palabras en zapoteco y español. '
-                        'Mejora tu vocabulario mientras ejercitas tu memoria.',
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Color(0xFF666666),
-                          height: 1.5,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                
                 const SizedBox(height: 32),
                 
                 // Título de dificultades
@@ -172,34 +99,6 @@ class MemoramaMenuScreen extends StatelessWidget {
                         icon: '🌳',
                         color: Colors.red,
                         difficulty: 'Difícil',
-                      ),
-                    ],
-                  ),
-                ),
-                
-                // Footer con información adicional
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFD4A574).withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Row(
-                    children: [
-                      const Icon(
-                        Icons.info_outline,
-                        color: Color(0xFFD4A574),
-                        size: 20,
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Text(
-                          'Gana puntos por completar el memorama rápidamente y con pocos movimientos',
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: Colors.grey[600],
-                          ),
-                        ),
                       ),
                     ],
                   ),

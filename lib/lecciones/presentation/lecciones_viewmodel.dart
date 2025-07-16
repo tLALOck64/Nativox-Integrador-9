@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:integrador/core/navigation/navigation_service.dart';
 import '../../models/lesson_model.dart';
 import '../../services/lesson_service.dart';
 
@@ -76,9 +77,7 @@ class LessonsViewModel extends ChangeNotifier {
   }
   
   Future<void> startLesson(LessonModel lesson) async {
-    // Simular inicio de lección
-    // Aquí podrías navegar a la pantalla de la lección individual
-    // return NavigationService.navigateToLessonDetail(lesson);
+     return NavigationService.push("leccion", arguments: lesson.id);
   }
   
   List<MapEntry<String, List<LessonModel>>> getOrderedLevels() {
