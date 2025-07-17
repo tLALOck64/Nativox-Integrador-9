@@ -7,21 +7,17 @@ class LessonService {
   factory LessonService() => _instance;
   LessonService._internal();
 
-  // URL de tu API
   static const String _baseUrl = 'https://a3pl892azf.execute-api.us-east-1.amazonaws.com/micro-learning/api_learning';
   
-  // Cache para mejorar performance
   List<LessonModel>? _cachedLessons;
   DateTime? _lastFetch;
   static const Duration _cacheValidDuration = Duration(minutes: 10);
 
-  // Headers comunes
   Map<String, String> get _headers => {
     'Content-Type': 'application/json',
     'Accept': 'application/json',
     'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NTI1OTE5OTcsImlhdCI6MTc1MjUwNTU5N30.Bc2WS9NeUdTmIBayLWScq4BeWsel0YAR8lbTVcpHddI',
   };
-  // ✅ OBTENER TODAS LAS LECCIONES (SOLO API)
   Future<List<LessonModel>> getAllLessons() async {
     try {
       print('� Loading data from API...');
@@ -131,7 +127,6 @@ class LessonService {
     }
   }
 
-  // ✅ OBTENER LECCIÓN POR ID (SOLO API)
   Future<LessonModel?> getLessonById(String id) async {
     try {
       // Intentar obtener de la lista cacheada primero
@@ -162,7 +157,6 @@ class LessonService {
     }
   }
 
-  // ✅ OBTENER LECCIONES AGRUPADAS POR NIVEL (SOLO API)
   Future<Map<String, List<LessonModel>>> getLessonsByLevel() async {
     try {
       final lessons = await getAllLessons();
@@ -188,7 +182,6 @@ class LessonService {
     }
   }
 
-  // ✅ OBTENER ESTADÍSTICAS DE LECCIONES (SOLO API)
   Future<Map<String, int>> getLessonStats() async {
     try {
       final lessons = await getAllLessons();
@@ -210,7 +203,6 @@ class LessonService {
     } catch (e) {
       print('Error getting lesson stats: $e');
       
-      // Retornar estadísticas vacías si falla
       return {
         'completed': 0,
         'inProgress': 0,
@@ -219,13 +211,11 @@ class LessonService {
     }
   }
 
-  // ✅ OBTENER LECCIONES POR DIFICULTAD (SOLO API)
   Future<List<LessonModel>> getLessonsByDifficulty(String difficulty) async {
     final lessons = await getAllLessons();
     return lessons.where((lesson) => lesson.difficulty == difficulty).toList();
   }
 
-  // ✅ OBTENER SIGUIENTE LECCIÓN DISPONIBLE (SOLO API)
   Future<LessonModel?> getNextLesson() async {
     try {
       final lessons = await getAllLessons();
@@ -237,7 +227,6 @@ class LessonService {
     }
   }
 
-  // ✅ OBTENER ESTADÍSTICAS DE PROGRESO (SOLO API)
   Future<Map<String, dynamic>> getProgressStats() async {
     try {
       final lessons = await getAllLessons();
@@ -267,7 +256,6 @@ class LessonService {
     }
   }
 
-  // ✅ ACTUALIZAR PROGRESO DE LECCIÓN (CACHE LOCAL)
   Future<bool> updateLessonProgress(String lessonId, double progress) async {
     try {
       // Actualizar en cache si existe
@@ -296,7 +284,6 @@ class LessonService {
     }
   }
 
-  // ✅ COMPLETAR LECCIÓN (CACHE LOCAL)
   Future<bool> completeLesson(String lessonId) async {
     try {
       // Actualizar en cache
@@ -327,7 +314,6 @@ class LessonService {
     }
   }
 
-  // ✅ RESETEAR PROGRESO (CACHE LOCAL)
   Future<void> resetProgress() async {
     try {
       // Reset cache
@@ -349,9 +335,7 @@ class LessonService {
     }
   }
 
-  // ✅ APLICAR LÓGICA DE PROGRESO Y BLOQUEOS
   List<LessonModel> _applyProgressLogic(List<LessonModel> lessons) {
-    // Ordenar por número de lección
     lessons.sort((a, b) => a.lessonNumber.compareTo(b.lessonNumber));
     
     for (int i = 0; i < lessons.length; i++) {
@@ -368,14 +352,12 @@ class LessonService {
     return lessons;
   }
 
-  // ✅ LIMPIAR CACHE
   void clearCache() {
     _cachedLessons = null;
     _lastFetch = null;
     print('Cache cleared');
   }
 
-  // ✅ VERIFICAR CONECTIVIDAD CON API
   Future<bool> checkApiConnectivity() async {
     try {
       final response = await http.get(
@@ -390,13 +372,11 @@ class LessonService {
     }
   }
 
-  // ✅ FORZAR RECARGA DESDE API
   Future<List<LessonModel>> forceRefresh() async {
     clearCache();
     return await getAllLessons();
   }
 
-  // ✅ OBTENER INFORMACIÓN DEL CACHE
   Map<String, dynamic> getCacheInfo() {
     return {
       'hasCachedData': _cachedLessons != null,
@@ -447,10 +427,7 @@ class LessonService {
   */
 }
 
-// ============================================
-// MANEJO DE ERRORES MEJORADO
-// ============================================
-    final fallbackLessons = [
+final fallbackLessons = [
       LessonModel(
         id: 'test-1',
         icon: '�',
@@ -494,10 +471,7 @@ class LessonService {
         wordCount: 12,
       ),
     ];
-    
-    return _applyProgressLogic(fallbackLessons);
-  }
-}
+
 
 // ============================================
 // MANEJO DE ERRORES MEJORADO

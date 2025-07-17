@@ -89,7 +89,6 @@ class LoginViewModel extends ChangeNotifier {
       user: user,
     ));
 
-    // Navegar a home
     NavigationService.pushAndClearStack(RouteNames.home);
   }
 
