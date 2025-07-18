@@ -2,7 +2,7 @@
 import 'package:dio/dio.dart';
 import 'package:integrador/core/network/interceptors/auth_interceptor.dart';
 import 'package:integrador/core/network/interceptors/error_interceptor.dart';
-import 'package:integrador/core/network/interceptors/logging_interceptor.dart';
+// import 'package:integrador/core/network/interceptors/logging_interceptor.dart';
 import 'package:integrador/core/utils/constants.dart';
 
 class ApiClient {
@@ -36,7 +36,7 @@ class ApiClient {
 
   void _setupInterceptors() {
     _dio.interceptors.addAll([
-      LoggingInterceptor(),
+      // LoggingInterceptor(),
       AuthInterceptor(),
       ErrorInterceptor(),
     ]);

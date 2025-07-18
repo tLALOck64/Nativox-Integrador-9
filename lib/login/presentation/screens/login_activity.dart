@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:integrador/login/presentation/states/login_state.dart';
 import 'package:integrador/login/presentation/viewmodels/login_viewmodel.dart';
 import 'package:provider/provider.dart';
+import 'package:go_router/go_router.dart';
+import 'package:integrador/core/navigation/route_names.dart';
 
 class LoginActivity extends StatefulWidget {
   const LoginActivity({super.key});
@@ -36,6 +38,20 @@ class _LoginActivityState extends State<LoginActivity> {
         child: SafeArea(
           child: Consumer<LoginViewModel>(
             builder: (context, viewModel, child) {
+              // ✅ AGREGAR LISTENER PARA NAVEGACIÓN AUTOMÁTICA
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                if (viewModel.state.status == LoginStatus.success && mounted) {
+                  print('✅ Login successful in UI, navigating to home...');
+                  
+                  // ✅ NAVEGACIÓN DIRECTA COMO BACKUP
+                  Future.delayed(const Duration(milliseconds: 500), () {
+                    if (mounted) {
+                      context.go(RouteNames.home);
+                    }
+                  });
+                }
+              });
+
               return SingleChildScrollView(
                 child: ConstrainedBox(
                   constraints: BoxConstraints(
@@ -170,6 +186,63 @@ class _LoginActivityState extends State<LoginActivity> {
                                   ),
                                   const SizedBox(height: 32),
                                   
+                                  // ✅ MOSTRAR ESTADO DE LOADING/SUCCESS
+                                  if (viewModel.state.status == LoginStatus.loading)
+                                    Container(
+                                      margin: const EdgeInsets.only(bottom: 20),
+                                      padding: const EdgeInsets.all(16),
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFFD4A574).withOpacity(0.1),
+                                        borderRadius: BorderRadius.circular(12),
+                                        border: Border.all(color: const Color(0xFFD4A574).withOpacity(0.3)),
+                                      ),
+                                      child: const Row(
+                                        children: [
+                                          SizedBox(
+                                            width: 20,
+                                            height: 20,
+                                            child: CircularProgressIndicator(
+                                              strokeWidth: 2,
+                                              valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFD4A574)),
+                                            ),
+                                          ),
+                                          SizedBox(width: 12),
+                                          Text(
+                                            'Iniciando sesión...',
+                                            style: TextStyle(
+                                              color: Color(0xFFD4A574),
+                                              fontWeight: FontWeight.w500,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+
+                                  // ✅ MOSTRAR SUCCESS
+                                  if (viewModel.state.status == LoginStatus.success)
+                                    Container(
+                                      margin: const EdgeInsets.only(bottom: 20),
+                                      padding: const EdgeInsets.all(16),
+                                      decoration: BoxDecoration(
+                                        color: Colors.green.withOpacity(0.1),
+                                        borderRadius: BorderRadius.circular(12),
+                                        border: Border.all(color: Colors.green.withOpacity(0.3)),
+                                      ),
+                                      child: const Row(
+                                        children: [
+                                          Icon(Icons.check_circle, color: Colors.green, size: 20),
+                                          SizedBox(width: 12),
+                                          Text(
+                                            '¡Login exitoso! Redirigiendo...',
+                                            style: TextStyle(
+                                              color: Colors.green,
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  
                                   // Error Message
                                   if (viewModel.state.status == LoginStatus.error)
                                     Container(
@@ -293,14 +366,17 @@ class _LoginActivityState extends State<LoginActivity> {
                                   
                                   const SizedBox(height: 24),
                                   
-                                  // Google Button
+                                  // ✅ GOOGLE BUTTON CON DEBUG
                                   SizedBox(
                                     width: double.infinity,
                                     height: 56,
                                     child: OutlinedButton.icon(
                                       onPressed: viewModel.state.status == LoginStatus.loading
                                           ? null
-                                          : () => viewModel.signInWithGoogle(),
+                                          : () {
+                                              print('🔄 Google button pressed');
+                                              viewModel.signInWithGoogle();
+                                            },
                                       style: OutlinedButton.styleFrom(
                                         backgroundColor: Colors.white,
                                         side: BorderSide(color: Colors.grey[300]!),
@@ -441,6 +517,7 @@ class _LoginActivityState extends State<LoginActivity> {
 
   void _handleEmailLogin(LoginViewModel viewModel) {
     if (_formKey.currentState!.validate()) {
+      print('🔄 Email login button pressed');
       viewModel.signInWithEmail(
         _emailController.text.trim(),
         _passwordController.text.trim(),
@@ -449,10 +526,7 @@ class _LoginActivityState extends State<LoginActivity> {
   }
 }
 
-// ============================================
-// CUSTOM PAINTER PARA PATRÓN CULTURAL
-// ============================================
-
+// CulturalPatternPainter sin cambios...
 class CulturalPatternPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
@@ -463,7 +537,6 @@ class CulturalPatternPainter extends CustomPainter {
 
     const double spacing = 15;
     
-    // Líneas diagonales sutiles
     for (double i = -size.height; i < size.width + size.height; i += spacing) {
       canvas.drawLine(
         Offset(i, 0),
@@ -472,7 +545,6 @@ class CulturalPatternPainter extends CustomPainter {
       );
     }
     
-    // Círculos decorativos
     final circlePaint = Paint()
       ..color = Colors.white.withOpacity(0.05)
       ..style = PaintingStyle.fill;

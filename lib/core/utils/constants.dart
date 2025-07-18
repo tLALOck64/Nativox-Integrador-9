@@ -1,7 +1,7 @@
 // TODO Implement this library.
 class AppConstants {
   // API
-  static const String baseUrl = 'https://api.yoloxochitl.com';
+  static const String baseUrl = 'https://a3pl892azf.execute-api.us-east-1.amazonaws.com ';
   static const String apiVersion = 'v1';
   
   // Storage Keys

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:integrador/games/screen/lesson_detail_screen.dart';
 import 'package:provider/provider.dart';
 import '../../models/lesson_model.dart';
 import '../../widgets/lesson_stats_widget.dart';
@@ -8,7 +9,6 @@ import 'lecciones_viewmodel.dart';
 
 class LessonsView extends StatefulWidget {
   const LessonsView({super.key});
-
   @override
   State<LessonsView> createState() => _LessonsViewState();
 }
@@ -277,32 +277,34 @@ class _LessonsViewState extends State<LessonsView> {
   }
 
   void _onLessonTapped(LessonModel lesson) {
+    print("holaaaa");
     final message = _viewModel.getLessonMessage(lesson);
-    
+    print(!_viewModel.canStartLesson(lesson));
     if (!_viewModel.canStartLesson(lesson)) {
       _showMessage(message);
       return;
     }
-    
-    if (lesson.isCompleted) {
-      _showMessage(message);
-    } else {
-      _showMessage(message);
-    }
-    
-    _startLesson(lesson);
+
+    _startLesson(lesson); 
   }
 
-  Future<void> _startLesson(LessonModel lesson) async {
-    _showMessage('Cargando lección "${lesson.title}"...');
-    await _viewModel.startLesson(lesson);
-    
-    // Navegación se maneja en el ViewModel o mediante un servicio de navegación
-    // Navigator.of(context).push(
-    //   MaterialPageRoute(
-    //     builder: (context) => LessonDetailScreen(lesson: lesson),
-    //   ),
-    // );
+ Future<void> _startLesson(LessonModel lesson) async {
+    try {
+      print("cargando lección ${lesson.id}");
+
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (context) => LessonDetailScreen(lessonId: lesson.id),
+          ),
+        );
+      });
+
+    } catch (e, stack) {
+      print(" Error al iniciar la lección: $e");
+      print("🪵 Stacktrace: $stack");
+      _showMessage("Ocurrió un error al cargar la lección");
+    }
   }
 
   void _onStatsBoxTapped() {
