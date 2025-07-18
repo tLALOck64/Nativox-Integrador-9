@@ -19,6 +19,7 @@ class LessonService {
   Map<String, String> get _headers => {
     'Content-Type': 'application/json',
     'Accept': 'application/json',
+    'Authorization': 'Beare eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NTI5MzkzNTEsImlhdCI6MTc1Mjg1Mjk1MX0.mIiEGSmpBT_CeiCaggltvgSrobjX7bqceidJVTCr1zo'
   };
 
   // ✅ OBTENER TODAS LAS LECCIONES (SOLO API)
