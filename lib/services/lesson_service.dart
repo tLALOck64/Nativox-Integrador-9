@@ -494,10 +494,7 @@ class LessonService {
         wordCount: 12,
       ),
     ];
-    
-    return _applyProgressLogic(fallbackLessons);
-  }
-}
+ 
 
 // ============================================
 // MANEJO DE ERRORES MEJORADO
