@@ -3,12 +3,14 @@ import 'package:go_router/go_router.dart';
 import 'package:integrador/core/di/injection_container.dart' as di;
 import 'package:integrador/core/navigation/route_names.dart';
 import 'package:integrador/core/navigation/guards/auth_guard.dart';
+import 'package:integrador/core/navigation/navigation_service.dart';
 import 'package:integrador/core/services/storage_service.dart';
 import 'package:integrador/core/layouts/main_layout.dart';
 import 'package:integrador/games/screen/lesson_detail_screen.dart';
 import 'package:integrador/games/screen/memorama_menu_screen.dart';
 import 'package:integrador/games/screen/traductor_screen.dart';
 import 'package:integrador/login/presentation/screens/login_activity.dart';
+import 'package:integrador/register/presentation/screens/resgistration_screen.dart';
 import 'package:integrador/perfil/presentation/screens/profile_activity.dart';
 import 'package:integrador/screens/home_screen.dart';
 import 'package:integrador/screens/lesson_screen.dart';
@@ -17,18 +19,24 @@ import 'package:integrador/screens/practice_screen.dart';
 class AppRouter {
   static final GoRouter _router = GoRouter(
     initialLocation: '/splash',
+    navigatorKey: NavigationService.navigatorKey,
     routes: [
       // Rutas sin navbar
       GoRoute(
         path: RouteNames.splash,
         builder: (context, state) => const SplashScreen(),
       ),
-      
+
       GoRoute(
         path: RouteNames.login,
         builder: (context, state) => const LoginActivity(),
       ),
-      
+
+      GoRoute(
+        path: RouteNames.register,
+        builder: (context, state) => const RegistrationActivity(),
+      ),
+
       GoRoute(
         path: '/lessons/:lessonId',
         builder: (context, state) {
@@ -37,7 +45,7 @@ class AppRouter {
         },
         redirect: AuthGuard.redirectIfNotAuthenticated,
       ),
-      
+
       GoRoute(
         path: RouteNames.settings,
         builder: (context, state) => const SettingsScreen(),
@@ -57,37 +65,34 @@ class AppRouter {
       // Rutas con navbar usando ShellRoute
       ShellRoute(
         builder: (context, state, child) {
-          return MainLayout(
-            location: state.matchedLocation,
-            child: child,
-          );
+          return MainLayout(location: state.matchedLocation, child: child);
         },
         routes: [
           GoRoute(
             path: RouteNames.home,
             builder: (context, state) => const HomeScreen(),
           ),
-          
+
           GoRoute(
             path: RouteNames.lessons,
             builder: (context, state) => const LessonsScreen(),
           ),
-          
+
           GoRoute(
             path: RouteNames.practice,
             builder: (context, state) => const PracticeScreen(),
           ),
-          
+
           GoRoute(
             path: RouteNames.traductor,
             builder: (context, state) => const TraductorScreen(),
           ),
-          
+
           GoRoute(
             path: RouteNames.game,
             builder: (context, state) => const MemoramaMenuScreen(),
           ),
-          
+
           GoRoute(
             path: RouteNames.profile,
             builder: (context, state) => const ProfileActivity(),
@@ -118,10 +123,10 @@ class _SplashScreenState extends State<SplashScreen> {
 
   Future<void> _checkAuthStatus() async {
     await Future.delayed(const Duration(seconds: 2));
-    
+
     final storageService = di.sl<StorageService>();
     final userData = await storageService.getUserData();
-    
+
     if (mounted) {
       if (userData != null) {
         context.go(RouteNames.home);
@@ -164,15 +169,10 @@ class _SplashScreenState extends State<SplashScreen> {
             const SizedBox(height: 8),
             const Text(
               'Aprendiendo Zapoteco',
-              style: TextStyle(
-                fontSize: 16,
-                color: Colors.white70,
-              ),
+              style: TextStyle(fontSize: 16, color: Colors.white70),
             ),
             const SizedBox(height: 48),
-            const CircularProgressIndicator(
-              color: Colors.white,
-            ),
+            const CircularProgressIndicator(color: Colors.white),
           ],
         ),
       ),
@@ -180,27 +180,30 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 }
 
-
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
   @override
-  Widget build(BuildContext context) => const Scaffold(body: Center(child: Text('Settings')));
+  Widget build(BuildContext context) =>
+      const Scaffold(body: Center(child: Text('Settings')));
 }
 
 class NotificationSettingsScreen extends StatelessWidget {
   const NotificationSettingsScreen({super.key});
   @override
-  Widget build(BuildContext context) => const Scaffold(body: Center(child: Text('Notification Settings')));
+  Widget build(BuildContext context) =>
+      const Scaffold(body: Center(child: Text('Notification Settings')));
 }
 
 class ThemeSettingsScreen extends StatelessWidget {
   const ThemeSettingsScreen({super.key});
   @override
-  Widget build(BuildContext context) => const Scaffold(body: Center(child: Text('Theme Settings')));
+  Widget build(BuildContext context) =>
+      const Scaffold(body: Center(child: Text('Theme Settings')));
 }
 
 class NotFoundScreen extends StatelessWidget {
   const NotFoundScreen({super.key});
   @override
-  Widget build(BuildContext context) => const Scaffold(body: Center(child: Text('Page Not Found')));
+  Widget build(BuildContext context) =>
+      const Scaffold(body: Center(child: Text('Page Not Found')));
 }

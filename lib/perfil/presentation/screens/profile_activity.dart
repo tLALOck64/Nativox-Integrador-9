@@ -5,6 +5,7 @@ import 'package:integrador/perfil/presentation/states/profile_state.dart';
 import 'package:integrador/perfil/presentation/viewmodels/profile_viewmodel.dart';
 import 'package:integrador/perfil/domain/entities/achievement.dart';
 import 'package:provider/provider.dart';
+import 'package:integrador/login/presentation/viewmodels/login_viewmodel.dart';
 
 class ProfileActivity extends StatefulWidget {
   const ProfileActivity({super.key});
@@ -313,6 +314,41 @@ class _ProfileActivityState extends State<ProfileActivity> {
                                     );
                                   }).toList(),
                             ),
+                          ),
+                          const SizedBox(height: 20),
+                          // Botón de cerrar sesión
+                          Consumer<LoginViewModel>(
+                            builder:
+                                (context, loginViewModel, _) => SizedBox(
+                                  width: double.infinity,
+                                  child: OutlinedButton.icon(
+                                    icon: const Icon(
+                                      Icons.logout,
+                                      color: Color(0xFFD4A574),
+                                    ),
+                                    label: const Text(
+                                      'Cerrar sesión',
+                                      style: TextStyle(
+                                        color: Color(0xFFD4A574),
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                    style: OutlinedButton.styleFrom(
+                                      side: const BorderSide(
+                                        color: Color(0xFFD4A574),
+                                      ),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(16),
+                                      ),
+                                      padding: const EdgeInsets.symmetric(
+                                        vertical: 16,
+                                      ),
+                                    ),
+                                    onPressed: () async {
+                                      await loginViewModel.signOut();
+                                    },
+                                  ),
+                                ),
                           ),
                           const SizedBox(
                             height: 100,

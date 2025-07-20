@@ -3,10 +3,15 @@ import 'package:http/http.dart' as http;
 import '../model/registration_request_model.dart';
 import '../model/registration_response_model.dart';
 
-
 abstract class RegistrationDataSource {
   Future<RegistrationResponseModel> registerWithEmailAndPassword(
     RegistrationRequestModel request
+  );
+  Future<RegistrationResponseModel> registerWithFirebase(
+    RegistrationRequestModel request,
+    String displayName,
+    String firebaseUid,
+    bool emailVerified,
   );
   Future<bool> checkEmailAvailability(String email);
 }
@@ -53,6 +58,63 @@ class RegistrationDataSourceImpl implements RegistrationDataSource {
       
     } catch (e) {
       print('❌ RegistrationDataSource: Exception: $e');
+      
+      if (e.toString().contains('EMAIL_ALREADY_EXISTS')) {
+        throw Exception('EMAIL_ALREADY_EXISTS');
+      } else if (e.toString().contains('SocketException')) {
+        throw Exception('NETWORK_ERROR');
+      } else if (e.toString().contains('TimeoutException')) {
+        throw Exception('TIMEOUT_ERROR');
+      } else {
+        throw Exception('UNKNOWN_ERROR: ${e.toString()}');
+      }
+    }
+  }
+
+  @override
+  Future<RegistrationResponseModel> registerWithFirebase(
+    RegistrationRequestModel request,
+    String displayName,
+    String firebaseUid,
+    bool emailVerified,
+  ) async {
+    try {
+      print('🔄 RegistrationDataSource: Creating user account with Firebase');
+      
+      final firebaseRequest = request.toFirebaseJson(
+        displayName: displayName,
+        firebaseUid: firebaseUid,
+        emailVerified: emailVerified,
+      );
+      
+      print('🔄 RegistrationDataSource: Firebase request body: ${json.encode(firebaseRequest)}');
+      
+      final response = await http.post(
+        Uri.parse('$_baseUrl/firebase/registrar'), 
+        headers: _headers,
+        body: json.encode(firebaseRequest),
+      ).timeout(const Duration(seconds: 30));
+
+      print('📡 RegistrationDataSource: Firebase API Response status: ${response.statusCode}');
+      print('📡 RegistrationDataSource: Firebase API Response body: ${response.body}');
+
+      if (response.statusCode == 201 || response.statusCode == 200) {
+        final Map<String, dynamic> responseData = json.decode(response.body);
+        
+        return RegistrationResponseModel.fromJson(responseData);
+        
+      } else if (response.statusCode == 409) {
+        throw Exception('EMAIL_ALREADY_EXISTS');
+      } else if (response.statusCode == 400) {
+        final errorBody = json.decode(response.body);
+        final errorMessage = errorBody['message'] ?? errorBody['error'] ?? 'Datos inválidos';
+        throw Exception('INVALID_DATA: $errorMessage');
+      } else {
+        throw Exception('SERVER_ERROR: ${response.statusCode}');
+      }
+      
+    } catch (e) {
+      print('❌ RegistrationDataSource: Firebase registration exception: $e');
       
       if (e.toString().contains('EMAIL_ALREADY_EXISTS')) {
         throw Exception('EMAIL_ALREADY_EXISTS');

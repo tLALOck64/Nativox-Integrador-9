@@ -10,11 +10,14 @@ class FirebaseAuthDataSource implements AuthDataSource {
   FirebaseAuthDataSource(this._firebaseAuth, this._googleSignIn);
 
   @override
-  Future<UserModel?> signInWithEmailAndPassword(String email, String password) async {
+  Future<UserModel?> signInWithEmailAndPassword(
+    String email,
+    String password,
+  ) async {
     try {
       final firebase_auth.UserCredential userCredential = await _firebaseAuth
           .signInWithEmailAndPassword(email: email, password: password);
-      
+
       if (userCredential.user != null) {
         return UserModel.fromFirebaseUser(userCredential.user!);
       }
@@ -45,16 +48,17 @@ class FirebaseAuthDataSource implements AuthDataSource {
       final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
       if (googleUser == null) return null;
 
-      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
-      
+      final GoogleSignInAuthentication googleAuth =
+          await googleUser.authentication;
+
       final credential = firebase_auth.GoogleAuthProvider.credential(
         accessToken: googleAuth.accessToken,
         idToken: googleAuth.idToken,
       );
 
-      final firebase_auth.UserCredential userCredential = 
-          await _firebaseAuth.signInWithCredential(credential);
-      
+      final firebase_auth.UserCredential userCredential = await _firebaseAuth
+          .signInWithCredential(credential);
+
       if (userCredential.user != null) {
         return UserModel.fromFirebaseUser(userCredential.user!);
       }
@@ -62,7 +66,9 @@ class FirebaseAuthDataSource implements AuthDataSource {
     } on firebase_auth.FirebaseAuthException catch (e) {
       switch (e.code) {
         case 'account-exists-with-different-credential':
-          throw Exception('Ya existe una cuenta con este email usando un método diferente');
+          throw Exception(
+            'Ya existe una cuenta con este email usando un método diferente',
+          );
         case 'invalid-credential':
           throw Exception('Las credenciales de Google son inválidas');
         case 'operation-not-allowed':
@@ -78,10 +84,7 @@ class FirebaseAuthDataSource implements AuthDataSource {
   @override
   Future<void> signOut() async {
     try {
-      await Future.wait([
-        _firebaseAuth.signOut(),
-        _googleSignIn.signOut(),
-      ]);
+      await Future.wait([_firebaseAuth.signOut(), _googleSignIn.signOut()]);
     } catch (e) {
       throw Exception('Error al cerrar sesión: ${e.toString()}');
     }
@@ -101,6 +104,15 @@ class FirebaseAuthDataSource implements AuthDataSource {
   }
 
   @override
+  Future<UserModel?> signInWithFirebase(String idToken, String fcmToken) async {
+    // This method is not used in FirebaseAuthDataSource since it's for API calls
+    // The actual implementation is in AuthDataSourceImpl
+    throw UnimplementedError(
+      'signInWithFirebase is not implemented in FirebaseAuthDataSource',
+    );
+  }
+
+  @override
   Stream<UserModel?> get authStateChanges {
     return _firebaseAuth.authStateChanges().map((firebaseUser) {
       if (firebaseUser != null) {
@@ -108,5 +120,32 @@ class FirebaseAuthDataSource implements AuthDataSource {
       }
       return null;
     });
+  }
+
+  Future<UserModel?> registerWithEmailAndPassword(
+    String email,
+    String password,
+  ) async {
+    try {
+      final firebase_auth.UserCredential userCredential = await _firebaseAuth
+          .createUserWithEmailAndPassword(email: email, password: password);
+      if (userCredential.user != null) {
+        return UserModel.fromFirebaseUser(userCredential.user!);
+      }
+      return null;
+    } on firebase_auth.FirebaseAuthException catch (e) {
+      switch (e.code) {
+        case 'email-already-in-use':
+          throw Exception('El email ya está en uso');
+        case 'invalid-email':
+          throw Exception('El formato del email es inválido');
+        case 'weak-password':
+          throw Exception('La contraseña es demasiado débil');
+        default:
+          throw Exception('Error de registro: ${e.message}');
+      }
+    } catch (e) {
+      throw Exception('Error al registrar usuario: ${e.toString()}');
+    }
   }
 }

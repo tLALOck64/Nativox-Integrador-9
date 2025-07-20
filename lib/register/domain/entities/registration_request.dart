@@ -6,6 +6,7 @@ class RegistrationRequest {
   final String contrasena;
   final String idiomaPreferido;
   final String? fcmToken;
+  final bool isGoogle;
 
   const RegistrationRequest({
     required this.nombre,
@@ -15,5 +16,6 @@ class RegistrationRequest {
     required this.contrasena,
     required this.idiomaPreferido,
     this.fcmToken,
+    this.isGoogle = false,
   });
 }
