@@ -18,7 +18,7 @@ import 'package:integrador/screens/practice_screen.dart';
 
 class AppRouter {
   static final GoRouter _router = GoRouter(
-    initialLocation: '/splash',
+    initialLocation: '/practice',
     navigatorKey: NavigationService.navigatorKey,
     routes: [
       // Rutas sin navbar
