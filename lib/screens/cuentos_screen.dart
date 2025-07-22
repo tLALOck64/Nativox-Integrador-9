@@ -4,6 +4,8 @@ import 'package:http/http.dart' as http;
 import 'package:integrador/core/services/secure_storage_service.dart'
     as secure_storage;
 import 'package:integrador/games/practicas/practice_screen.dart';
+import 'package:integrador/screens/story_quiz_screen.dart';
+import 'package:go_router/go_router.dart';
 
 class StoryModel {
   final String id;
@@ -32,7 +34,8 @@ class StoryModel {
 }
 
 class CuentosScreen extends StatefulWidget {
-  const CuentosScreen({super.key});
+  final VoidCallback? onBack;
+  const CuentosScreen({super.key, this.onBack});
 
   @override
   State<CuentosScreen> createState() => _CuentosScreenState();
@@ -92,11 +95,20 @@ class _CuentosScreenState extends State<CuentosScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final media = MediaQuery.of(context);
-    final isWide = media.size.width > 700;
-    final isLandscape = media.orientation == Orientation.landscape;
-    final maxContentWidth = 1100.0;
+    final isWide = MediaQuery.of(context).size.width > 700;
     return Scaffold(
+      appBar: AppBar(
+        backgroundColor: const Color(0xFFB8956A),
+        foregroundColor: Colors.white,
+        title: const Text('Cuentos'),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            // Navegar a la pantalla de práctica
+            context.go('/practice');
+          },
+        ),
+      ),
       body: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
@@ -105,142 +117,65 @@ class _CuentosScreenState extends State<CuentosScreen> {
             colors: [Color(0xFFF7F3F0), Color(0xFFE8DDD4)],
           ),
         ),
-        child: SafeArea(
-          child: Center(
-            child: ConstrainedBox(
-              constraints: BoxConstraints(maxWidth: maxContentWidth),
-              child: Padding(
-                padding: EdgeInsets.symmetric(
-                  horizontal: isWide ? 32 : 8,
-                  vertical: isWide ? 32 : 12,
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Row(
-                      children: [
-                        IconButton(
-                          icon: const Icon(
-                            Icons.arrow_back_ios_new_rounded,
-                            color: Color(0xFFB8956A),
-                          ),
-                          onPressed: () {
-                            if (Navigator.of(context).canPop()) {
-                              Navigator.of(context).pop();
-                            } else {
-                              Navigator.of(context).pushReplacement(
-                                MaterialPageRoute(
-                                  builder: (context) => PracticeScreen(),
-                                ),
-                              );
-                            }
-                          },
-                        ),
-                        Expanded(
-                          child: Text(
-                            'Cuentos',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              fontSize: isWide ? 32 : 24,
-                              fontWeight: FontWeight.bold,
-                              color: const Color(0xFFB8956A),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 48), // Para balancear el Row
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Lee y aprende cuentos en diferentes idiomas ',
-                      style: TextStyle(
-                        fontSize: isWide ? 18 : 15,
-                        color: Colors.grey[700],
+        child:
+            _isLoading
+                ? const Center(
+                  child: CircularProgressIndicator(
+                    valueColor: AlwaysStoppedAnimation(Color(0xFFB8956A)),
+                  ),
+                )
+                : _error != null
+                ? Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        _error!,
+                        style: const TextStyle(color: Colors.red),
                       ),
-                    ),
-                    const SizedBox(height: 24),
-                    if (_isLoading)
-                      const CircularProgressIndicator(
-                        valueColor: AlwaysStoppedAnimation(Color(0xFFB8956A)),
-                      )
-                    else if (_error != null)
-                      Column(
-                        children: [
-                          Text(
-                            _error!,
-                            style: const TextStyle(color: Colors.red),
-                          ),
-                          const SizedBox(height: 16),
-                          ElevatedButton(
-                            onPressed: _fetchStories,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFFB8956A),
-                              foregroundColor: Colors.white,
-                            ),
-                            child: const Text('Reintentar'),
-                          ),
-                        ],
-                      )
-                    else if (_stories.isEmpty)
-                      const Text('No hay cuentos disponibles.')
-                    else
-                      Expanded(
-                        child: LayoutBuilder(
-                          builder: (context, constraints) {
-                            // Determinar columnas según ancho y orientación
-                            int crossAxisCount = 1;
-                            if (constraints.maxWidth > 900) {
-                              crossAxisCount = isLandscape ? 3 : 2;
-                            } else if (constraints.maxWidth > 600) {
-                              crossAxisCount = 2;
-                            }
-                            if (crossAxisCount == 1) {
-                              return ListView.separated(
-                                itemCount: _stories.length,
-                                separatorBuilder:
-                                    (_, __) => const SizedBox(height: 18),
-                                itemBuilder:
-                                    (context, i) => GestureDetector(
-                                      onTap:
-                                          () =>
-                                              _openStoryDetail(_stories[i].id),
-                                      child: _buildStoryCard(
-                                        _stories[i],
-                                        isWide,
-                                      ),
-                                    ),
-                              );
-                            } else {
-                              return GridView.builder(
-                                gridDelegate:
-                                    SliverGridDelegateWithFixedCrossAxisCount(
-                                      crossAxisCount: crossAxisCount,
-                                      crossAxisSpacing: 18,
-                                      mainAxisSpacing: 18,
-                                      childAspectRatio: isLandscape ? 2.6 : 2.1,
-                                    ),
-                                itemCount: _stories.length,
-                                itemBuilder:
-                                    (context, i) => GestureDetector(
-                                      onTap:
-                                          () =>
-                                              _openStoryDetail(_stories[i].id),
-                                      child: _buildStoryCard(
-                                        _stories[i],
-                                        isWide,
-                                      ),
-                                    ),
-                              );
-                            }
-                          },
+                      const SizedBox(height: 16),
+                      ElevatedButton(
+                        onPressed: _fetchStories,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFFB8956A),
+                          foregroundColor: Colors.white,
+                        ),
+                        child: const Text('Reintentar'),
+                      ),
+                    ],
+                  ),
+                )
+                : _stories.isEmpty
+                ? const Center(child: Text('No hay cuentos disponibles.'))
+                : SingleChildScrollView(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: isWide ? 80 : 16,
+                    vertical: 32,
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Lee y aprende cuentos en diferentes idiomas',
+                        style: TextStyle(
+                          fontSize: isWide ? 18 : 15,
+                          color: Colors.grey[800],
                         ),
                       ),
-                  ],
+                      const SizedBox(height: 24),
+                      ...List.generate(
+                        _stories.length,
+                        (i) => Padding(
+                          padding: const EdgeInsets.only(bottom: 18),
+                          child: GestureDetector(
+                            onTap: () => _openStoryDetail(_stories[i].id),
+                            child: _buildStoryCard(_stories[i], isWide),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-            ),
-          ),
-        ),
       ),
     );
   }
@@ -404,6 +339,18 @@ class _StoryDetailScreenState extends State<StoryDetailScreen> {
     });
   }
 
+  void _openQuiz() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => StoryQuizScreen(
+          storyId: widget.storyId,
+          storyTitle: _story!['Title'] ?? 'Cuento',
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final isWide = MediaQuery.of(context).size.width > 700;
@@ -492,6 +439,27 @@ class _StoryDetailScreenState extends State<StoryDetailScreen> {
                             ),
                           ),
                         ),
+                      const SizedBox(height: 32),
+                      
+                      // Botón para ir al cuestionario
+                      Center(
+                        child: ElevatedButton.icon(
+                          onPressed: _openQuiz,
+                          icon: const Icon(Icons.quiz),
+                          label: const Text('Realizar Cuestionario'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFFB8956A),
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 24,
+                              vertical: 12,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                        ),
+                      ),
                     ],
                   ),
                 ),
