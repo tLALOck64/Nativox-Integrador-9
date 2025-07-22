@@ -120,16 +120,16 @@ class _LoginActivityState extends State<LoginActivity> {
                                         Container(
                                           width:
                                               isSmallScreen
-                                                  ? 80
-                                                  : isMediumScreen
                                                   ? 100
-                                                  : 120,
+                                                  : isMediumScreen
+                                                  ? 120
+                                                  : 140,
                                           height:
                                               isSmallScreen
-                                                  ? 80
-                                                  : isMediumScreen
                                                   ? 100
-                                                  : 120,
+                                                  : isMediumScreen
+                                                  ? 120
+                                                  : 140,
                                           decoration: BoxDecoration(
                                             color: Colors.white,
                                             borderRadius: BorderRadius.circular(
@@ -147,7 +147,7 @@ class _LoginActivityState extends State<LoginActivity> {
                                           ),
                                           child: ClipRRect(
                                             borderRadius: BorderRadius.circular(
-                                              isSmallScreen ? 12 : 16,
+                                              isSmallScreen ? 16 : 18,
                                             ),
                                             child: Image.asset(
                                               'assets/icon/logo.png',

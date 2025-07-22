@@ -15,6 +15,7 @@ import 'package:integrador/perfil/presentation/screens/profile_activity.dart';
 import 'package:integrador/screens/home_screen.dart';
 import 'package:integrador/screens/lesson_screen.dart';
 import 'package:integrador/screens/practice_screen.dart';
+import 'package:integrador/screens/cuentos_screen.dart';
 
 class AppRouter {
   static final GoRouter _router = GoRouter(
@@ -96,6 +97,10 @@ class AppRouter {
           GoRoute(
             path: RouteNames.profile,
             builder: (context, state) => const ProfileActivity(),
+          ),
+          GoRoute(
+            path: '/cuentos',
+            builder: (context, state) => const CuentosScreen(),
           ),
         ],
       ),
