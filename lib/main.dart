@@ -21,7 +21,7 @@ void main() async {
 
   await di.sl<NotificationService>().init();
   await di.sl<FCMService>().initialize();
-
+  print('Main iniciado');
   runApp(const MyApp());
 }
 

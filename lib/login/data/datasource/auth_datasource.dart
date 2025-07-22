@@ -4,6 +4,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:http/http.dart' as http;
 import 'package:integrador/login/data/model/user_model.dart';
 import 'package:integrador/login/data/model/firebase_login_response_model.dart';
+import 'package:integrador/core/services/secure_storage_service.dart';
 
 abstract class AuthDataSource {
   Future<UserModel?> signInWithEmailAndPassword(String email, String password);
@@ -59,6 +60,12 @@ class AuthDataSourceImpl implements AuthDataSource {
         // ✅ ADAPTACIÓN FLEXIBLE DE LA RESPUESTA
         final userData = responseData['user'] ?? responseData;
         print('👤 AuthDataSource: User data from API: $userData');
+
+        // Guardar el token de la API en almacenamiento seguro
+        final token = responseData['token'] ?? responseData['access_token'];
+        if (token != null) {
+          await SecureStorageService().saveToken(token);
+        }
 
         // Crear UserModel desde la respuesta de tu API
         final userModel = UserModel(
@@ -146,6 +153,9 @@ class AuthDataSourceImpl implements AuthDataSource {
         print('✅ AuthDataSource: API Token: ${firebaseResponse.data.token}');
         print('✅ AuthDataSource: User: ${firebaseResponse.data.user.email}');
 
+        // Guardar el token de la API en almacenamiento seguro
+        await SecureStorageService().saveToken(firebaseResponse.data.token);
+
         // Crear UserModel desde la respuesta de Firebase API
         final userModel = UserModel(
           id: firebaseResponse.data.user.uid,
@@ -174,20 +184,10 @@ class AuthDataSourceImpl implements AuthDataSource {
         final errorCode = e.toString().split('CUSTOM_AUTH_ERROR: ')[1];
         throw _createCustomAuthException(errorCode);
       }
-
-      if (e.toString().contains('SocketException') ||
-          e.toString().contains('network')) {
-        throw Exception('CUSTOM_AUTH_ERROR: network-error');
-      } else if (e.toString().contains('TimeoutException') ||
-          e.toString().contains('timeout')) {
-        throw Exception('CUSTOM_AUTH_ERROR: timeout');
-      } else {
-        throw Exception('CUSTOM_AUTH_ERROR: unknown');
-      }
+      rethrow;
     }
   }
 
-  // ✅ NUEVO: Crear excepciones personalizadas (no Firebase)
   Exception _createCustomAuthException(String code) {
     switch (code) {
       case 'invalid-credential':
@@ -207,7 +207,6 @@ class AuthDataSourceImpl implements AuthDataSource {
     }
   }
 
-  // ✅ ACTUALIZADO: Google Sign-In que usa la nueva API de Firebase
   @override
   Future<UserModel?> signInWithGoogle() async {
     try {
@@ -216,7 +215,7 @@ class AuthDataSourceImpl implements AuthDataSource {
       final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
       if (googleUser == null) {
         print('❌ AuthDataSource: Google Sign-In cancelled by user');
-        return null; // Usuario canceló
+        return null;
       }
       print('googleUser: $googleUser');
       print('✅ AuthDataSource: Google account selected: ${googleUser.email}');
@@ -266,7 +265,6 @@ class AuthDataSourceImpl implements AuthDataSource {
     }
   }
 
-  // ✅ ACTUALIZADO: Obtener usuario actual
   @override
   Future<UserModel?> getCurrentUser() async {
     try {
@@ -290,7 +288,6 @@ class AuthDataSourceImpl implements AuthDataSource {
     }
   }
 
-  // ✅ SIN CAMBIOS: Stream de cambios de auth (solo Firebase por ahora)
   @override
   Stream<UserModel?> get authStateChanges {
     return _firebaseAuth.authStateChanges().map((User? user) {

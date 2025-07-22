@@ -18,7 +18,7 @@ class LoginViewModel extends ChangeNotifier {
   final SignInOrRegisterWithGoogleUseCase _signInOrRegisterWithGoogleUseCase;
   final GetCurrentUserUseCase _getCurrentUserUseCase;
   final SignOutUseCase _signOutUseCase;
-  final StorageService _storageService;
+  final SecureStorageService _storageService;
 
   LoginState _state = LoginState.initial();
   LoginState get state => _state;
@@ -30,7 +30,7 @@ class LoginViewModel extends ChangeNotifier {
     signInOrRegisterWithGoogleUseCase,
     required GetCurrentUserUseCase getCurrentUserUseCase,
     required SignOutUseCase signOutUseCase,
-    required StorageService storageService,
+    required SecureStorageService storageService,
   }) : _signInWithEmailUseCase = signInWithEmailUseCase,
        _signInWithGoogleUseCase = signInWithGoogleUseCase,
        _signInOrRegisterWithGoogleUseCase = signInOrRegisterWithGoogleUseCase,

@@ -6,6 +6,7 @@ import 'package:integrador/core/navigation/route_names.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../viewmodels/registration_viewmodel.dart';
 import '../states/registration_state.dart';
+import 'package:integrador/core/services/fcm_service.dart';
 
 class RegistrationActivity extends StatefulWidget {
   const RegistrationActivity({super.key});
@@ -25,12 +26,12 @@ class _RegistrationActivityState extends State<RegistrationActivity> {
 
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
-  String _selectedIdioma = 'zapoteco'; // Default
-  bool _acceptedTerms = false; // Checkbox para términos y condiciones
+  String _selectedIdioma = 'zapoteco';
+  bool _acceptedTerms = false;
 
   final List<Map<String, String>> _idiomas = [
     {'value': 'zapoteco', 'label': 'Zapoteco'},
-    {'value': 'tzeltal', 'label': 'Tzeltal'},
+    {'value': 'tseltal', 'label': 'Tseltal'},
   ];
 
   @override
@@ -62,7 +63,6 @@ class _RegistrationActivityState extends State<RegistrationActivity> {
         child: SafeArea(
           child: Consumer<RegistrationViewModel>(
             builder: (context, viewModel, child) {
-              // Listener para navegación automática
               WidgetsBinding.instance.addPostFrameCallback((_) {
                 if (viewModel.state.status == RegistrationStatus.success &&
                     mounted) {
@@ -94,7 +94,6 @@ class _RegistrationActivityState extends State<RegistrationActivity> {
                           children: [
                             SizedBox(height: isSmallScreen ? 20 : 40),
 
-                            // Header responsivo con logo
                             Container(
                               width: double.infinity,
                               margin: EdgeInsets.symmetric(
@@ -134,7 +133,6 @@ class _RegistrationActivityState extends State<RegistrationActivity> {
                               ),
                               child: Column(
                                 children: [
-                                  // Logo de Nativox
                                   Container(
                                     width:
                                         isSmallScreen
@@ -284,7 +282,7 @@ class _RegistrationActivityState extends State<RegistrationActivity> {
                                   // Apellido
                                   _buildResponsiveTextField(
                                     controller: _apellidoController,
-                                    label: 'Apellido',
+                                    label: 'Apellidos',
                                     icon: Icons.person_outline,
                                     isSmallScreen: isSmallScreen,
                                     isMediumScreen: isMediumScreen,
@@ -499,9 +497,17 @@ class _RegistrationActivityState extends State<RegistrationActivity> {
                                           viewModel.state.status ==
                                                   RegistrationStatus.loading
                                               ? null
-                                              : () => _handleRegistration(
-                                                viewModel,
-                                              ),
+                                              : () async {
+                                                // Obtener el FCMToken antes de registrar
+                                                final fcmService = FCMService();
+                                                final fcmToken =
+                                                    await fcmService
+                                                        .getFCMToken();
+                                                _handleRegistration(
+                                                  viewModel,
+                                                  fcmToken,
+                                                );
+                                              },
                                       style: ElevatedButton.styleFrom(
                                         backgroundColor: const Color(
                                           0xFFD4A574,
@@ -948,7 +954,7 @@ class _RegistrationActivityState extends State<RegistrationActivity> {
     );
   }
 
-  void _handleRegistration(RegistrationViewModel viewModel) {
+  void _handleRegistration(RegistrationViewModel viewModel, String? fcmToken) {
     if (_formKey.currentState!.validate()) {
       // Verificar que se aceptaron los términos
       if (!_acceptedTerms) {
@@ -972,6 +978,7 @@ class _RegistrationActivityState extends State<RegistrationActivity> {
         contrasena: _passwordController.text,
         confirmPassword: _confirmPasswordController.text,
         idiomaPreferido: _selectedIdioma,
+        fcmToken: fcmToken,
       );
     }
   }

@@ -8,11 +8,7 @@ import 'package:integrador/core/services/storage_service.dart';
 import 'package:integrador/core/services/cache_service.dart';
 import 'package:integrador/core/services/notifications_service.dart';
 import 'package:integrador/core/services/fcm_service.dart';
-
-// Login imports
 import 'package:integrador/login/data/datasource/auth_datasource.dart';
-// ❌ REMOVER ESTA LÍNEA:
-// import 'package:integrador/login/data/datasource/firebase_auth_datasource.dart';
 import 'package:integrador/login/data/repository/auth_repository_impl.dart';
 import 'package:integrador/login/domain/repository/auth_repository.dart';
 import 'package:integrador/login/domain/usecases/sign_in_with_email_usecase.dart';
@@ -55,6 +51,7 @@ Future<void> initializeDependencies() async {
   sl.registerLazySingleton<ApiClient>(() => ApiClient());
   sl.registerLazySingleton<NetworkInfo>(() => NetworkInfoImpl(sl()));
   sl.registerLazySingleton<StorageService>(() => StorageService());
+  sl.registerLazySingleton<SecureStorageService>(() => SecureStorageService());
   sl.registerLazySingleton<CacheService>(() => CacheService());
   sl.registerLazySingleton<NotificationService>(() => NotificationService());
   sl.registerLazySingleton<FCMService>(() => FCMService());
@@ -103,7 +100,7 @@ Future<void> initializeDependencies() async {
       signInOrRegisterWithGoogleUseCase: sl(),
       getCurrentUserUseCase: sl(),
       signOutUseCase: sl(),
-      storageService: sl<StorageService>(),
+      storageService: sl<SecureStorageService>(),
     );
   });
 
@@ -115,7 +112,7 @@ Future<void> initializeDependencies() async {
       sl(),
       sl<NetworkInfo>(),
       sl<CacheService>(),
-      sl<StorageService>(),
+      sl<StorageService>() as StorageService,
     ),
   );
 
@@ -154,7 +151,7 @@ Future<void> initializeDependencies() async {
     () => RegistrationViewModel(
       registerUseCase: sl(),
       checkEmailUseCase: sl(),
-      storageService: sl<StorageService>(),
+      storageService: sl<SecureStorageService>(),
       registerWithFirebaseEmailUseCase: sl(),
       registerWithGoogleUseCase: sl(),
     ),
@@ -168,11 +165,6 @@ Future<void> initializeDependencies() async {
   print('🎯 DI: Ready for login operations');
 }
 
-// ============================================
-// VERIFICACIÓN DE DEPENDENCIAS (OPCIONAL)
-// ============================================
-
-// Función opcional para verificar que las dependencias están bien registradas
 void verifyDependencies() {
   try {
     print('🔍 DI Verification:');

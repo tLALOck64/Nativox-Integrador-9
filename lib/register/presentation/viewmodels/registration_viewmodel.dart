@@ -15,7 +15,7 @@ import '../states/registration_state.dart';
 class RegistrationViewModel extends ChangeNotifier {
   final RegisterWithEmailUseCase _registerUseCase;
   final CheckEmailAvailabilityUseCase _checkEmailUseCase;
-  final StorageService _storageService;
+  final SecureStorageService _storageService;
   final RegisterWithFirebaseEmailUseCase? _registerWithFirebaseEmailUseCase;
   final RegisterWithGoogleUseCase? _registerWithGoogleUseCase;
 
@@ -25,7 +25,7 @@ class RegistrationViewModel extends ChangeNotifier {
   RegistrationViewModel({
     required RegisterWithEmailUseCase registerUseCase,
     required CheckEmailAvailabilityUseCase checkEmailUseCase,
-    required StorageService storageService,
+    required SecureStorageService storageService,
     RegisterWithFirebaseEmailUseCase? registerWithFirebaseEmailUseCase,
     RegisterWithGoogleUseCase? registerWithGoogleUseCase,
   }) : _registerUseCase = registerUseCase,
@@ -49,7 +49,6 @@ class RegistrationViewModel extends ChangeNotifier {
       '🔄 RegistrationViewModel: Data - nombre: $nombre, apellido: $apellido, email: $email',
     );
 
-    // Validaciones frontend
     if (contrasena != confirmPassword) {
       _updateState(
         _state.copyWith(
@@ -123,7 +122,6 @@ class RegistrationViewModel extends ChangeNotifier {
     try {
       final user = await _registerWithFirebaseEmailUseCase!(email, password);
       if (user != null) {
-        // Aquí podrías guardar datos mínimos en storage si lo deseas
         _updateState(_state.copyWith(status: RegistrationStatus.success));
         NavigationService.pushAndClearStack(RouteNames.home);
       } else {
@@ -214,7 +212,6 @@ class RegistrationViewModel extends ChangeNotifier {
       '✅ RegistrationViewModel: Registration successful, ID: ${response.id}',
     );
 
-    // Guardar datos del usuario registrado
     await _storageService.saveUserData({
       'id': response.id,
       'email': email,
@@ -225,7 +222,6 @@ class RegistrationViewModel extends ChangeNotifier {
 
     print('💾 RegistrationViewModel: User data saved');
 
-    // Convertir la entidad al modelo para el estado
     final responseModel = RegistrationResponseModel(
       id: response.id,
       email: response.email,
@@ -241,7 +237,6 @@ class RegistrationViewModel extends ChangeNotifier {
     );
 
     print('🚀 RegistrationViewModel: Navigating to home');
-    // Navegar a home después del registro exitoso
     NavigationService.pushAndClearStack(RouteNames.home);
   }
 

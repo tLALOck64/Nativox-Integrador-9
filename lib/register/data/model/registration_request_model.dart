@@ -30,35 +30,29 @@ class RegistrationRequestModel extends RegistrationRequest {
       'contrasena': contrasena,
       'idiomaPreferido': idiomaPreferido,
       'fcmToken':
-          fcmToken ?? 'default_fcm_token', // Token por defecto si no hay
+          fcmToken ?? 'default_fcm_token',
       'isGoogle': isGoogle,
     };
   }
 
-  // Método específico para Firebase
   Map<String, dynamic> toFirebaseJson({
     required String displayName,
     required String firebaseUid,
     required bool emailVerified,
   }) {
-    // Procesar el número de teléfono para Firebase
     String processedPhone = phone;
 
-    // Si el teléfono está vacío o es nulo, usar un valor por defecto
     if (phone.isEmpty || phone.trim().isEmpty) {
       processedPhone =
-          '0000000000'; // Número por defecto para usuarios de Google
+          '';
     } else {
-      // Si tiene código de país (+52), removerlo
       if (phone.startsWith('+')) {
         processedPhone = phone.substring(1);
       }
-      // Remover espacios y caracteres especiales
       processedPhone = processedPhone.replaceAll(RegExp(r'[^\d]'), '');
 
-      // Si después de limpiar está vacío, usar valor por defecto
       if (processedPhone.isEmpty) {
-        processedPhone = '0000000000';
+        processedPhone = '';
       }
     }
 

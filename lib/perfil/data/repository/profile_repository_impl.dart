@@ -5,7 +5,7 @@ import 'package:integrador/core/services/cache_service.dart';
 import 'package:integrador/core/services/storage_service.dart';
 import 'package:integrador/perfil/data/datasource/profile_datasource.dart';
 import 'package:integrador/perfil/domain/entities/user_profile.dart';
-import 'package:integrador/perfil/domain/entities/achievement.dart'; // ✅ Import Achievement
+import 'package:integrador/perfil/domain/entities/achievement.dart';
 import 'package:integrador/perfil/domain/entities/sentting_item.dart';
 import 'package:integrador/perfil/domain/repository/profile_repository.dart';
 
@@ -16,11 +16,11 @@ class ProfileRepositoryImpl implements ProfileRepository {
   final StorageService _storageService;
 
   ProfileRepositoryImpl(
-    this._dataSource, 
-    this._networkInfo, 
+    this._dataSource,
+    this._networkInfo,
     this._cacheService,
-    this._storageService,
-  );
+    StorageService storageService,
+  ) : _storageService = storageService;
 
   @override
   Future<Either<Failure, UserProfile>> getUserProfile() async {
@@ -37,9 +37,13 @@ class ProfileRepositoryImpl implements ProfileRepository {
 
       final model = await _dataSource.getUserProfile();
       final profile = model.toEntity();
-      
-      _cacheService.put('user_profile', profile, expiry: const Duration(hours: 1));
-      
+
+      _cacheService.put(
+        'user_profile',
+        profile,
+        expiry: const Duration(hours: 1),
+      );
+
       return Right(profile);
     } catch (e) {
       return Left(ServerFailure('Error al obtener perfil: ${e.toString()}'));
@@ -49,7 +53,9 @@ class ProfileRepositoryImpl implements ProfileRepository {
   @override
   Future<Either<Failure, List<Achievement>>> getAchievements() async {
     try {
-      final cachedAchievements = _cacheService.get<List<Achievement>>('achievements');
+      final cachedAchievements = _cacheService.get<List<Achievement>>(
+        'achievements',
+      );
       if (cachedAchievements != null) {
         return Right(cachedAchievements);
       }
@@ -61,9 +67,13 @@ class ProfileRepositoryImpl implements ProfileRepository {
 
       final models = await _dataSource.getAchievements();
       final achievements = models.map((model) => model.toEntity()).toList();
-      
-      _cacheService.put('achievements', achievements, expiry: const Duration(minutes: 30));
-      
+
+      _cacheService.put(
+        'achievements',
+        achievements,
+        expiry: const Duration(minutes: 30),
+      );
+
       return Right(achievements);
     } catch (e) {
       return Left(ServerFailure('Error al obtener logros: ${e.toString()}'));
@@ -76,7 +86,9 @@ class ProfileRepositoryImpl implements ProfileRepository {
       final settings = await _dataSource.getSettings();
       return Right(settings);
     } catch (e) {
-      return Left(ServerFailure('Error al obtener configuraciones: ${e.toString()}'));
+      return Left(
+        ServerFailure('Error al obtener configuraciones: ${e.toString()}'),
+      );
     }
   }
 
@@ -91,7 +103,9 @@ class ProfileRepositoryImpl implements ProfileRepository {
       await Future.delayed(const Duration(milliseconds: 500));
       return const Right(null);
     } catch (e) {
-      return Left(ServerFailure('Error al actualizar notificaciones: ${e.toString()}'));
+      return Left(
+        ServerFailure('Error al actualizar notificaciones: ${e.toString()}'),
+      );
     }
   }
 
