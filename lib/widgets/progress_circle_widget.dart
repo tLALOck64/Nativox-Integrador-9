@@ -27,6 +27,9 @@ class _ProgressCircleWidgetState extends State<ProgressCircleWidget>
   late AnimationController _animationController;
   late Animation<double> _progressAnimation;
 
+  // Validación del progreso para asegurar que esté entre 0.0 y 1.0
+  double get validatedProgress => widget.progress.clamp(0.0, 1.0);
+
   @override
   void initState() {
     super.initState();
@@ -37,7 +40,7 @@ class _ProgressCircleWidgetState extends State<ProgressCircleWidget>
     
     _progressAnimation = Tween<double>(
       begin: 0.0,
-      end: widget.progress,
+      end: validatedProgress, // Usamos el progreso validado
     ).animate(CurvedAnimation(
       parent: _animationController,
       curve: Curves.easeInOut,
@@ -51,8 +54,8 @@ class _ProgressCircleWidgetState extends State<ProgressCircleWidget>
     super.didUpdateWidget(oldWidget);
     if (oldWidget.progress != widget.progress) {
       _progressAnimation = Tween<double>(
-        begin: oldWidget.progress,
-        end: widget.progress,
+        begin: oldWidget.progress.clamp(0.0, 1.0), // Validamos el valor inicial
+        end: validatedProgress, // Usamos el progreso validado
       ).animate(CurvedAnimation(
         parent: _animationController,
         curve: Curves.easeInOut,
@@ -123,8 +126,10 @@ class _ProgressCircleWidgetState extends State<ProgressCircleWidget>
                 AnimatedBuilder(
                   animation: _progressAnimation,
                   builder: (context, child) {
+                    // Aseguramos que el porcentaje no exceda 100%
+                    final percentageValue = (_progressAnimation.value * 100).toInt();
                     return Text(
-                      '${(_progressAnimation.value * 100).toInt()}%',
+                      '${percentageValue.clamp(0, 100)}%',
                       style: TextStyle(
                         fontSize: widget.size * 0.26,
                         fontWeight: FontWeight.w700,

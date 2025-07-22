@@ -33,13 +33,12 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _loadData() async {
     try {
       setState(() => _isLoading = true);
-      
-      // Cargar datos en paralelo
+
       final results = await Future.wait([
         _lessonService.getAllLessons(),
         _userProgressService.getUserProgress(),
       ]);
-      
+
       setState(() {
         _lessons = results[0] as List<LessonModel>;
         _userProgress = results[1] as UserProgressModel;
@@ -47,7 +46,7 @@ class _HomeScreenState extends State<HomeScreen> {
       });
     } catch (e) {
       setState(() => _isLoading = false);
-      _showError('Error al cargar los datos');
+      _showError('Error al cargar los datos: $e');
     }
   }
 
@@ -57,6 +56,7 @@ class _HomeScreenState extends State<HomeScreen> {
         content: Text(message),
         backgroundColor: Colors.red,
         behavior: SnackBarBehavior.floating,
+        duration: const Duration(seconds: 4),
       ),
     );
   }
@@ -76,9 +76,9 @@ class _HomeScreenState extends State<HomeScreen> {
       _showMessage('Esta lección está bloqueada. Completa las anteriores primero.');
       return;
     }
-    
+
     _showMessage('Iniciando lección: ${lesson.title}');
-    // Aquí navegarías a la pantalla de la lección
+    // Navigator.pushNamed(context, '/lesson', arguments: lesson);
   }
 
   void _onFloatingButtonPressed() {
@@ -86,7 +86,7 @@ class _HomeScreenState extends State<HomeScreen> {
       (lesson) => !lesson.isCompleted && !lesson.isLocked,
       orElse: () => _lessons.first,
     );
-    
+
     _onLessonTapped(nextLesson);
   }
 
@@ -96,6 +96,10 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
+    final crossAxisCount = (screenWidth / 200).floor().clamp(2, 4);
+
     return Scaffold(
       body: Container(
         decoration: const BoxDecoration(
@@ -106,7 +110,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ),
         child: SafeArea(
-          child: _isLoading ? _buildLoadingState() : _buildMainContent(),
+          child: _isLoading ? _buildLoadingState() : _buildMainContent(crossAxisCount, screenHeight),
         ),
       ),
       floatingActionButton: _userProgress != null
@@ -125,6 +129,7 @@ class _HomeScreenState extends State<HomeScreen> {
         children: [
           CircularProgressIndicator(
             valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFD4A574)),
+            semanticsLabel: 'Cargando progreso',
           ),
           SizedBox(height: 16),
           Text(
@@ -133,42 +138,67 @@ class _HomeScreenState extends State<HomeScreen> {
               fontSize: 16,
               color: Color(0xFF666666),
             ),
+            semanticsLabel: 'Cargando tu progreso',
           ),
         ],
       ),
     );
   }
 
-  Widget _buildMainContent() {
-    if (_userProgress == null) {
-      return _buildErrorState();
-    }
 
-    return Column(
-      children: [
-        // Header
-        const AnimatedHeaderWidget(
-          title: 'Nativox',
-          subtitle: 'Preservando nuestras raíces',
-        ),
-        
-        // Streak Banner
-        StreakBannerWidget(
-          streakDays: _userProgress!.streakDays,
-          isActive: _userProgress!.isStreakActive,
-          onTap: _onStreakBannerTapped,
-        ),
-        
-        // Progress Section
-        _buildProgressSection(),
-        
-        // Lesson Grid
-        Expanded(
-          child: _buildLessonGrid(),
-        ),
-      ],
-    );
+Widget _buildMainContent(int crossAxisCount, double screenHeight) {
+  if (_userProgress == null) {
+    return _buildErrorState();
   }
+
+  return LayoutBuilder(
+    builder: (context, constraints) {
+      return RefreshIndicator(
+        onRefresh: _loadData,
+        color: const Color(0xFFD4A574),
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              minHeight: constraints.maxHeight,
+            ),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  // Header
+                  const AnimatedHeaderWidget(
+                    title: 'Nativox',
+                    subtitle: 'Preservando nuestras raíces',
+                  ),
+
+                  // Streak Banner
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                    child: StreakBannerWidget(
+                      streakDays: _userProgress!.streakDays,
+                      isActive: _userProgress!.isStreakActive,
+                      onTap: _onStreakBannerTapped,
+                    ),
+                  ),
+
+                  // Progress Section
+                  _buildProgressSection(),
+
+                  // Lessons Grid
+                  _buildLessonGrid(crossAxisCount),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+    },
+  );
+}
+
+
 
   Widget _buildErrorState() {
     return Center(
@@ -179,6 +209,7 @@ class _HomeScreenState extends State<HomeScreen> {
             Icons.error_outline,
             size: 64,
             color: Color(0xFFD4A574),
+            semanticLabel: 'Error',
           ),
           const SizedBox(height: 16),
           const Text(
@@ -188,6 +219,7 @@ class _HomeScreenState extends State<HomeScreen> {
               fontWeight: FontWeight.w600,
               color: Color(0xFF2C2C2C),
             ),
+            semanticsLabel: 'Error al cargar los datos',
           ),
           const SizedBox(height: 8),
           const Text(
@@ -220,8 +252,12 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _buildProgressSection() {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 30),
+      padding: EdgeInsets.symmetric(
+        horizontal: MediaQuery.of(context).size.width * 0.05,
+        vertical: MediaQuery.of(context).size.height * 0.02,
+      ),
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
           const Text(
             'Tu progreso Actual',
@@ -230,54 +266,55 @@ class _HomeScreenState extends State<HomeScreen> {
               fontWeight: FontWeight.w600,
               color: Color(0xFF2C2C2C),
             ),
+            semanticsLabel: 'Tu progreso actual',
           ),
-          const SizedBox(height: 20),
-          
-          // Progress Circle
-          ProgressCircleWidget(
-            progress: _userProgress!.overallProgress,
-            percentage: _userProgress!.progressPercentage,
-            level: _userProgress!.currentLevel,
+          SizedBox(height: MediaQuery.of(context).size.height * 0.02),
+          SizedBox(
+            height: MediaQuery.of(context).size.height * 0.2, // Constrain height
+            child: ProgressCircleWidget(
+              progress: _userProgress!.overallProgress,
+              percentage: _userProgress!.progressPercentage,
+              level: _userProgress!.currentLevel,
+            ),
           ),
-          
-          const SizedBox(height: 20),
+          SizedBox(height: MediaQuery.of(context).size.height * 0.02),
           Text(
             'Siguiente: ${_userProgress!.nextLesson}',
             style: const TextStyle(
               fontSize: 16,
               color: Color(0xFF666666),
             ),
+            semanticsLabel: 'Siguiente lección: ${_userProgress!.nextLesson}',
           ),
         ],
       ),
     );
   }
-
-  Widget _buildLessonGrid() {
-    if (_lessons.isEmpty) {
-      return const Center(
+Widget _buildLessonGrid(int crossAxisCount) {
+  if (_lessons.isEmpty) {
+    return const Center(
+      child: Padding(
+        padding: EdgeInsets.symmetric(vertical: 32.0),
         child: Text(
           'No hay lecciones disponibles',
-          style: TextStyle(
-            fontSize: 16,
-            color: Color(0xFF666666),
-          ),
+          style: TextStyle(fontSize: 16, color: Color(0xFF666666)),
         ),
-      );
-    }
+      ),
+    );
+  }
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: RefreshIndicator(
-        onRefresh: _loadData,
-        color: const Color(0xFFD4A574),
-        child: GridView.builder(
-          physics: const AlwaysScrollableScrollPhysics(),
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 2,
+  return Padding(
+    padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+    child: LayoutBuilder(
+      builder: (context, constraints) {
+        return GridView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: crossAxisCount,
             childAspectRatio: 0.85,
-            crossAxisSpacing: 15,
-            mainAxisSpacing: 15,
+            crossAxisSpacing: 16,
+            mainAxisSpacing: 16,
           ),
           itemCount: _lessons.length,
           itemBuilder: (context, index) {
@@ -285,11 +322,14 @@ class _HomeScreenState extends State<HomeScreen> {
             return LessonCardWidget(
               lesson: lesson,
               onTap: () => _onLessonTapped(lesson),
-              shouldAnimate: index % 2 == 1, // Animar solo las tarjetas pares
+              shouldAnimate: true,
             );
           },
-        ),
-      ),
-    );
-  }
+        );
+      },
+    ),
+  );
+}
+
+  
 }

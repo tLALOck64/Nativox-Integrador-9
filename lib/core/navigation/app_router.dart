@@ -6,19 +6,19 @@ import 'package:integrador/core/navigation/guards/auth_guard.dart';
 import 'package:integrador/core/navigation/navigation_service.dart';
 import 'package:integrador/core/services/storage_service.dart';
 import 'package:integrador/core/layouts/main_layout.dart';
-import 'package:integrador/games/screen/lesson_detail_screen.dart';
-import 'package:integrador/games/screen/memorama_menu_screen.dart';
-import 'package:integrador/games/screen/traductor_screen.dart';
+import 'package:integrador/games/lecciones/screens/lesson_detail_screen.dart';
+import 'package:integrador/games/practicas/screen/memorama_menu_screen.dart';
+import 'package:integrador/games/practicas/screen/traductor_screen.dart';
 import 'package:integrador/login/presentation/screens/login_activity.dart';
 import 'package:integrador/register/presentation/screens/resgistration_screen.dart';
 import 'package:integrador/perfil/presentation/screens/profile_activity.dart';
 import 'package:integrador/screens/home_screen.dart';
-import 'package:integrador/screens/lesson_screen.dart';
-import 'package:integrador/screens/practice_screen.dart';
+import 'package:integrador/games/lecciones/lesson_screen.dart';
+import 'package:integrador/games/practicas/practice_screen.dart';
 
 class AppRouter {
   static final GoRouter _router = GoRouter(
-    initialLocation: '/practice',
+    initialLocation: '/lessons',
     navigatorKey: NavigationService.navigatorKey,
     routes: [
       // Rutas sin navbar
@@ -43,7 +43,6 @@ class AppRouter {
           final lessonId = state.pathParameters['lessonId']!;
           return LessonDetailScreen(lessonId: lessonId);
         },
-        redirect: AuthGuard.redirectIfNotAuthenticated,
       ),
 
       GoRoute(

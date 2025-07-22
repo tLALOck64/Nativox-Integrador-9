@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
-import '../models/lesson_model.dart';
-import '../services/lesson_service.dart';
-import '../widgets/lesson_stats_widget.dart';
-import '../widgets/level_section_widget.dart';
+import 'package:go_router/go_router.dart';
+import '../../models/lesson_model.dart';
+import '../../services/lesson_service.dart';
+import '../../widgets/lesson_stats_widget.dart';
+import '../../widgets/level_section_widget.dart';
 
 class LessonsScreen extends StatefulWidget {
   const LessonsScreen({super.key});
@@ -98,7 +99,7 @@ class _LessonsScreenState extends State<LessonsScreen> {
     // );
     
     // O usando GoRouter:
-    // context.push('/lessons/${lesson.id}');
+     context.push('/lessons/${lesson.id}');
   }
 
   void _onStatsBoxTapped() {

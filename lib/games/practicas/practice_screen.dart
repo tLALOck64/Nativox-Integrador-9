@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import '../models/practice_mode_model.dart';
-import '../services/practice_service.dart';
+import '../../models/practice_mode_model.dart';
+import '../../services/practice_service.dart';
 
 class PracticeScreen extends StatefulWidget {
   const PracticeScreen({super.key});

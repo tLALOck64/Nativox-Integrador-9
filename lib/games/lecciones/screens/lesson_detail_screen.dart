@@ -1,10 +1,10 @@
 // games/screens/lesson_detail_screen.dart
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:integrador/games/models/lesson_detail_model.dart';
-import 'package:integrador/games/screen/completion_exercise_screen.dart';
-import 'package:integrador/games/screen/selection_exercis_screen.dart';
-import 'package:integrador/games/services/lesson_detail_service.dart';
+import 'package:integrador/games/lecciones/models/lesson_detail_model.dart';
+import 'package:integrador/games/lecciones/screens/completion_exercise_screen.dart';
+import 'package:integrador/games/lecciones/screens/selection_exercis_screen.dart';
+import 'package:integrador/games/lecciones/services/lesson_detail_service.dart';
 
 class LessonDetailScreen extends StatefulWidget {
   final String lessonId;
