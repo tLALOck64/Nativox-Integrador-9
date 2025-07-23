@@ -36,7 +36,7 @@ class LessonService {
 
       // Llamar a la API
       final response = await http.get(
-        Uri.parse('http://localhost:3001/api/lecciones/lecciones'),
+        Uri.parse('/lecciones/lecciones'),
         headers: _headers,
       ).timeout(const Duration(seconds: 30));
 
