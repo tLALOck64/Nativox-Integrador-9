@@ -24,7 +24,7 @@ class LessonService {
   // ✅ OBTENER TODAS LAS LECCIONES (SOLO API)
   Future<List<LessonModel>> getAllLessons() async {
     try {
-      print('� Loading data from API...');
+      print('🔄 Loading data from API...');
 
       // Verificar cache
       if (_cachedLessons != null && 
@@ -453,7 +453,7 @@ class LessonService {
     final fallbackLessons = [
       LessonModel(
         id: 'test-1',
-        icon: '�',
+        icon: '👋',
         title: 'Saludos en Zapoteco',
         subtitle: 'Aprende saludos básicos',
         difficulty: 'Fácil',
@@ -481,7 +481,7 @@ class LessonService {
       ),
       LessonModel(
         id: 'test-3',
-        icon: '�',
+        icon: '🔢',
         title: 'Números en Zapoteco',
         subtitle: 'Cuenta del 1 al 10',
         difficulty: 'Fácil',

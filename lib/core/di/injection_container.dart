@@ -41,7 +41,16 @@ import 'package:integrador/login/data/datasource/firebase_auth_datasource.dart';
 
 final GetIt sl = GetIt.instance;
 
+bool _isInitialized = false;
+
 Future<void> initializeDependencies() async {
+  if (_isInitialized) {
+    print('⚠️ DI: Dependencies already initialized, skipping...');
+    return;
+  }
+
+  print('🔧 DI: Starting dependency initialization...');
+
   // External
   sl.registerLazySingleton(() => Connectivity());
   sl.registerLazySingleton(() => FirebaseAuth.instance);
@@ -59,7 +68,7 @@ Future<void> initializeDependencies() async {
   // ✅ LOGIN FEATURE - CORREGIDO
   sl.registerLazySingleton<AuthDataSource>(() {
     print('🎯 DI: Registering AuthDataSourceImpl (API + Firebase hybrid)');
-    return AuthDataSourceImpl(sl(), sl()); // ← CAMBIO CRÍTICO
+    return AuthDataSourceImpl(sl(), sl());
   });
 
   sl.registerLazySingleton<AuthRepository>(() {
@@ -104,7 +113,6 @@ Future<void> initializeDependencies() async {
     );
   });
 
-  // PROFILE FEATURE
   sl.registerLazySingleton<ProfileDataSource>(() => LocalProfileDataSource());
 
   sl.registerLazySingleton<ProfileRepository>(
@@ -112,7 +120,7 @@ Future<void> initializeDependencies() async {
       sl(),
       sl<NetworkInfo>(),
       sl<CacheService>(),
-      sl<StorageService>() as StorageService,
+      sl<StorageService>(),
     ),
   );
 
@@ -157,7 +165,7 @@ Future<void> initializeDependencies() async {
     ),
   );
 
-  // ✅ NUEVO: Logging de inicialización
+  _isInitialized = true;
   print('🎯 DI: All dependencies initialized successfully');
   print(
     '🎯 DI: AuthDataSource -> AuthDataSourceImpl (API for email, Firebase for Google)',
@@ -185,4 +193,11 @@ void verifyDependencies() {
   } catch (e) {
     print('❌ DI Verification failed: $e');
   }
+}
+
+// Función para resetear el estado de inicialización (útil para testing)
+void resetDependencies() {
+  _isInitialized = false;
+  sl.reset();
+  print('🔄 DI: Dependencies reset');
 }

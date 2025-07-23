@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:integrador/core/error/failure.dart';
+import 'package:integrador/core/services/secure_storage_service.dart'
+    as secure_storage;
 import '../models/lessons_models.dart';
 
 abstract class LessonRemoteDataSource {
@@ -11,29 +13,35 @@ abstract class LessonRemoteDataSource {
 }
 
 class LessonRemoteDataSourceImpl implements LessonRemoteDataSource {
-  static const String _baseUrl = 'https://a3pl892azf.execute-api.us-east-1.amazonaws.com/micro-learning/api_learning';
+  static const String _baseUrl =
+      'https://a3pl892azf.execute-api.us-east-1.amazonaws.com/micro-learning/api_learning';
   final http.Client client;
-
   LessonRemoteDataSourceImpl({required this.client});
 
   Map<String, String> get _headers => {
     'Content-Type': 'application/json',
     'Accept': 'application/json',
-    'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NTI5MzkzNTEsImlhdCI6MTc1Mjg1Mjk1MX0.mIiEGSmpBT_CeiCaggltvgSrobjX7bqceidJVTCr1zo'
   };
 
   @override
   Future<List<LessonModel>> getAllLessons() async {
     try {
-      final response = await client.get(
-        Uri.parse('http://localhost:3001/api/lecciones/lecciones'),
-        headers: _headers,
-      ).timeout(const Duration(seconds: 30));
+      final storage = secure_storage.SecureStorageService();
+      final token = await storage.getToken();
 
+      final headers = Map<String, String>.from(_headers);
+      headers['Authorization'] = 'Bearer $token';
+      if (token == null || token.isEmpty) {
+        throw Exception('Token no encontrado');
+      }
+      final response = await client
+          .get(Uri.parse('$_baseUrl/lecciones/lecciones'), headers: _headers)
+          .timeout(const Duration(seconds: 30));
+      print(response.statusCode);
       if (response.statusCode == 200) {
         final Map<String, dynamic> decoded = json.decode(response.body);
         final List<dynamic> jsonList = decoded['data'];
-
+        print(jsonList);
         return jsonList
             .map((json) => LessonModel.fromJson(json as Map<String, dynamic>))
             .toList();
@@ -51,10 +59,9 @@ class LessonRemoteDataSourceImpl implements LessonRemoteDataSource {
   @override
   Future<LessonModel> getLessonById(String id) async {
     try {
-      final response = await client.get(
-        Uri.parse('$_baseUrl/lecciones/$id'),
-        headers: _headers,
-      ).timeout(const Duration(seconds: 15));
+      final response = await client
+          .get(Uri.parse('$_baseUrl/lecciones/$id'), headers: _headers)
+          .timeout(const Duration(seconds: 15));
 
       if (response.statusCode == 200) {
         final Map<String, dynamic> json = jsonDecode(response.body);
@@ -73,11 +80,13 @@ class LessonRemoteDataSourceImpl implements LessonRemoteDataSource {
   @override
   Future<void> updateLessonProgress(String lessonId, int progress) async {
     try {
-      final response = await client.put(
-        Uri.parse('$_baseUrl/lecciones/$lessonId/progress'),
-        headers: _headers,
-        body: json.encode({'progress': progress}),
-      ).timeout(const Duration(seconds: 15));
+      final response = await client
+          .put(
+            Uri.parse('$_baseUrl/lecciones/$lessonId/progress'),
+            headers: _headers,
+            body: json.encode({'progress': progress}),
+          )
+          .timeout(const Duration(seconds: 15));
 
       if (response.statusCode != 200) {
         throw NetworkFailure.serverError(response.statusCode);
@@ -91,10 +100,12 @@ class LessonRemoteDataSourceImpl implements LessonRemoteDataSource {
   @override
   Future<void> completeLesson(String lessonId) async {
     try {
-      final response = await client.post(
-        Uri.parse('$_baseUrl/lecciones/$lessonId/complete'),
-        headers: _headers,
-      ).timeout(const Duration(seconds: 15));
+      final response = await client
+          .post(
+            Uri.parse('$_baseUrl/lecciones/$lessonId/complete'),
+            headers: _headers,
+          )
+          .timeout(const Duration(seconds: 15));
 
       if (response.statusCode != 200) {
         throw NetworkFailure.serverError(response.statusCode);

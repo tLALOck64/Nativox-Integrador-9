@@ -1,4 +1,3 @@
-// screens/traductor_screen.dart
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
@@ -185,8 +184,30 @@ class _TraductorScreenState extends State<TraductorScreen>
     }
   }
 
+  // Función para obtener el ícono según el idioma
+  IconData _getLanguageIcon(String? languageCode) {
+    switch (languageCode) {
+      case 'es':
+        return Icons.language;
+      case 'tseltal':
+        return Icons.nature_people;
+      case 'zapoteco':
+        return Icons.forest;
+      case 'maya':
+        return Icons.temple_hindu;
+      case 'nahuatl':
+        return Icons.landscape;
+      default:
+        return Icons.translate;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final isWide = MediaQuery.of(context).size.width > 700;
+    final isLandscape = MediaQuery.of(context).orientation == Orientation.landscape;
+    final maxContentWidth = 1200.0;
+    
     return Scaffold(
       body: Container(
         decoration: const BoxDecoration(
@@ -199,18 +220,20 @@ class _TraductorScreenState extends State<TraductorScreen>
         child: SafeArea(
           child: Column(
             children: [
-              _buildHeader(),
+              _buildHeader(isWide),
               Expanded(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.all(20),
-                  child: Column(
-                    children: [
-                      _buildLanguageSelector(),
-                      const SizedBox(height: 24),
-                      _buildInputCard(),
-                      const SizedBox(height: 20),
-                      _buildOutputCard(),
-                    ],
+                child: Center(
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(maxWidth: maxContentWidth),
+                    child: SingleChildScrollView(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: isWide ? 40 : 20,
+                        vertical: 20,
+                      ),
+                      child: isLandscape && isWide
+                          ? _buildLandscapeLayout(isWide)
+                          : _buildPortraitLayout(isWide),
+                    ),
                   ),
                 ),
               ),
@@ -221,9 +244,41 @@ class _TraductorScreenState extends State<TraductorScreen>
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildLandscapeLayout(bool isWide) {
+    return Column(
+      children: [
+        _buildLanguageSelector(isWide),
+        const SizedBox(height: 24),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(child: _buildInputCard(isWide)),
+            const SizedBox(width: 20),
+            Expanded(child: _buildOutputCard(isWide)),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildPortraitLayout(bool isWide) {
+    return Column(
+      children: [
+        _buildLanguageSelector(isWide),
+        const SizedBox(height: 24),
+        _buildInputCard(isWide),
+        const SizedBox(height: 20),
+        _buildOutputCard(isWide),
+      ],
+    );
+  }
+
+  Widget _buildHeader(bool isWide) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+      padding: EdgeInsets.symmetric(
+        horizontal: isWide ? 40 : 20, 
+        vertical: isWide ? 20 : 15,
+      ),
       decoration: const BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
@@ -234,8 +289,8 @@ class _TraductorScreenState extends State<TraductorScreen>
       child: Row(
         children: [
           Container(
-            width: 40,
-            height: 40,
+            width: isWide ? 48 : 40,
+            height: isWide ? 48 : 40,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               color: Colors.white.withOpacity(0.2),
@@ -246,44 +301,44 @@ class _TraductorScreenState extends State<TraductorScreen>
               child: InkWell(
                 customBorder: const CircleBorder(),
                 onTap: () => context.pop(),
-                child: const Icon(
+                child: Icon(
                   Icons.arrow_back,
                   color: Colors.white,
-                  size: 20,
+                  size: isWide ? 24 : 20,
                 ),
               ),
             ),
           ),
-          const Expanded(
+          Expanded(
             child: Column(
               children: [
                 Text(
                   'Traductor',
                   style: TextStyle(
-                    fontSize: 20,
+                    fontSize: isWide ? 24 : 20,
                     fontWeight: FontWeight.w600,
                     color: Colors.white,
                     letterSpacing: 0.5,
                   ),
                 ),
-                SizedBox(height: 4),
+                SizedBox(height: isWide ? 6 : 4),
                 Text(
                   'Traduce entre idiomas nativos',
                   style: TextStyle(
-                    fontSize: 14,
+                    fontSize: isWide ? 16 : 14,
                     color: Colors.white70,
                   ),
                 ),
               ],
             ),
           ),
-          const SizedBox(width: 40),
+          SizedBox(width: isWide ? 48 : 40),
         ],
       ),
     );
   }
 
-  Widget _buildLanguageSelector() {
+  Widget _buildLanguageSelector(bool isWide) {
     return Container(
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
@@ -303,6 +358,7 @@ class _TraductorScreenState extends State<TraductorScreen>
             child: _buildLanguageButton(
               language: _sourceLanguage,
               onTap: () => _showLanguageSelector(isSource: true),
+              isWide: isWide,
             ),
           ),
           Container(
@@ -319,12 +375,12 @@ class _TraductorScreenState extends State<TraductorScreen>
               child: InkWell(
                 borderRadius: BorderRadius.circular(12),
                 onTap: _swapLanguages,
-                child: const Padding(
-                  padding: EdgeInsets.all(12),
+                child: Padding(
+                  padding: EdgeInsets.all(isWide ? 14 : 12),
                   child: Icon(
                     Icons.swap_horiz,
                     color: Colors.white,
-                    size: 20,
+                    size: isWide ? 24 : 20,
                   ),
                 ),
               ),
@@ -334,6 +390,7 @@ class _TraductorScreenState extends State<TraductorScreen>
             child: _buildLanguageButton(
               language: _targetLanguage,
               onTap: () => _showLanguageSelector(isSource: false),
+              isWide: isWide,
             ),
           ),
         ],
@@ -344,6 +401,7 @@ class _TraductorScreenState extends State<TraductorScreen>
   Widget _buildLanguageButton({
     required LanguageModel? language,
     required VoidCallback onTap,
+    required bool isWide,
   }) {
     return Material(
       color: Colors.transparent,
@@ -352,22 +410,26 @@ class _TraductorScreenState extends State<TraductorScreen>
         borderRadius: BorderRadius.circular(12),
         onTap: onTap,
         child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
+          padding: EdgeInsets.symmetric(
+            vertical: isWide ? 18 : 16, 
+            horizontal: isWide ? 16 : 12,
+          ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text(
-                language?.flag ?? '🌐',
-                style: const TextStyle(fontSize: 18),
+              Icon(
+                _getLanguageIcon(language?.code),
+                color: const Color(0xFFB8956A),
+                size: isWide ? 22 : 18,
               ),
               const SizedBox(width: 8),
               Flexible(
                 child: Text(
                   language?.name ?? 'Seleccionar',
-                  style: const TextStyle(
-                    fontSize: 14,
+                  style: TextStyle(
+                    fontSize: isWide ? 16 : 14,
                     fontWeight: FontWeight.w500,
-                    color: Color(0xFF2C2C2C),
+                    color: const Color(0xFF2C2C2C),
                   ),
                   textAlign: TextAlign.center,
                 ),
@@ -375,7 +437,7 @@ class _TraductorScreenState extends State<TraductorScreen>
               const SizedBox(width: 4),
               Icon(
                 Icons.keyboard_arrow_down,
-                size: 16,
+                size: isWide ? 18 : 16,
                 color: Colors.grey[600],
               ),
             ],
@@ -385,7 +447,7 @@ class _TraductorScreenState extends State<TraductorScreen>
     );
   }
 
-  Widget _buildInputCard() {
+  Widget _buildInputCard(bool isWide) {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -402,20 +464,21 @@ class _TraductorScreenState extends State<TraductorScreen>
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
-            padding: const EdgeInsets.all(20),
+            padding: EdgeInsets.all(isWide ? 24 : 20),
             child: Row(
               children: [
-                Text(
-                  _sourceLanguage?.flag ?? '🌐',
-                  style: const TextStyle(fontSize: 20),
+                Icon(
+                  _getLanguageIcon(_sourceLanguage?.code),
+                  color: const Color(0xFFB8956A),
+                  size: isWide ? 24 : 20,
                 ),
                 const SizedBox(width: 8),
                 Text(
                   _sourceLanguage?.name ?? 'Idioma origen',
-                  style: const TextStyle(
-                    fontSize: 14,
+                  style: TextStyle(
+                    fontSize: isWide ? 16 : 14,
                     fontWeight: FontWeight.w500,
-                    color: Color(0xFF666666),
+                    color: const Color(0xFF666666),
                   ),
                 ),
                 const Spacer(),
@@ -430,7 +493,7 @@ class _TraductorScreenState extends State<TraductorScreen>
                         padding: const EdgeInsets.all(4),
                         child: Icon(
                           Icons.clear,
-                          size: 20,
+                          size: isWide ? 22 : 20,
                           color: Colors.grey[600],
                         ),
                       ),
@@ -440,32 +503,32 @@ class _TraductorScreenState extends State<TraductorScreen>
             ),
           ),
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
+            padding: EdgeInsets.symmetric(horizontal: isWide ? 24 : 20),
             child: TextField(
               controller: _inputController,
               focusNode: _inputFocusNode,
-              maxLines: 4,
-              minLines: 3,
+              maxLines: isWide ? 5 : 4,
+              minLines: isWide ? 4 : 3,
               maxLength: 100,
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 hintText: 'Escribe aquí para traducir...',
                 border: InputBorder.none,
                 hintStyle: TextStyle(
-                  color: Color(0xFF999999),
-                  fontSize: 16,
+                  color: const Color(0xFF999999),
+                  fontSize: isWide ? 18 : 16,
                 ),
                 counterText: '',
               ),
-              style: const TextStyle(
-                fontSize: 16,
+              style: TextStyle(
+                fontSize: isWide ? 18 : 16,
                 height: 1.5,
-                color: Color(0xFF2C2C2C),
+                color: const Color(0xFF2C2C2C),
               ),
             ),
           ),
           if (_inputController.text.isNotEmpty)
             Padding(
-              padding: const EdgeInsets.all(20),
+              padding: EdgeInsets.all(isWide ? 24 : 20),
               child: Row(
                 children: [
                   Material(
@@ -478,7 +541,7 @@ class _TraductorScreenState extends State<TraductorScreen>
                         padding: const EdgeInsets.all(8),
                         child: Icon(
                           Icons.copy,
-                          size: 20,
+                          size: isWide ? 22 : 20,
                           color: Colors.grey[600],
                         ),
                       ),
@@ -489,7 +552,7 @@ class _TraductorScreenState extends State<TraductorScreen>
                     '${_inputController.text.length}/100',
                     style: TextStyle(
                       color: Colors.grey[500],
-                      fontSize: 12,
+                      fontSize: isWide ? 14 : 12,
                     ),
                   ),
                 ],
@@ -500,7 +563,7 @@ class _TraductorScreenState extends State<TraductorScreen>
     );
   }
 
-  Widget _buildOutputCard() {
+  Widget _buildOutputCard(bool isWide) {
     if (_inputController.text.isEmpty) return const SizedBox.shrink();
 
     return AnimatedBuilder(
@@ -527,20 +590,21 @@ class _TraductorScreenState extends State<TraductorScreen>
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Padding(
-                    padding: const EdgeInsets.all(20),
+                    padding: EdgeInsets.all(isWide ? 24 : 20),
                     child: Row(
                       children: [
-                        Text(
-                          _targetLanguage?.flag ?? '🌐',
-                          style: const TextStyle(fontSize: 20),
+                        Icon(
+                          _getLanguageIcon(_targetLanguage?.code),
+                          color: const Color(0xFFB8956A),
+                          size: isWide ? 24 : 20,
                         ),
                         const SizedBox(width: 8),
                         Text(
                           _targetLanguage?.name ?? 'Idioma destino',
-                          style: const TextStyle(
-                            fontSize: 14,
+                          style: TextStyle(
+                            fontSize: isWide ? 16 : 14,
                             fontWeight: FontWeight.w500,
-                            color: Color(0xFF666666),
+                            color: const Color(0xFF666666),
                           ),
                         ),
                         const Spacer(),
@@ -555,7 +619,7 @@ class _TraductorScreenState extends State<TraductorScreen>
                                 padding: const EdgeInsets.all(8),
                                 child: Icon(
                                   Icons.copy,
-                                  size: 20,
+                                  size: isWide ? 22 : 20,
                                   color: Colors.grey[600],
                                 ),
                               ),
@@ -565,14 +629,14 @@ class _TraductorScreenState extends State<TraductorScreen>
                     ),
                   ),
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    padding: EdgeInsets.symmetric(horizontal: isWide ? 24 : 20),
                     child: Container(
                       width: double.infinity,
-                      constraints: const BoxConstraints(minHeight: 80),
-                      child: _buildTranslationContent(),
+                      constraints: BoxConstraints(minHeight: isWide ? 100 : 80),
+                      child: _buildTranslationContent(isWide),
                     ),
                   ),
-                  const SizedBox(height: 20),
+                  SizedBox(height: isWide ? 24 : 20),
                 ],
               ),
             ),
@@ -582,13 +646,14 @@ class _TraductorScreenState extends State<TraductorScreen>
     );
   }
 
-  Widget _buildTranslationContent() {
+  Widget _buildTranslationContent(bool isWide) {
     if (_isLoading) {
-      return const Center(
+      return Center(
         child: Padding(
-          padding: EdgeInsets.all(20),
+          padding: EdgeInsets.all(isWide ? 24 : 20),
           child: CircularProgressIndicator(
-            valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFD4A574)),
+            valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFFD4A574)),
+            strokeWidth: isWide ? 3 : 2,
           ),
         ),
       );
@@ -596,20 +661,20 @@ class _TraductorScreenState extends State<TraductorScreen>
 
     if (_hasError) {
       return Padding(
-        padding: const EdgeInsets.all(20),
+        padding: EdgeInsets.all(isWide ? 24 : 20),
         child: Column(
           children: [
-            const Icon(
+            Icon(
               Icons.error_outline,
               color: Colors.red,
-              size: 40,
+              size: isWide ? 48 : 40,
             ),
-            const SizedBox(height: 12),
+            SizedBox(height: isWide ? 16 : 12),
             Text(
               _errorMessage,
-              style: const TextStyle(
+              style: TextStyle(
                 color: Colors.red,
-                fontSize: 14,
+                fontSize: isWide ? 16 : 14,
               ),
               textAlign: TextAlign.center,
             ),
@@ -624,20 +689,20 @@ class _TraductorScreenState extends State<TraductorScreen>
         children: [
           Text(
             _currentTranslation!.traduccion,
-            style: const TextStyle(
-              fontSize: 18,
+            style: TextStyle(
+              fontSize: isWide ? 20 : 18,
               height: 1.5,
               fontWeight: FontWeight.w500,
-              color: Color(0xFF2C2C2C),
+              color: const Color(0xFF2C2C2C),
             ),
           ),
           if (_currentTranslation!.match != _currentTranslation!.entrada)
             Padding(
-              padding: const EdgeInsets.only(top: 8),
+              padding: EdgeInsets.only(top: isWide ? 12 : 8),
               child: Text(
                 'Coincidencia: ${_currentTranslation!.match}',
                 style: TextStyle(
-                  fontSize: 12,
+                  fontSize: isWide ? 14 : 12,
                   color: Colors.grey[600],
                   fontStyle: FontStyle.italic,
                 ),
@@ -651,6 +716,8 @@ class _TraductorScreenState extends State<TraductorScreen>
   }
 
   Widget _buildLanguageSelectorModal() {
+    final isWide = MediaQuery.of(context).size.width > 700;
+    
     return Container(
       height: MediaQuery.of(context).size.height * 0.6,
       decoration: const BoxDecoration(
@@ -663,7 +730,10 @@ class _TraductorScreenState extends State<TraductorScreen>
           Container(
             width: 40,
             height: 4,
-            margin: const EdgeInsets.only(top: 12, bottom: 20),
+            margin: EdgeInsets.only(
+              top: isWide ? 16 : 12, 
+              bottom: isWide ? 24 : 20,
+            ),
             decoration: BoxDecoration(
               color: Colors.grey.shade300,
               borderRadius: BorderRadius.circular(2),
@@ -671,29 +741,29 @@ class _TraductorScreenState extends State<TraductorScreen>
           ),
           
           // Title
-          const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 20),
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: isWide ? 32 : 20),
             child: Text(
               'Seleccionar idioma',
               style: TextStyle(
-                fontSize: 18,
+                fontSize: isWide ? 20 : 18,
                 fontWeight: FontWeight.w600,
-                color: Color(0xFF2C2C2C),
+                color: const Color(0xFF2C2C2C),
               ),
             ),
           ),
           
-          const SizedBox(height: 20),
+          SizedBox(height: isWide ? 24 : 20),
           
           // Language list
           Expanded(
             child: ListView.builder(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
+              padding: EdgeInsets.symmetric(horizontal: isWide ? 32 : 20),
               itemCount: _languages.length,
               itemBuilder: (context, index) {
                 final language = _languages[index];
                 return Container(
-                  margin: const EdgeInsets.only(bottom: 8),
+                  margin: EdgeInsets.only(bottom: isWide ? 12 : 8),
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(color: Colors.grey.shade200),
@@ -705,20 +775,21 @@ class _TraductorScreenState extends State<TraductorScreen>
                       borderRadius: BorderRadius.circular(12),
                       onTap: () => Navigator.of(context).pop(language),
                       child: Padding(
-                        padding: const EdgeInsets.all(16),
+                        padding: EdgeInsets.all(isWide ? 20 : 16),
                         child: Row(
                           children: [
-                            Text(
-                              language.flag,
-                              style: const TextStyle(fontSize: 24),
+                            Icon(
+                              _getLanguageIcon(language.code),
+                              color: const Color(0xFFB8956A),
+                              size: isWide ? 28 : 24,
                             ),
-                            const SizedBox(width: 16),
+                            SizedBox(width: isWide ? 20 : 16),
                             Text(
                               language.name,
-                              style: const TextStyle(
-                                fontSize: 16,
+                              style: TextStyle(
+                                fontSize: isWide ? 18 : 16,
                                 fontWeight: FontWeight.w500,
-                                color: Color(0xFF2C2C2C),
+                                color: const Color(0xFF2C2C2C),
                               ),
                             ),
                             const Spacer(),
@@ -726,13 +797,13 @@ class _TraductorScreenState extends State<TraductorScreen>
                               Icon(
                                 Icons.check_circle,
                                 color: Colors.green[600],
-                                size: 20,
+                                size: isWide ? 24 : 20,
                               )
                             else
                               Icon(
                                 Icons.schedule,
                                 color: Colors.orange[600],
-                                size: 20,
+                                size: isWide ? 24 : 20,
                               ),
                           ],
                         ),
@@ -744,7 +815,7 @@ class _TraductorScreenState extends State<TraductorScreen>
             ),
           ),
           
-          const SizedBox(height: 20),
+          SizedBox(height: isWide ? 24 : 20),
         ],
       ),
     );
