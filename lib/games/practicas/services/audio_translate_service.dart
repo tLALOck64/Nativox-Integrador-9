@@ -1,10 +1,10 @@
-import 'package:speech_to_text/speech_to_text.dart';
+// import 'package:speech_to_text/speech_to_text.dart'; // Temporarily commented out due to v1 embedding issues
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:flutter/foundation.dart'; // Para kIsWeb
 
 class AudioTranslatorService {
-  final SpeechToText _speech = SpeechToText();
+  // final SpeechToText _speech = SpeechToText(); // Temporarily commented out
   final FlutterTts _tts = FlutterTts();
   
   bool _isInitialized = false;
@@ -21,76 +21,14 @@ class AudioTranslatorService {
     try {
       print('🎤 Iniciando AudioTranslatorService...');
       print('🌐 Plataforma:  [1m${kIsWeb ? "Web" : "Móvil"} [0m');
-
-      // Manejar permisos según la plataforma
-      if (!kIsWeb) {
-        print('📱 Solicitando permisos de micrófono en móvil...');
-        final microphoneStatus = await Permission.microphone.request();
-        print('🔐 Estado de permisos: $microphoneStatus');
-        
-        if (microphoneStatus != PermissionStatus.granted) {
-          throw Exception('Permisos de micrófono denegados');
-        }
-      } else {
-        print('🌐 En web - los permisos se solicitan automáticamente por el navegador al presionar el botón de grabar.');
-      }
-
-      // Verificar disponibilidad antes de inicializar
-      print('🔍 Verificando disponibilidad de Speech-to-Text...');
-      
-      // Inicializar Speech to Text con reintentos
-      bool speechAvailable = false;
-      int intentos = 0;
-      const maxIntentos = 3;
-      
-      while (!speechAvailable && intentos < maxIntentos) {
-        intentos++;
-        print('🔄 Intento $intentos de $maxIntentos...');
-        
-        try {
-          speechAvailable = await _speech.initialize(
-            onStatus: _onSpeechStatus,
-            onError: _onSpeechError,
-            debugLogging: true, // Activar logs para debug
-          );
-          
-          if (speechAvailable) {
-            print('✅ Speech-to-Text inicializado correctamente');
-            break;
-          } else {
-            print('❌ Speech-to-Text no disponible en intento $intentos');
-            if (intentos < maxIntentos) {
-              await Future.delayed(Duration(milliseconds: 500));
-            }
-          }
-        } catch (e) {
-          print('💥 Error en intento $intentos: $e');
-          if (intentos < maxIntentos) {
-            await Future.delayed(Duration(milliseconds: 500));
-          }
-        }
-      }
-
-      if (!speechAvailable) {
-        // Información de diagnóstico
-        await _diagnosticarProblema();
-        if (kIsWeb) {
-          throw Exception('Speech-to-Text no está disponible en este navegador. Prueba con Google Chrome en escritorio y asegúrate de usar HTTPS o localhost.');
-        } else {
-          throw Exception('Speech-to-Text no está disponible en este dispositivo.');
-        }
-      }
+      print('⚠️ Speech-to-Text temporalmente deshabilitado debido a problemas de compatibilidad');
 
       // Configurar Text to Speech
       print('🔊 Configurando Text-to-Speech...');
       await _configureTTS();
 
-      // Verificar idiomas disponibles
-      print('🌍 Verificando idiomas disponibles...');
-      await _checkAvailableLanguages();
-
       _isInitialized = true;
-      print('🎉 AudioTranslatorService inicializado correctamente');
+      print('🎉 AudioTranslatorService inicializado correctamente (solo TTS)');
       return true;
       
     } catch (e) {
@@ -98,40 +36,6 @@ class AudioTranslatorService {
       _isInitialized = false;
       return false;
     }
-  }
-
-  /// Diagnostica problemas de inicialización
-  Future<void> _diagnosticarProblema() async {
-    print('🔍 === DIAGNÓSTICO DE PROBLEMAS ===');
-    
-    try {
-      // Verificar si el dispositivo tiene micrófono
-      print('🎤 Verificando disponibilidad de micrófono...');
-      
-      if (kIsWeb) {
-        print('🌐 Plataforma: Web');
-        print('🔗 URL actual: ${Uri.base}');
-        print('🔒 Protocolo seguro (HTTPS): ${Uri.base.scheme == 'https' || Uri.base.host == 'localhost'}');
-        
-        // En web, verificar si getUserMedia está disponible
-        print('📱 Navigator.mediaDevices disponible: disponible (no se puede verificar desde Dart)');
-      } else {
-        print('📱 Plataforma: Móvil (Android/iOS)');
-        
-        // Verificar permisos en móvil
-        final status = await Permission.microphone.status;
-        print('🔐 Estado actual de permisos: $status');
-      }
-      
-      // Verificar disponibilidad básica
-      final available = _speech.isAvailable;
-      print('🎯 Speech instance disponible: $available');
-      
-    } catch (e) {
-      print('💥 Error en diagnóstico: $e');
-    }
-    
-    print('=== FIN DIAGNÓSTICO ===');
   }
 
   /// Configura el servicio de Text-to-Speech
@@ -170,133 +74,18 @@ class AudioTranslatorService {
     }
   }
 
-  /// Verifica y muestra los idiomas disponibles para STT
-  Future<void> _checkAvailableLanguages() async {
-    try {
-      List<LocaleName> locales = await _speech.locales();
-      
-      print('=== IDIOMAS DISPONIBLES PARA SPEECH-TO-TEXT ===');
-      
-      // Buscar idiomas zapoteco
-      final zapotecoLocales = locales.where((locale) =>
-        locale.localeId.toLowerCase().contains('zap') ||
-        locale.name.toLowerCase().contains('zapotec') ||
-        locale.localeId.toLowerCase().contains('ztu')
-      ).toList();
-      
-      if (zapotecoLocales.isNotEmpty) {
-        print('Idiomas zapoteco encontrados:');
-        for (var locale in zapotecoLocales) {
-          print('  ${locale.localeId}: ${locale.name}');
-        }
-      } else {
-        print('No se encontraron idiomas zapoteco específicos');
-        print('Usando reconocimiento genérico...');
-      }
-      
-      // Mostrar algunos idiomas disponibles para debug
-      print('Otros idiomas disponibles (primeros 10):');
-      for (int i = 0; i < locales.length && i < 10; i++) {
-        print('  ${locales[i].localeId}: ${locales[i].name}');
-      }
-      
-    } catch (e) {
-      print('Error verificando idiomas: $e');
-    }
-  }
-
-  /// Inicia la escucha de audio
+  /// Inicia la escucha de audio (temporalmente deshabilitado)
   Future<void> startListening({
     required Function(String) onResult,
     required Function(String) onTranslation,
     required Function(String) onError,
   }) async {
-    if (!_isInitialized) {
-      onError('Servicio no inicializado');
-      return;
-    }
-
-    if (_isListening) {
-      onError('Ya se está escuchando');
-      return;
-    }
-
-    // Guardar callbacks
-    _onResult = onResult;
-    _onTranslation = onTranslation;
-    _onError = onError;
-
-    try {
-      _isListening = true;
-      _lastRecognizedText = '';
-
-      await _speech.listen(
-        onResult: _onSpeechResult,
-        listenFor: const Duration(seconds: 30), // Máximo 30 segundos
-        pauseFor: const Duration(seconds: 3), // Pausa de 3 segundos
-        partialResults: true, // Mostrar resultados parciales
-        cancelOnError: true,
-        listenMode: ListenMode.confirmation,
-        
-        // Intentar usar zapoteco, si no está disponible usar genérico
-        localeId: await _getBestZapotecoLocale(),
-      );
-      
-    } catch (e) {
-      _isListening = false;
-      onError('Error al iniciar escucha: $e');
-    }
+    onError('Speech-to-Text temporalmente deshabilitado. Actualiza las dependencias para habilitarlo.');
   }
 
-  /// Obtiene el mejor código de idioma zapoteco disponible
-  Future<String> _getBestZapotecoLocale() async {
-    try {
-      List<LocaleName> locales = await _speech.locales();
-      
-      // Lista de códigos zapoteco para probar (en orden de preferencia)
-      final zapotecoCodes = [
-        'zap-MX', // Zapoteco mexicano
-        'zap',    // Zapoteco genérico
-        'ztu-MX', // Zapoteco de Güilá
-        'ztu',    // Zapoteco de Güilá genérico
-      ];
-      
-      // Buscar el primer código disponible
-      for (String code in zapotecoCodes) {
-        if (locales.any((locale) => locale.localeId == code)) {
-          print('Usando idioma zapoteco: $code');
-          return code;
-        }
-      }
-      
-      // Si no encuentra zapoteco específico, usar español como fallback
-      // para que al menos funcione el reconocimiento
-      print('No se encontró zapoteco específico, usando es-MX como fallback');
-      return 'es-MX';
-      
-    } catch (e) {
-      print('Error obteniendo idioma zapoteco: $e');
-      return 'es-MX'; // Fallback seguro
-    }
-  }
-
-  /// Detiene la escucha de audio
+  /// Detiene la escucha de audio (temporalmente deshabilitado)
   Future<void> stopListening() async {
-    if (!_isListening) return;
-
-    try {
-      await _speech.stop();
-      _isListening = false;
-      
-      // Si hay texto reconocido, procesarlo
-      if (_lastRecognizedText.isNotEmpty) {
-        await _processZapotecoText(_lastRecognizedText);
-      }
-      
-    } catch (e) {
-      _isListening = false;
-      _onError?.call('Error al detener escucha: $e');
-    }
+    print('Speech-to-Text temporalmente deshabilitado');
   }
 
   /// Procesa el texto en zapoteco y lo traduce
@@ -322,33 +111,6 @@ class AudioTranslatorService {
       print('Procesando con modelo: $zapotecoText');
       
       await Future.delayed(const Duration(milliseconds: 800)); // Simular procesamiento
-      
-      // TODO: Reemplazar esta simulación con tu modelo real
-      // Ejemplos de integración:
-      
-      // 1. Si tu modelo es una API REST:
-      /*
-      final response = await http.post(
-        Uri.parse('https://tu-api.com/translate'),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({'text': zapotecoText, 'from': 'zap', 'to': 'es'}),
-      );
-      final data = jsonDecode(response.body);
-      return data['translation'];
-      */
-      
-      // 2. Si tu modelo es local con TensorFlow Lite:
-      /*
-      final input = preprocessText(zapotecoText);
-      final output = await _interpreter.run(input);
-      return postprocessOutput(output);
-      */
-      
-      // 3. Si usas un servicio personalizado:
-      /*
-      final result = await YourModelService.translate(zapotecoText);
-      return result.translatedText;
-      */
       
       // SIMULACIÓN TEMPORAL - Quita esto cuando integres tu modelo
       if (zapotecoText.trim().isEmpty) {
@@ -406,42 +168,6 @@ class AudioTranslatorService {
     }
   }
 
-  /// Callback cuando cambia el estado del speech-to-text
-  void _onSpeechStatus(String status) {
-    print('Speech Status: $status');
-    
-    if (status == 'done' || status == 'notListening') {
-      _isListening = false;
-    }
-  }
-
-  /// Callback cuando hay error en speech-to-text
-  void _onSpeechError(dynamic error) {
-    print('Speech Error: $error');
-    _isListening = false;
-    _onError?.call('Error de reconocimiento: ${error.errorMsg ?? error.toString()}');
-  }
-
-  /// Callback cuando se obtienen resultados del speech-to-text
-  void _onSpeechResult(dynamic result) {
-    try {
-      final recognizedWords = result.recognizedWords ?? '';
-      _lastRecognizedText = recognizedWords;
-      
-      // Informar a la UI sobre el texto reconocido
-      _onResult?.call(recognizedWords);
-      
-      // Si es resultado final, procesar para traducción
-      if (result.finalResult && recognizedWords.isNotEmpty) {
-        _processZapotecoText(recognizedWords);
-      }
-      
-    } catch (e) {
-      print('Error procesando resultado de voz: $e');
-      _onError?.call('Error procesando resultado: $e');
-    }
-  }
-
   /// Verifica si el servicio está inicializado
   bool get isInitialized => _isInitialized;
   
@@ -455,24 +181,15 @@ class AudioTranslatorService {
   Future<Map<String, dynamic>> getDeviceCapabilities() async {
     try {
       final hasPermission = kIsWeb ? true : await Permission.microphone.isGranted;
-      final speechAvailable = await _speech.isAvailable;
-      final locales = await _speech.locales();
-      
-      final zapotecoLocales = locales.where((locale) =>
-        locale.localeId.toLowerCase().contains('zap') ||
-        locale.name.toLowerCase().contains('zapotec')
-      ).toList();
       
       return {
         'platform': kIsWeb ? 'web' : 'mobile',
         'hasMicrophonePermission': hasPermission,
-        'speechToTextAvailable': speechAvailable,
-        'totalLanguages': locales.length,
-        'zapotecoLanguagesCount': zapotecoLocales.length,
-        'zapotecoLanguages': zapotecoLocales.map((l) => {
-          'id': l.localeId,
-          'name': l.name,
-        }).toList(),
+        'speechToTextAvailable': false, // Temporalmente deshabilitado
+        'totalLanguages': 0,
+        'zapotecoLanguagesCount': 0,
+        'zapotecoLanguages': [],
+        'note': 'Speech-to-Text temporalmente deshabilitado debido a problemas de compatibilidad'
       };
     } catch (e) {
       return {
@@ -545,7 +262,7 @@ class AudioTranslatorService {
   /// Limpia recursos y estado
   void dispose() {
     try {
-      _speech.stop();
+      // _speech.stop(); // Temporalmente comentado
       _tts.stop();
       _isListening = false;
       _lastRecognizedText = '';
