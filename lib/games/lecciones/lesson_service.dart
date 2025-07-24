@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import '../models/lesson_model.dart';
+import 'package:integrador/core/services/secure_storage_service.dart';
+import './lesson_model.dart';
 
 class LessonService {
   static final LessonService _instance = LessonService._internal();
@@ -15,30 +16,37 @@ class LessonService {
   DateTime? _lastFetch;
   static const Duration _cacheValidDuration = Duration(minutes: 10);
 
-  // Headers comunes
-  Map<String, String> get _headers => {
-    'Content-Type': 'application/json',
-    'Accept': 'application/json',
-    'Authorization': 'Beare eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NTI5MzkzNTEsImlhdCI6MTc1Mjg1Mjk1MX0.mIiEGSmpBT_CeiCaggltvgSrobjX7bqceidJVTCr1zo'
-  };
+  // Headers dinámicos con token
+  Future<Map<String, String>> _getHeaders() async {
+    final token = await SecureStorageService().getToken();
+    print('🔑 Token: $token');
+    return {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+      'Authorization': 'Bearer ${token ?? ''}',
+    };
+  }
   // ✅ OBTENER TODAS LAS LECCIONES (SOLO API)
   Future<List<LessonModel>> getAllLessons() async {
-    try {
-      print('🔄 Loading data from API...');
+   try {
+    print('🔄 Loading data from API...');
 
-      // Verificar cache
-      if (_cachedLessons != null && 
-          _lastFetch != null && 
-          DateTime.now().difference(_lastFetch!) < _cacheValidDuration) {
-        print('📱 Using cached data');
-        return _applyProgressLogic(List.from(_cachedLessons!));
-      }
+    // Verificar cache
+    if (_cachedLessons != null && 
+        _lastFetch != null && 
+        DateTime.now().difference(_lastFetch!) < _cacheValidDuration) {
+      print('📱 Using cached data');
+      return _applyProgressLogic(List.from(_cachedLessons!));
+    }
 
-      // Llamar a la API
-      final response = await http.get(
-        Uri.parse('/lecciones/lecciones'),
-        headers: _headers,
-      ).timeout(const Duration(seconds: 30));
+    // Obtener headers con token actualizado
+    final headers = await _getHeaders();
+
+    // Llamar a la API
+    final response = await http.get(
+      Uri.parse('$_baseUrl/lecciones/lecciones'),
+      headers: headers,
+    ).timeout(const Duration(seconds: 30));
 
       if (response.statusCode == 200) {
         final Map<String, dynamic> decoded = json.decode(response.body);
@@ -142,22 +150,28 @@ class LessonService {
       );
     } catch (e) {
       print('Error fetching lesson by ID $id: $e');
-      
-      // Si falla, intentar llamada directa a API (si tienes endpoint específico)
+      // Si falla, intentar llamada directa a API (si tienes endpoint específico) para obtener la lección 
       try {
+        final headers = await _getHeaders();
         final response = await http.get(
-          Uri.parse('$_baseUrl/lecciones/$id'),
-          headers: _headers,
+          Uri.parse('$_baseUrl/lecciones/lecciones/$id'),
+          headers: headers,
         ).timeout(const Duration(seconds: 15));
 
         if (response.statusCode == 200) {
           final Map<String, dynamic> json = jsonDecode(response.body);
           return LessonModel.fromApiResponse(json);
+        } else if (response.statusCode == 401) {
+          print('🔑 Token inválido o expirado (401)');
+          print('Body: ${response.body}');
+          throw Exception('Token de autenticación inválido o expirado. Inicia sesión de nuevo.');
+        } else {
+          print('❌ Error HTTP: ${response.statusCode} - ${response.body}');
+          throw Exception('Error HTTP: ${response.statusCode}');
         }
       } catch (e) {
         print('Error fetching single lesson from API: $e');
       }
-      
       return null;
     }
   }
@@ -264,6 +278,83 @@ class LessonService {
         'averageProgress': 0.0,
         'completionRate': 0.0,
       };
+    }
+  }
+
+  /// Obtiene el progreso de una lección específica para un usuario
+  Future<double> getLessonProgressForUser({required String userId, required String lessonId}) async {
+    print('🔄 Loading lesson progress for user: $userId');
+    print('🔄 Loading lesson: $lessonId');
+    try {
+      final headers = await _getHeaders();
+      final url = '$_baseUrl/lecciones/usuarios/$userId/lecciones/$lessonId/progreso';
+      final response = await http.get(Uri.parse(url), headers: headers);
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> data = json.decode(response.body);
+        final double progress = (data['progreso'] ?? 0).toDouble();
+        // Actualizar en cache local si existe
+        if (_cachedLessons != null) {
+          final index = _cachedLessons!.indexWhere((l) => l.id == lessonId);
+          if (index != -1) {
+            final isCompleted = progress >= 1.0;
+            _cachedLessons![index] = _cachedLessons![index].copyWith(
+              progress: progress,
+              isCompleted: isCompleted,
+            );
+            // Desbloquear la siguiente lección si se completó
+            if (isCompleted && index + 1 < _cachedLessons!.length) {
+              _cachedLessons![index + 1] = _cachedLessons![index + 1].copyWith(isLocked: false);
+            }
+          }
+        }
+        return progress;
+      } else {
+        print('Error al obtener progreso: ${response.statusCode} - ${response.body}');
+        return 0.0;
+      }
+    } catch (e) {
+      print('Error al obtener progreso de lección: $e');
+      return 0.0;
+    }
+  }
+
+  /// Actualiza el progreso de una lección para un usuario (POST)
+  Future<bool> updateLessonProgressForUser({required String userId, required String lessonId, required double progress}) async {
+    try {
+      final headers = await _getHeaders();
+      print('userId: $userId');
+      print('lessonId: $lessonId');
+      print('progress: $progress');
+      final url = '$_baseUrl/lecciones/usuarios/$userId/lecciones/$lessonId/progreso/actualizar';
+      final response = await http.post(
+        Uri.parse(url),
+        headers: headers,
+        body: json.encode({'progreso': progress}),
+      );
+      if (response.statusCode == 200) {
+        // Actualizar en cache local si existe
+        if (_cachedLessons != null) {
+          final index = _cachedLessons!.indexWhere((l) => l.id == lessonId);
+          if (index != -1) {
+            final isCompleted = progress >= 1.0;
+            _cachedLessons![index] = _cachedLessons![index].copyWith(
+              progress: progress,
+              isCompleted: isCompleted,
+            );
+            // Desbloquear la siguiente lección si se completó
+            if (isCompleted && index + 1 < _cachedLessons!.length) {
+              _cachedLessons![index + 1] = _cachedLessons![index + 1].copyWith(isLocked: false);
+            }
+          }
+        }
+        return true;
+      } else {
+        print('Error al actualizar progreso: ${response.statusCode} - ${response.body}');
+        return false;
+      }
+    } catch (e) {
+      print('Error al actualizar progreso de lección: $e');
+      return false;
     }
   }
 
@@ -380,7 +471,7 @@ class LessonService {
     try {
       final response = await http.get(
         Uri.parse('$_baseUrl/lecciones'),
-        headers: _headers,
+        headers: await _getHeaders(),
       ).timeout(const Duration(seconds: 5));
       
       return response.statusCode == 200;

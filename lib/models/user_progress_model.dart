@@ -10,20 +10,28 @@ class UserProgressModel {
 
   UserProgressModel({
     required this.userId,
-    required this.overallProgress,
+    required double overallProgress,
     required this.currentLevel,
     required this.streakDays,
     required this.totalLessonsCompleted,
     required this.totalTimeSpent,
     required this.nextLesson,
     required this.lastActivity,
-  });
+  }) : overallProgress = (overallProgress.isNaN ? 0.0 : overallProgress.clamp(0.0, 1.0));
 
   // Factory constructor para crear desde JSON
   factory UserProgressModel.fromJson(Map<String, dynamic> json) {
+    double progress = 0.0;
+    try {
+      progress = json['overallProgress']?.toDouble() ?? 0.0;
+      if (progress.isNaN) progress = 0.0;
+      progress = progress.clamp(0.0, 1.0);
+    } catch (_) {
+      progress = 0.0;
+    }
     return UserProgressModel(
       userId: json['userId'],
-      overallProgress: json['overallProgress'].toDouble(),
+      overallProgress: progress,
       currentLevel: json['currentLevel'],
       streakDays: json['streakDays'],
       totalLessonsCompleted: json['totalLessonsCompleted'],

@@ -2,32 +2,52 @@ import 'package:integrador/perfil/data/datasource/profile_datasource.dart';
 import 'package:integrador/perfil/data/models/user_profile_model.dart';
 import 'package:integrador/perfil/data/models/achievement_model.dart';
 import 'package:integrador/perfil/domain/entities/sentting_item.dart';
+import 'package:integrador/core/services/secure_storage_service.dart';
 
 class LocalProfileDataSource implements ProfileDataSource {
   @override
   Future<UserProfileModel> getUserProfile() async {
-    await Future.delayed(const Duration(milliseconds: 500));
-    
+    final storage = SecureStorageService();
+    final userData = await storage.getUserData();
+    print('Datos del usuario obtenidos: $userData');
+    if (userData != null) {
+      // Adaptar los datos de UserModel a UserProfileModel
+      return UserProfileModel(
+        id: userData['id'] ?? userData['uid'] ?? '',
+        name: userData['displayName'] ?? userData['name'] ?? '',
+        title: 'Estudiante de zapoteco', // Valor por defecto
+        avatarUrl: userData['photoUrl'] ?? '',
+        level: 1, // Valor por defecto
+        activeDays: 0, // Valor por defecto
+        totalXP: 0, // Valor por defecto
+        badges: 0, // Valor por defecto
+        currentXP: 0, // Valor por defecto
+        nextLevelXP: 100, // Valor por defecto
+        vocabularyCount: 0, // Valor por defecto
+        vocabularyGoal: 200, // Valor por defecto
+      );
+    }
+    // Si no hay datos, retornar un modelo vacío o con valores por defecto
     return const UserProfileModel(
-      id: '1',
-      name: 'Andrea Isabella Trejo Morales',
-      title: 'Estudiante de zapoteco',
+      id: '',
+      name: '',
+      title: '',
       avatarUrl: '',
-      level: 0,
+      level: 1,
       activeDays: 0,
       totalXP: 0,
       badges: 0,
       currentXP: 0,
-      nextLevelXP: 0,
+      nextLevelXP: 100,
       vocabularyCount: 0,
-      vocabularyGoal: 0,
+      vocabularyGoal: 200,
     );
   }
 
   @override
   Future<List<AchievementModel>> getAchievements() async {
     await Future.delayed(const Duration(milliseconds: 300));
-    
+
     return const [
       AchievementModel(
         id: '1',
@@ -83,7 +103,7 @@ class LocalProfileDataSource implements ProfileDataSource {
   @override
   Future<List<SettingItem>> getSettings() async {
     await Future.delayed(const Duration(milliseconds: 200));
-    
+
     return const [
       SettingItem(
         id: '1',

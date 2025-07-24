@@ -1,10 +1,12 @@
 // games/screens/lesson_detail_screen.dart
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:integrador/games/lecciones/lesson_service.dart';
 import 'package:integrador/games/lecciones/models/lesson_detail_model.dart';
 import 'package:integrador/games/lecciones/screens/completion_exercise_screen.dart';
 import 'package:integrador/games/lecciones/screens/selection_exercis_screen.dart';
 import 'package:integrador/games/lecciones/services/lesson_detail_service.dart';
+import 'package:integrador/core/services/secure_storage_service.dart';
 
 class LessonDetailScreen extends StatefulWidget {
   final String lessonId;
@@ -28,13 +30,23 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
   int _currentExerciseIndex = 0;
   List<ExerciseResultModel> _results = [];
   
-  final String _usuarioId = 'e62539c6-bdcb-4ef2-bd93-9d7cc85fa630';
+  String? _usuarioId;
 
   @override
   void initState() {
     super.initState();
-    _loadLesson();
+    _initUserAndLoadLesson();
     print("llego a lesson detail screen con id: ${widget.lessonId}");
+  }
+
+  Future<void> _initUserAndLoadLesson() async {
+    // Obtener el usuarioId desde SecureStorageService
+    final userData = await SecureStorageService().getUserData();
+    setState(() {
+      _usuarioId = userData?['id'] ?? userData?['uid'] ?? '';
+      print('🔑 Usuario ID: $_usuarioId');
+    });
+    await _loadLesson();
   }
 
   Future<void> _loadLesson() async {
@@ -97,7 +109,7 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
       final success = await _service.resolverEjercicio(
         lessonId: widget.lessonId,
         ejercicioId: exercise.id,
-        usuarioId: _usuarioId,
+        usuarioId: _usuarioId ?? '',
         respuesta: answer,
       );
 
@@ -224,7 +236,17 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
 
     try {
       await _service.saveProgress(progress);
-      
+      // ACTUALIZAR PROGRESO GLOBAL Y DESBLOQUEAR SIGUIENTE LECCIÓN
+      final userData = await SecureStorageService().getUserData();
+      final userId = userData?['id'] ?? userData?['uid'] ?? '';
+      if (userId != null && userId.toString().isNotEmpty) {
+        // Llama al método global de LessonService
+        await LessonService().updateLessonProgressForUser(
+          userId: userId,
+          lessonId: widget.lessonId,
+          progress: 1.0,
+        );
+      }
       if (mounted) {
         showDialog(
           context: context,

@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../models/lesson_detail_model.dart';
+import 'package:integrador/core/services/secure_storage_service.dart';
 
 class LessonDetailService {
   static final LessonDetailService _instance = LessonDetailService._internal();
@@ -21,6 +22,17 @@ class LessonDetailService {
     'Accept': 'application/json',
   };
 
+  // Headers dinámicos con token
+  Future<Map<String, String>> _getHeaders() async {
+    final token = await SecureStorageService().getToken();
+    print('Token usado en Authorization: $token');
+    return {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+      'Authorization': 'Bearer ${token ?? ''}',
+    };
+  }
+
   // ✅ OBTENER LECCIÓN POR ID DESDE TU API
   Future<LessonDetailModel?> getLessonById(String lessonId) async {
     try {
@@ -33,11 +45,11 @@ class LessonDetailService {
       }
 
       print('🌐 Fetching lesson from API: $lessonId');
-      
-      // Llamar a tu API específica
+      final headers = await _getHeaders();
+      print('Headers: $headers');
       final response = await http.get(
         Uri.parse('$_baseUrl/lecciones/lecciones/$lessonId'),
-        headers: _headers,
+        headers: headers,
       ).timeout(const Duration(seconds: 30));
 
       if (response.statusCode == 200) {
@@ -137,14 +149,15 @@ class LessonDetailService {
   }) async {
     try {
       print('📤 Enviando respuesta del ejercicio: $ejercicioId');
-      
+      final headers = await _getHeaders();
       final response = await http.post(
         Uri.parse('$_baseUrl/lecciones/lecciones/$lessonId/ejercicios/resolver'),
-        headers: _headers,
+        headers: headers,
         body: json.encode({
           'usuarioId': usuarioId,
           'ejercicioId': ejercicioId,
           'respuesta': respuesta.toString(),
+          'tiempoRespuesta': 0, // No incluir tiempoRespuesta como pediste
           // No incluir tiempoRespuesta como pediste
         }),
       ).timeout(const Duration(seconds: 15));
@@ -212,9 +225,10 @@ class LessonDetailService {
   // ✅ VERIFICAR CONECTIVIDAD
   Future<bool> checkApiConnectivity() async {
     try {
+      final headers = await _getHeaders();
       final response = await http.get(
         Uri.parse('$_baseUrl/lecciones'),
-        headers: _headers,
+        headers: headers,
       ).timeout(const Duration(seconds: 5));
       
       return response.statusCode == 200;

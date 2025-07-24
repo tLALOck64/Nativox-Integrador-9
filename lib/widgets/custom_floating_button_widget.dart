@@ -129,7 +129,7 @@ class _CustomFloatingButtonWidgetState extends State<CustomFloatingButtonWidget>
           child: Transform.scale(
             scale: _slideAnimation.value * _scaleAnimation.value,
             child: Opacity(
-              opacity: _slideAnimation.value,
+              opacity: _slideAnimation.value.isNaN ? 1.0 : _slideAnimation.value.clamp(0.0, 1.0),
               child: Container(
                 width: 60,
                 height: 60,
