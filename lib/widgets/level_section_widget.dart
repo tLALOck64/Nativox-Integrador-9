@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../models/lesson_model.dart';
+import 'package:integrador/games/lecciones/lesson_model.dart';
 import 'lesson_list_item_widget.dart';
 
 class LevelSectionWidget extends StatelessWidget {

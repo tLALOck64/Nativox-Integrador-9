@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../models/lesson_model.dart';
+import 'package:integrador/games/lecciones/lesson_model.dart';
 
 class LessonCardWidget extends StatefulWidget {
   final LessonModel lesson;
@@ -60,8 +60,10 @@ class _LessonCardWidgetState extends State<LessonCardWidget>
         animation: widget.shouldAnimate ? _pulseAnimation : const AlwaysStoppedAnimation(1.0),
         builder: (context, child) {
           return Opacity(
-            // Aseguramos que la opacidad esté siempre en rango válido
-            opacity: widget.shouldAnimate ? _pulseAnimation.value.clamp(0.0, 1.0) : 1.0,
+            // Aseguramos que la opacidad esté siempre en rango válido y nunca sea NaN
+            opacity: widget.shouldAnimate
+                ? (_pulseAnimation.value.isNaN ? 1.0 : _pulseAnimation.value.clamp(0.0, 1.0))
+                : 1.0,
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 200),
               transform: Matrix4.identity()..scale(_isPressed ? 0.95 : 1.0),

@@ -25,6 +25,16 @@ class UserModel {
     );
   }
 
+  // Nuevo: crear UserModel desde la respuesta del API de login
+  factory UserModel.fromFirebaseApiJson(Map<String, dynamic> json) {
+    return UserModel(
+      id: json['uid'] ?? json['id'] ?? '',
+      email: json['email'] ?? '',
+      displayName: json['displayName'] ?? '',
+      photoUrl: json['photoUrl'] ?? '', // Puede que no venga, dejar string vacío
+    );
+  }
+
   // Convertir a entidad de dominio
   domain.User toEntity() {
     return domain.User(
@@ -33,6 +43,16 @@ class UserModel {
       displayName: displayName,
       photoUrl: photoUrl,
     );
+  }
+
+  // Convertir a JSON para almacenamiento
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'email': email,
+      'displayName': displayName,
+      'photoUrl': photoUrl,
+    };
   }
 
   @override

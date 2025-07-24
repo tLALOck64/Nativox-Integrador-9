@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../models/lesson_model.dart';
+import 'package:integrador/games/lecciones/lesson_model.dart';
 
 class LessonListItemWidget extends StatefulWidget {
   final LessonModel lesson;
@@ -244,7 +244,7 @@ class _LessonListItemWidgetState extends State<LessonListItemWidget>
                                   ),
                                   child: FractionallySizedBox(
                                     alignment: Alignment.centerLeft,
-                                    widthFactor: widget.lesson.progress,
+                                    widthFactor: widget.lesson.progress.clamp(0.0, 1.0),
                                     child: Container(
                                       decoration: BoxDecoration(
                                         gradient: widget.lesson.isLocked

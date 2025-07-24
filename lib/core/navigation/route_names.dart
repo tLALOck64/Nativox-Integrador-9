@@ -22,4 +22,6 @@ class RouteNames {
 
   //route games
   static const String game = '/memorama';
+  static const String audioTranslate = '/audio-translate';
+  static const String cuentos = '/cuentos';
 }

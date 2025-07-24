@@ -9,6 +9,7 @@ import 'package:integrador/core/services/notifications_service.dart';
 import 'package:integrador/core/services/fcm_service.dart';
 import 'package:integrador/core/navigation/app_router.dart';
 import 'package:integrador/core/config/platform_config.dart';
+import 'package:integrador/core/config/app_theme.dart';
 import 'package:integrador/login/presentation/viewmodels/login_viewmodel.dart';
 import 'package:integrador/register/presentation/viewmodels/registration_viewmodel.dart';
 import 'package:integrador/perfil/presentation/viewmodels/profile_viewmodel.dart';
@@ -115,14 +116,9 @@ class MyApp extends StatelessWidget {
       ],
       child: MaterialApp.router(
         title: 'Nativox',
+        theme: AppTheme.lightTheme,
         debugShowCheckedModeBanner: false,
         routerConfig: AppRouter.router,
-        theme: ThemeData(
-          primarySwatch: Colors.orange,
-          fontFamily: 'SF Pro Display',
-          colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFFD4A574)),
-          useMaterial3: true,
-        ),
       ),
     );
   }

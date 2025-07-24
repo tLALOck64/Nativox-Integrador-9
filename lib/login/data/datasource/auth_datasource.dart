@@ -155,6 +155,9 @@ class AuthDataSourceImpl implements AuthDataSource {
 
         // Guardar el token de la API en almacenamiento seguro
         await SecureStorageService().saveToken(firebaseResponse.data.token);
+        await SecureStorageService().saveUserData(
+          firebaseResponse.data.user.toJson(),
+        );
 
         // Crear UserModel desde la respuesta de Firebase API
         final userModel = UserModel(
