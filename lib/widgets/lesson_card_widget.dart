@@ -55,6 +55,10 @@ class _LessonCardWidgetState extends State<LessonCardWidget>
 
   @override
   Widget build(BuildContext context) {
+    // Obtener el tamaño de la pantalla para hacer el widget responsive
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isSmallScreen = screenWidth < 360;
+    
     try {
       return AnimatedBuilder(
         animation: widget.shouldAnimate ? _pulseAnimation : const AlwaysStoppedAnimation(1.0),
@@ -125,14 +129,14 @@ class _LessonCardWidgetState extends State<LessonCardWidget>
                         
                         // Main content
                         Padding(
-                          padding: const EdgeInsets.all(20),
+                          padding: EdgeInsets.all(isSmallScreen ? 12 : 20),
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               // Icon
                               Container(
-                                width: 50,
-                                height: 50,
+                                width: isSmallScreen ? 40 : 50,
+                                height: isSmallScreen ? 40 : 50,
                                 decoration: BoxDecoration(
                                   shape: BoxShape.circle,
                                   gradient: widget.lesson.isLocked
@@ -148,48 +152,56 @@ class _LessonCardWidgetState extends State<LessonCardWidget>
                                 ),
                                 child: Center(
                                   child: widget.lesson.isLocked
-                                      ? const Icon(
+                                      ? Icon(
                                           Icons.lock,
                                           color: Colors.white,
-                                          size: 24,
+                                          size: isSmallScreen ? 20 : 24,
                                         )
                                       : Text(
                                           widget.lesson.icon,
-                                          style: const TextStyle(fontSize: 24),
+                                          style: TextStyle(fontSize: isSmallScreen ? 20 : 24),
                                         ),
                                 ),
                               ),
                               
-                              const SizedBox(height: 15),
+                              SizedBox(height: isSmallScreen ? 10 : 15),
                               
                               // Title
-                              Text(
-                                widget.lesson.title,
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w600,
-                                  color: widget.lesson.isLocked 
-                                      ? Colors.grey 
-                                      : const Color(0xFF2C2C2C),
+                              Flexible(
+                                child: Text(
+                                  widget.lesson.title,
+                                  style: TextStyle(
+                                    fontSize: isSmallScreen ? 14 : 16,
+                                    fontWeight: FontWeight.w600,
+                                    color: widget.lesson.isLocked 
+                                        ? Colors.grey 
+                                        : const Color(0xFF2C2C2C),
+                                  ),
+                                  textAlign: TextAlign.center,
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
                                 ),
-                                textAlign: TextAlign.center,
                               ),
                               
-                              const SizedBox(height: 8),
+                              SizedBox(height: isSmallScreen ? 6 : 8),
                               
                               // Subtitle
-                              Text(
-                                widget.lesson.subtitle,
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: widget.lesson.isLocked 
-                                      ? Colors.grey.withOpacity(0.7)
-                                      : const Color(0xFF888888),
+                              Flexible(
+                                child: Text(
+                                  widget.lesson.subtitle,
+                                  style: TextStyle(
+                                    fontSize: isSmallScreen ? 10 : 12,
+                                    color: widget.lesson.isLocked 
+                                        ? Colors.grey.withOpacity(0.7)
+                                        : const Color(0xFF888888),
+                                  ),
+                                  textAlign: TextAlign.center,
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
                                 ),
-                                textAlign: TextAlign.center,
                               ),
                               
-                              const SizedBox(height: 15),
+                              SizedBox(height: isSmallScreen ? 10 : 15),
                               
                               // Progress bar
                               Container(
@@ -262,7 +274,6 @@ class _LessonCardWidgetState extends State<LessonCardWidget>
               color: Colors.black.withOpacity(0.08),
               blurRadius: 20,
               offset: const Offset(0, 4),
-         
             )
           ],
         ),

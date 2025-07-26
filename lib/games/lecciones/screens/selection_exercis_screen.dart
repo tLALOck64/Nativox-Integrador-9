@@ -90,89 +90,91 @@ class _SelectionExerciseScreenState extends State<SelectionExerciseScreen>
       position: _slideAnimation,
       child: FadeTransition(
         opacity: _fadeAnimation,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Tipo de ejercicio
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [Color(0xFF4A90E2), Color(0xFF357ABD)],
-                ),
-                borderRadius: BorderRadius.circular(20),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.blue.withOpacity(0.3),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
+        child: SingleChildScrollView(
+          physics: const BouncingScrollPhysics(),
+          padding: const EdgeInsets.only(bottom: 20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Tipo de ejercicio
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF4A90E2), Color(0xFF357ABD)],
                   ),
-                ],
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Icon(Icons.quiz, color: Colors.white, size: 16),
-                  const SizedBox(width: 8),
-                  Text(
-                    'SELECCIÓN MÚLTIPLE',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: 0.5,
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.blue.withOpacity(0.3),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
                     ),
-                  ),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 24),
-
-            // Progreso
-            _buildProgressIndicator(),
-
-            const SizedBox(height: 32),
-
-            // Imagen si existe
-            if (widget.exercise.contenido.imagenes.isNotEmpty)
-              _buildExerciseImage(),
-
-            const SizedBox(height: 24),
-
-            // Pregunta
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
-                    blurRadius: 10,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
-              ),
-              child: Text(
-                widget.exercise.enunciado,
-                style: const TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.w600,
-                  color: Color(0xFF2C2C2C),
-                  height: 1.4,
+                  ],
                 ),
-                textAlign: TextAlign.center,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.quiz, color: Colors.white, size: 16),
+                    const SizedBox(width: 8),
+                    Text(
+                      'SELECCIÓN MÚLTIPLE',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ),
 
-            const SizedBox(height: 32),
+              const SizedBox(height: 24),
 
-            // Opciones
-            Expanded(
-              child: _buildAnswerOptions(),
-            ),
-          ],
+              // Progreso
+              _buildProgressIndicator(),
+
+              const SizedBox(height: 32),
+
+              // Imagen si existe
+              if (widget.exercise.contenido.imagenes.isNotEmpty)
+                _buildExerciseImage(),
+
+              const SizedBox(height: 24),
+
+              // Pregunta
+              Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.05),
+                      blurRadius: 10,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: Text(
+                  widget.exercise.enunciado,
+                  style: const TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF2C2C2C),
+                    height: 1.4,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+
+              const SizedBox(height: 32),
+
+              // Opciones
+              _buildAnswerOptions(),
+            ],
+          ),
         ),
       ),
     );
@@ -267,102 +269,103 @@ class _SelectionExerciseScreenState extends State<SelectionExerciseScreen>
   }
 
   Widget _buildAnswerOptions() {
-    return ListView.separated(
-      padding: EdgeInsets.zero,
-      itemCount: widget.exercise.contenido.opciones.length,
-      separatorBuilder: (context, index) => const SizedBox(height: 16),
-      itemBuilder: (context, index) {
-        final option = widget.exercise.contenido.opciones[index];
+    return Column(
+      children: widget.exercise.contenido.opciones.asMap().entries.map((entry) {
+        final index = entry.key;
+        final option = entry.value;
         final isSelected = _selectedAnswer == option;
         final isDisabled = widget.isSubmitting || _selectedAnswer != null;
 
-        return TweenAnimationBuilder<double>(
-          duration: Duration(milliseconds: 200 + (index * 100)),
-          tween: Tween(begin: 0.0, end: 1.0),
-          builder: (context, value, child) {
-            return Transform.translate(
-              offset: Offset(0, 20 * (1 - value)),
-              child: Opacity(
-                opacity: value,
-                child: child,
-              ),
-            );
-          },
-          child: GestureDetector(
-            onTap: isDisabled ? null : () => _selectAnswer(option),
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: isSelected 
-                  ? const Color(0xFF4A90E2).withOpacity(0.1)
-                  : Colors.white,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(
-                  color: isSelected 
-                    ? const Color(0xFF4A90E2)
-                    : Colors.grey[300]!,
-                  width: isSelected ? 2 : 1,
+        return Padding(
+          padding: EdgeInsets.only(bottom: index < widget.exercise.contenido.opciones.length - 1 ? 16 : 0),
+          child: TweenAnimationBuilder<double>(
+            duration: Duration(milliseconds: 200 + (index * 100)),
+            tween: Tween(begin: 0.0, end: 1.0),
+            builder: (context, value, child) {
+              return Transform.translate(
+                offset: Offset(0, 20 * (1 - value)),
+                child: Opacity(
+                  opacity: value,
+                  child: child,
                 ),
-                boxShadow: [
-                  BoxShadow(
+              );
+            },
+            child: GestureDetector(
+              onTap: isDisabled ? null : () => _selectAnswer(option),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: isSelected 
+                    ? const Color(0xFF4A90E2).withOpacity(0.1)
+                    : Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
                     color: isSelected 
-                      ? const Color(0xFF4A90E2).withOpacity(0.2)
-                      : Colors.black.withOpacity(0.03),
-                    blurRadius: isSelected ? 12 : 6,
-                    offset: const Offset(0, 2),
+                      ? const Color(0xFF4A90E2)
+                      : Colors.grey[300]!,
+                    width: isSelected ? 2 : 1,
                   ),
-                ],
-              ),
-              child: Row(
-                children: [
-                  Container(
-                    width: 24,
-                    height: 24,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: isSelected 
-                          ? const Color(0xFF4A90E2)
-                          : Colors.grey[400]!,
-                        width: 2,
-                      ),
+                  boxShadow: [
+                    BoxShadow(
                       color: isSelected 
-                        ? const Color(0xFF4A90E2)
-                        : Colors.transparent,
+                        ? const Color(0xFF4A90E2).withOpacity(0.2)
+                        : Colors.black.withOpacity(0.03),
+                      blurRadius: isSelected ? 12 : 6,
+                      offset: const Offset(0, 2),
                     ),
-                    child: isSelected
-                      ? const Icon(Icons.check, color: Colors.white, size: 16)
-                      : null,
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Text(
-                      option,
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                  ],
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 24,
+                      height: 24,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: isSelected 
+                            ? const Color(0xFF4A90E2)
+                            : Colors.grey[400]!,
+                          width: 2,
+                        ),
                         color: isSelected 
                           ? const Color(0xFF4A90E2)
-                          : const Color(0xFF2C2C2C),
+                          : Colors.transparent,
+                      ),
+                      child: isSelected
+                        ? const Icon(Icons.check, color: Colors.white, size: 16)
+                        : null,
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Text(
+                        option,
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                          color: isSelected 
+                            ? const Color(0xFF4A90E2)
+                            : const Color(0xFF2C2C2C),
+                        ),
                       ),
                     ),
-                  ),
-                  if (widget.isSubmitting && isSelected)
-                    const SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF4A90E2)),
+                    if (widget.isSubmitting && isSelected)
+                      const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF4A90E2)),
+                        ),
                       ),
-                    ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),
         );
-      },
+      }).toList(),
     );
   }
 }

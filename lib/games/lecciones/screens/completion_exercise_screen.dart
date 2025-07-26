@@ -91,100 +91,102 @@ class _CompletionExerciseScreenState extends State<CompletionExerciseScreen>
   Widget build(BuildContext context) {
     return SlideTransition(
       position: _slideAnimation,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Tipo de ejercicio
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [Color(0xFF50C878), Color(0xFF228B22)],
-              ),
-              borderRadius: BorderRadius.circular(20),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.green.withOpacity(0.3),
-                  blurRadius: 8,
-                  offset: const Offset(0, 2),
+      child: SingleChildScrollView(
+        physics: const BouncingScrollPhysics(),
+        padding: const EdgeInsets.only(bottom: 20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Tipo de ejercicio
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [Color(0xFF50C878), Color(0xFF228B22)],
                 ),
-              ],
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Icon(Icons.edit, color: Colors.white, size: 16),
-                const SizedBox(width: 8),
-                Text(
-                  'COMPLETAR FRASE',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: 0.5,
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.green.withOpacity(0.3),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
                   ),
-                ),
-              ],
-            ),
-          ),
-
-          const SizedBox(height: 24),
-
-          // Progreso
-          _buildProgressIndicator(),
-
-          const SizedBox(height: 32),
-
-          // Imagen si existe
-          if (widget.exercise.contenido.imagenes.isNotEmpty)
-            _buildExerciseImage(),
-
-          const SizedBox(height: 24),
-
-          // Instrucción
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: const Color(0xFF50C878).withOpacity(0.1),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(
-                color: const Color(0xFF50C878).withOpacity(0.3),
+                ],
               ),
-            ),
-            child: Row(
-              children: [
-                Icon(
-                  Icons.lightbulb_outline,
-                  color: const Color(0xFF50C878),
-                  size: 20,
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    'Selecciona la palabra correcta para completar la frase',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: const Color(0xFF50C878),
-                      fontWeight: FontWeight.w500,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.edit, color: Colors.white, size: 16),
+                  const SizedBox(width: 8),
+                  Text(
+                    'COMPLETAR FRASE',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 0.5,
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
 
-          const SizedBox(height: 24),
+            const SizedBox(height: 24),
 
-          // Frase con espacio en blanco
-          _buildCompletionSentence(),
+            // Progreso
+            _buildProgressIndicator(),
 
-          const SizedBox(height: 32),
+            const SizedBox(height: 32),
 
-          // Opciones como chips
-          Expanded(
-            child: _buildWordOptions(),
-          ),
-        ],
+            // Imagen si existe
+            if (widget.exercise.contenido.imagenes.isNotEmpty)
+              _buildExerciseImage(),
+
+            const SizedBox(height: 24),
+
+            // Instrucción
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: const Color(0xFF50C878).withOpacity(0.1),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: const Color(0xFF50C878).withOpacity(0.3),
+                ),
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.lightbulb_outline,
+                    color: const Color(0xFF50C878),
+                    size: 20,
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      'Selecciona la palabra correcta para completar la frase',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: const Color(0xFF50C878),
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 24),
+
+            // Frase con espacio en blanco
+            _buildCompletionSentence(),
+
+            const SizedBox(height: 32),
+
+            // Opciones como chips
+            _buildWordOptions(),
+          ],
+        ),
       ),
     );
   }
@@ -361,83 +363,81 @@ class _CompletionExerciseScreenState extends State<CompletionExerciseScreen>
           ),
         ),
         const SizedBox(height: 16),
-        Expanded(
-          child: Wrap(
-            spacing: 12,
-            runSpacing: 12,
-            children: _shuffledOptions.asMap().entries.map((entry) {
-              final index = entry.key;
-              final option = entry.value;
-              final isSelected = _selectedAnswer == option;
-              final isDisabled = widget.isSubmitting || _selectedAnswer != null;
+        Wrap(
+          spacing: 12,
+          runSpacing: 12,
+          children: _shuffledOptions.asMap().entries.map((entry) {
+            final index = entry.key;
+            final option = entry.value;
+            final isSelected = _selectedAnswer == option;
+            final isDisabled = widget.isSubmitting || _selectedAnswer != null;
 
-              return TweenAnimationBuilder<double>(
-                duration: Duration(milliseconds: 300 + (index * 150)),
-                tween: Tween(begin: 0.0, end: 1.0),
-                builder: (context, value, child) {
-                  return Transform.scale(
-                    scale: value,
-                    child: child,
-                  );
-                },
-                child: GestureDetector(
-                  onTap: isDisabled ? null : () => _selectAnswer(option),
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 300),
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-                    decoration: BoxDecoration(
-                      gradient: isSelected
-                        ? const LinearGradient(
-                            colors: [Color(0xFF50C878), Color(0xFF228B22)],
-                          )
-                        : null,
-                      color: isSelected ? null : Colors.white,
-                      borderRadius: BorderRadius.circular(25),
-                      border: Border.all(
+            return TweenAnimationBuilder<double>(
+              duration: Duration(milliseconds: 300 + (index * 150)),
+              tween: Tween(begin: 0.0, end: 1.0),
+              builder: (context, value, child) {
+                return Transform.scale(
+                  scale: value,
+                  child: child,
+                );
+              },
+              child: GestureDetector(
+                onTap: isDisabled ? null : () => _selectAnswer(option),
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 300),
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                  decoration: BoxDecoration(
+                    gradient: isSelected
+                      ? const LinearGradient(
+                          colors: [Color(0xFF50C878), Color(0xFF228B22)],
+                        )
+                      : null,
+                    color: isSelected ? null : Colors.white,
+                    borderRadius: BorderRadius.circular(25),
+                    border: Border.all(
+                      color: isSelected 
+                        ? Colors.transparent
+                        : const Color(0xFF50C878),
+                      width: 2,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
                         color: isSelected 
-                          ? Colors.transparent
-                          : const Color(0xFF50C878),
-                        width: 2,
+                          ? const Color(0xFF50C878).withOpacity(0.3)
+                          : Colors.black.withOpacity(0.05),
+                        blurRadius: isSelected ? 12 : 6,
+                        offset: const Offset(0, 2),
                       ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: isSelected 
-                            ? const Color(0xFF50C878).withOpacity(0.3)
-                            : Colors.black.withOpacity(0.05),
-                          blurRadius: isSelected ? 12 : 6,
-                          offset: const Offset(0, 2),
+                    ],
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        option,
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: isSelected ? Colors.white : const Color(0xFF50C878),
                         ),
-                      ],
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          option,
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                            color: isSelected ? Colors.white : const Color(0xFF50C878),
+                      ),
+                      if (widget.isSubmitting && isSelected) ...[
+                        const SizedBox(width: 12),
+                        const SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                           ),
                         ),
-                        if (widget.isSubmitting && isSelected) ...[
-                          const SizedBox(width: 12),
-                          const SizedBox(
-                            width: 16,
-                            height: 16,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                            ),
-                          ),
-                        ],
                       ],
-                    ),
+                    ],
                   ),
                 ),
-              );
-            }).toList(),
-          ),
+              ),
+            );
+          }).toList(),
         ),
       ],
     );

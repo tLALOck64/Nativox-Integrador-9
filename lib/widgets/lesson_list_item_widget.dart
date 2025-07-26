@@ -81,6 +81,9 @@ class _LessonListItemWidgetState extends State<LessonListItemWidget>
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isSmallScreen = screenWidth < 360;
+    
     return AnimatedBuilder(
       animation: _scaleAnimation,
       builder: (context, child) {
@@ -156,13 +159,13 @@ class _LessonListItemWidgetState extends State<LessonListItemWidget>
                     
                     // Main content
                     Padding(
-                      padding: const EdgeInsets.all(20),
+                      padding: EdgeInsets.all(isSmallScreen ? 16 : 20),
                       child: Row(
                         children: [
                           // Lesson Number
                           Container(
-                            width: 48,
-                            height: 48,
+                            width: isSmallScreen ? 40 : 48,
+                            height: isSmallScreen ? 40 : 48,
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
                               gradient: widget.lesson.isLocked
@@ -178,7 +181,7 @@ class _LessonListItemWidgetState extends State<LessonListItemWidget>
                               child: Text(
                                 widget.lesson.lessonNumber.toString(),
                                 style: TextStyle(
-                                  fontSize: 16,
+                                  fontSize: isSmallScreen ? 14 : 16,
                                   fontWeight: FontWeight.w600,
                                   color: _getLessonNumberTextColor(),
                                 ),
@@ -186,7 +189,7 @@ class _LessonListItemWidgetState extends State<LessonListItemWidget>
                             ),
                           ),
                           
-                          const SizedBox(width: 15),
+                          SizedBox(width: isSmallScreen ? 12 : 15),
                           
                           // Lesson Details
                           Expanded(
@@ -197,40 +200,76 @@ class _LessonListItemWidgetState extends State<LessonListItemWidget>
                                 Text(
                                   widget.lesson.title,
                                   style: TextStyle(
-                                    fontSize: 16,
+                                    fontSize: isSmallScreen ? 14 : 16,
                                     fontWeight: FontWeight.w600,
                                     color: widget.lesson.isLocked
                                         ? Colors.grey
                                         : const Color(0xFF2C2C2C),
                                   ),
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
                                 ),
                                 
                                 const SizedBox(height: 4),
                                 
-                                // Meta (duration and word count)
-                                Row(
-                                  children: [
-                                    Text(
-                                      widget.lesson.durationText,
-                                      style: TextStyle(
-                                        fontSize: 12,
-                                        color: widget.lesson.isLocked
-                                            ? Colors.grey
-                                            : const Color(0xFF888888),
+                                // Meta (duration and word count) - Responsive
+                                if (isSmallScreen)
+                                  // Layout vertical para pantallas pequeñas
+                                  Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        widget.lesson.durationText,
+                                        style: TextStyle(
+                                          fontSize: 11,
+                                          color: widget.lesson.isLocked
+                                              ? Colors.grey
+                                              : const Color(0xFF888888),
+                                        ),
                                       ),
-                                    ),
-                                    const SizedBox(width: 15),
-                                    Text(
-                                      widget.lesson.wordCountText,
-                                      style: TextStyle(
-                                        fontSize: 12,
-                                        color: widget.lesson.isLocked
-                                            ? Colors.grey
-                                            : const Color(0xFF888888),
+                                      const SizedBox(height: 2),
+                                      Text(
+                                        widget.lesson.wordCountText,
+                                        style: TextStyle(
+                                          fontSize: 11,
+                                          color: widget.lesson.isLocked
+                                              ? Colors.grey
+                                              : const Color(0xFF888888),
+                                        ),
                                       ),
-                                    ),
-                                  ],
-                                ),
+                                    ],
+                                  )
+                                else
+                                  // Layout horizontal para pantallas normales
+                                  Row(
+                                    children: [
+                                      Flexible(
+                                        child: Text(
+                                          widget.lesson.durationText,
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            color: widget.lesson.isLocked
+                                                ? Colors.grey
+                                                : const Color(0xFF888888),
+                                          ),
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 15),
+                                      Flexible(
+                                        child: Text(
+                                          widget.lesson.wordCountText,
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            color: widget.lesson.isLocked
+                                                ? Colors.grey
+                                                : const Color(0xFF888888),
+                                          ),
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
                                 
                                 const SizedBox(height: 8),
                                 
@@ -266,12 +305,12 @@ class _LessonListItemWidgetState extends State<LessonListItemWidget>
                             ),
                           ),
                           
-                          const SizedBox(width: 15),
+                          SizedBox(width: isSmallScreen ? 12 : 15),
                           
                           // Status Icon
                           Container(
-                            width: 32,
-                            height: 32,
+                            width: isSmallScreen ? 28 : 32,
+                            height: isSmallScreen ? 28 : 32,
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
                               color: widget.lesson.isLocked
@@ -283,7 +322,7 @@ class _LessonListItemWidgetState extends State<LessonListItemWidget>
                             child: Center(
                               child: Text(
                                 widget.lesson.statusIcon,
-                                style: const TextStyle(fontSize: 16),
+                                style: TextStyle(fontSize: isSmallScreen ? 14 : 16),
                               ),
                             ),
                           ),

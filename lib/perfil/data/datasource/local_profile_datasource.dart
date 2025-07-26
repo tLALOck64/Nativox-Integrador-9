@@ -123,11 +123,11 @@ class LocalProfileDataSource implements ProfileDataSource {
       ),
       SettingItem(
         id: '3',
-        title: 'Tema oscuro',
-        subtitle: 'Apariencia',
-        icon: '🌙',
+        title: 'Descargar diccionario',
+        subtitle: 'Descarga el diccionario para usar offline',
+        icon: '📥',
         hasNotification: false,
-        type: SettingType.theme,
+        type: SettingType.theme, // Mantener el tipo para no romper la lógica, pero se puede crear uno nuevo si se requiere acción distinta
       ),
       SettingItem(
         id: '4',
