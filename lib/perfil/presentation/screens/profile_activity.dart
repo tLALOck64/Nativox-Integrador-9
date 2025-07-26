@@ -600,7 +600,22 @@ class _ProfileActivityState extends State<ProfileActivity> with TickerProviderSt
   }
 
   Widget _buildMainContent(BuildContext context, ProfileViewModel viewModel, dynamic profile, Size screenSize, {bool isDesktop = false, bool isTablet = false}) {
-    final crossAxisCount = isDesktop ? 6 : isTablet ? 5 : 4;
+    // Calcular crossAxisCount dinámicamente basado en el ancho de pantalla
+    int crossAxisCount;
+    if (isDesktop) {
+      crossAxisCount = 6;
+    } else if (isTablet) {
+      crossAxisCount = 5;
+    } else {
+      // Para móviles, calcular basado en el ancho de pantalla
+      if (screenSize.width < 360) {
+        crossAxisCount = 2; // Dispositivos muy pequeños
+      } else if (screenSize.width < 480) {
+        crossAxisCount = 3; // Dispositivos pequeños
+      } else {
+        crossAxisCount = 4; // Dispositivos medianos
+      }
+    }
     
     if (isDesktop) {
       return Column(
@@ -1112,6 +1127,14 @@ class _AchievementItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isSmallScreen = screenWidth < 360;
+    
+    // Calcular tamaños dinámicamente
+    final iconSize = isLarge ? 52.0 : (isSmallScreen ? 36.0 : 44.0);
+    final fontSize = isLarge ? 13.0 : (isSmallScreen ? 9.0 : 11.0);
+    final padding = isLarge ? 16.0 : (isSmallScreen ? 8.0 : 12.0);
+    
     return AnimatedContainer(
       duration: const Duration(milliseconds: 300),
       decoration: BoxDecoration(
@@ -1140,14 +1163,14 @@ class _AchievementItem extends StatelessWidget {
           borderRadius: BorderRadius.circular(18),
           onTap: achievement.isUnlocked ? () {} : null,
           child: Container(
-            padding: EdgeInsets.all(isLarge ? 16 : 12),
+            padding: EdgeInsets.all(padding),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 // Icono del achievement
                 Container(
-                  width: isLarge ? 52 : 44,
-                  height: isLarge ? 52 : 44,
+                  width: iconSize,
+                  height: iconSize,
                   decoration: BoxDecoration(
                     color: achievement.isUnlocked
                       ? _ProfileActivityState._primaryColor.withOpacity(0.1)
@@ -1171,26 +1194,28 @@ class _AchievementItem extends StatelessWidget {
                     child: Text(
                       achievement.icon,
                       style: TextStyle(
-                        fontSize: isLarge ? 22 : 18,
+                        fontSize: iconSize * 0.5,
                       ),
                     ),
                   ),
                 ),
-                SizedBox(height: isLarge ? 12 : 8),
+                SizedBox(height: padding * 0.5),
                 // Título
-                Text(
-                  achievement.title,
-                  style: TextStyle(
-                    fontSize: isLarge ? 13 : 11,
-                    fontWeight: FontWeight.w600,
-                    color: achievement.isUnlocked 
-                      ? _ProfileActivityState._textPrimary
-                      : _ProfileActivityState._textSecondary,
-                    letterSpacing: 0.1,
+                Flexible(
+                  child: Text(
+                    achievement.title,
+                    style: TextStyle(
+                      fontSize: fontSize,
+                      fontWeight: FontWeight.w600,
+                      color: achievement.isUnlocked 
+                        ? _ProfileActivityState._textPrimary
+                        : _ProfileActivityState._textSecondary,
+                      letterSpacing: 0.1,
+                    ),
+                    textAlign: TextAlign.center,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
                   ),
-                  textAlign: TextAlign.center,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
                 ),
               ],
             ),
@@ -1219,6 +1244,9 @@ class ProgressCardWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isSmallScreen = screenWidth < 360;
+    
     return Container(
       margin: EdgeInsets.only(bottom: isLarge ? 0 : 16),
       decoration: BoxDecoration(
@@ -1237,48 +1265,89 @@ class ProgressCardWidget extends StatelessWidget {
         ],
       ),
       child: Padding(
-        padding: EdgeInsets.all(isLarge ? 28 : 24),
+        padding: EdgeInsets.all(isLarge ? 28 : (isSmallScreen ? 16 : 24)),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Header con título y valor
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                  child: Text(
-                    title,
-                    style: TextStyle(
-                      fontSize: isLarge ? 18 : 16,
-                      fontWeight: FontWeight.w600,
-                      color: _ProfileActivityState._textPrimary,
-                      letterSpacing: 0.1,
-                    ),
+            // Header con título y valor - Mejorado para dispositivos pequeños
+            if (isSmallScreen) ...[
+              // Layout vertical para pantallas muy pequeñas
+              Text(
+                title,
+                style: TextStyle(
+                  fontSize: isLarge ? 18 : 15,
+                  fontWeight: FontWeight.w600,
+                  color: _ProfileActivityState._textPrimary,
+                  letterSpacing: 0.1,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  color: _ProfileActivityState._primaryColor.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: _ProfileActivityState._primaryColor.withOpacity(0.2),
+                    width: 1,
                   ),
                 ),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                  decoration: BoxDecoration(
-                    color: _ProfileActivityState._primaryColor.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(
-                      color: _ProfileActivityState._primaryColor.withOpacity(0.2),
-                      width: 1,
-                    ),
-                  ),
-                  child: Text(
-                    value,
-                    style: TextStyle(
-                      fontSize: isLarge ? 14 : 12,
-                      fontWeight: FontWeight.w600,
-                      color: _ProfileActivityState._primaryColor,
-                      letterSpacing: 0.2,
-                    ),
+                child: Text(
+                  value,
+                  style: TextStyle(
+                    fontSize: isLarge ? 14 : 12,
+                    fontWeight: FontWeight.w600,
+                    color: _ProfileActivityState._primaryColor,
+                    letterSpacing: 0.2,
                   ),
                 ),
-              ],
-            ),
+              ),
+            ] else ...[
+              // Layout horizontal para pantallas normales
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    flex: 2,
+                    child: Text(
+                      title,
+                      style: TextStyle(
+                        fontSize: isLarge ? 18 : 16,
+                        fontWeight: FontWeight.w600,
+                        color: _ProfileActivityState._textPrimary,
+                        letterSpacing: 0.1,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Flexible(
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: _ProfileActivityState._primaryColor.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: _ProfileActivityState._primaryColor.withOpacity(0.2),
+                          width: 1,
+                        ),
+                      ),
+                      child: Text(
+                        value,
+                        style: TextStyle(
+                          fontSize: isLarge ? 14 : 12,
+                          fontWeight: FontWeight.w600,
+                          color: _ProfileActivityState._primaryColor,
+                          letterSpacing: 0.2,
+                        ),
+                        textAlign: TextAlign.center,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
             SizedBox(height: isLarge ? 20 : 16),
             
             // Barra de progreso
@@ -1320,24 +1389,30 @@ class ProgressCardWidget extends StatelessWidget {
             ),
             SizedBox(height: isLarge ? 16 : 12),
             
-            // Subtítulo con porcentaje
+            // Subtítulo con porcentaje - Mejorado para dispositivos pequeños
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Expanded(
+                  flex: 3,
                   child: Text(
                     subtitle,
                     style: TextStyle(
-                      fontSize: isLarge ? 14 : 12,
+                      fontSize: isLarge ? 14 : (isSmallScreen ? 11 : 12),
                       color: _ProfileActivityState._textSecondary,
                       fontWeight: FontWeight.w500,
+                      height: 1.3,
                     ),
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: isSmallScreen ? 2 : 1,
                   ),
                 ),
+                const SizedBox(width: 8),
                 Text(
                   '${(progress * 100).toInt()}%',
                   style: TextStyle(
-                    fontSize: isLarge ? 14 : 12,
+                    fontSize: isLarge ? 14 : (isSmallScreen ? 11 : 12),
                     fontWeight: FontWeight.w600,
                     color: _ProfileActivityState._primaryColor,
                     letterSpacing: 0.2,

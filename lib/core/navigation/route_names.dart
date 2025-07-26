@@ -24,4 +24,7 @@ class RouteNames {
   static const String game = '/memorama';
   static const String audioTranslate = '/audio-translate';
   static const String cuentos = '/cuentos';
+
+  // PDF download route
+  static const String downloadPdf = '/download-pdf';
 }

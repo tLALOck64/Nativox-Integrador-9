@@ -352,9 +352,15 @@ class _LessonsScreenState extends State<LessonsScreen> with TickerProviderStateM
   }
 
   Widget _buildHeader() {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isSmallScreen = screenWidth < 360;
+    
     return Container(
-      margin: const EdgeInsets.all(20),
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+      margin: EdgeInsets.all(isSmallScreen ? 16 : 20),
+      padding: EdgeInsets.symmetric(
+        horizontal: isSmallScreen ? 20 : 24, 
+        vertical: isSmallScreen ? 16 : 20
+      ),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
@@ -377,8 +383,8 @@ class _LessonsScreenState extends State<LessonsScreen> with TickerProviderStateM
         children: [
           // Back button consistente
           Container(
-            width: 48,
-            height: 48,
+            width: isSmallScreen ? 40 : 48,
+            height: isSmallScreen ? 40 : 48,
             decoration: BoxDecoration(
               color: Colors.white.withOpacity(0.15),
               borderRadius: BorderRadius.circular(14),
@@ -393,21 +399,21 @@ class _LessonsScreenState extends State<LessonsScreen> with TickerProviderStateM
               child: InkWell(
                 borderRadius: BorderRadius.circular(14),
                 onTap: () => Navigator.of(context).pop(),
-                child: const Icon(
+                child: Icon(
                   Icons.arrow_back_rounded,
                   color: Colors.white,
-                  size: 24,
+                  size: isSmallScreen ? 20 : 24,
                 ),
               ),
             ),
           ),
           
-          const SizedBox(width: 16),
+          SizedBox(width: isSmallScreen ? 12 : 16),
           
           // Icono del libro
           Container(
-            width: 48,
-            height: 48,
+            width: isSmallScreen ? 40 : 48,
+            height: isSmallScreen ? 40 : 48,
             decoration: BoxDecoration(
               color: Colors.white.withOpacity(0.15),
               borderRadius: BorderRadius.circular(14),
@@ -416,38 +422,42 @@ class _LessonsScreenState extends State<LessonsScreen> with TickerProviderStateM
                 width: 1,
               ),
             ),
-            child: const Icon(
+            child: Icon(
               Icons.library_books_rounded,
               color: Colors.white,
-              size: 24,
+              size: isSmallScreen ? 20 : 24,
             ),
           ),
           
-          const SizedBox(width: 16),
+          SizedBox(width: isSmallScreen ? 12 : 16),
           
           // Texto del header
-          const Expanded(
+          Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   'Lecciones',
                   style: TextStyle(
-                    fontSize: 22,
+                    fontSize: isSmallScreen ? 18 : 22,
                     fontWeight: FontWeight.bold,
                     color: Colors.white,
                     letterSpacing: 0.5,
                   ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
-                SizedBox(height: 2),
+                const SizedBox(height: 2),
                 Text(
                   'Aprende paso a paso',
                   style: TextStyle(
-                    fontSize: 14,
+                    fontSize: isSmallScreen ? 12 : 14,
                     color: Colors.white,
                     fontWeight: FontWeight.w500,
                     letterSpacing: 0.3,
                   ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ],
             ),
@@ -458,8 +468,14 @@ class _LessonsScreenState extends State<LessonsScreen> with TickerProviderStateM
   }
 
   Widget _buildStatsSection() {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isSmallScreen = screenWidth < 360;
+    
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+      margin: EdgeInsets.symmetric(
+        horizontal: isSmallScreen ? 16 : 20, 
+        vertical: 8
+      ),
       child: LessonStatsWidget(
         stats: _lessonStats,
         onTap: _onStatsBoxTapped,
@@ -499,13 +515,19 @@ class _LessonsScreenState extends State<LessonsScreen> with TickerProviderStateM
   }
 
   SliverToBoxAdapter _buildLevelSliver(String level, List<LessonModel> lessons) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isSmallScreen = screenWidth < 360;
+    
     final config = _levelConfig[level];
     final levelColor = config?['color'] ?? _primaryColor;
     final completedCount = lessons.where((l) => l.isCompleted).length;
     
     return SliverToBoxAdapter(
       child: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+        margin: EdgeInsets.symmetric(
+          horizontal: isSmallScreen ? 16 : 20, 
+          vertical: 8
+        ),
         decoration: BoxDecoration(
           color: _surfaceColor,
           borderRadius: BorderRadius.circular(20),
@@ -522,7 +544,7 @@ class _LessonsScreenState extends State<LessonsScreen> with TickerProviderStateM
           children: [
             // Header del nivel rediseñado
             Container(
-              padding: const EdgeInsets.all(20),
+              padding: EdgeInsets.all(isSmallScreen ? 16 : 20),
               decoration: BoxDecoration(
                 color: levelColor.withOpacity(0.08),
                 borderRadius: const BorderRadius.only(
@@ -540,8 +562,8 @@ class _LessonsScreenState extends State<LessonsScreen> with TickerProviderStateM
                 children: [
                   // Icono del nivel
                   Container(
-                    width: 52,
-                    height: 52,
+                    width: isSmallScreen ? 44 : 52,
+                    height: isSmallScreen ? 44 : 52,
                     decoration: BoxDecoration(
                       color: levelColor.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(16),
@@ -553,11 +575,11 @@ class _LessonsScreenState extends State<LessonsScreen> with TickerProviderStateM
                     child: Icon(
                       config?['icon'] ?? Icons.school_rounded,
                       color: levelColor,
-                      size: 28,
+                      size: isSmallScreen ? 24 : 28,
                     ),
                   ),
                   
-                  const SizedBox(width: 16),
+                  SizedBox(width: isSmallScreen ? 12 : 16),
                   
                   // Información del nivel
                   Expanded(
@@ -567,20 +589,24 @@ class _LessonsScreenState extends State<LessonsScreen> with TickerProviderStateM
                         Text(
                           'Nivel $level',
                           style: TextStyle(
-                            fontSize: 18,
+                            fontSize: isSmallScreen ? 16 : 18,
                             fontWeight: FontWeight.bold,
                             color: _textPrimary,
                             letterSpacing: 0.2,
                           ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
                         const SizedBox(height: 4),
                         Text(
                           config?['description'] ?? '${lessons.length} lecciones disponibles',
                           style: TextStyle(
-                            fontSize: 14,
+                            fontSize: isSmallScreen ? 12 : 14,
                             color: _textSecondary,
                             fontWeight: FontWeight.w500,
                           ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ],
                     ),
@@ -588,7 +614,10 @@ class _LessonsScreenState extends State<LessonsScreen> with TickerProviderStateM
                   
                   // Progreso badge
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    padding: EdgeInsets.symmetric(
+                      horizontal: isSmallScreen ? 8 : 12, 
+                      vertical: isSmallScreen ? 4 : 6
+                    ),
                     decoration: BoxDecoration(
                       color: levelColor.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(16),
@@ -600,7 +629,7 @@ class _LessonsScreenState extends State<LessonsScreen> with TickerProviderStateM
                     child: Text(
                       '$completedCount/${lessons.length}',
                       style: TextStyle(
-                        fontSize: 13,
+                        fontSize: isSmallScreen ? 11 : 13,
                         fontWeight: FontWeight.w700,
                         color: levelColor,
                         letterSpacing: 0.5,
@@ -613,7 +642,7 @@ class _LessonsScreenState extends State<LessonsScreen> with TickerProviderStateM
             
             // Widget de lecciones con padding consistente
             Padding(
-              padding: const EdgeInsets.all(16),
+              padding: EdgeInsets.all(isSmallScreen ? 12 : 16),
               child: LevelSectionWidget(
                 level: level,
                 lessons: lessons,

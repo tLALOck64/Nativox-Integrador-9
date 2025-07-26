@@ -316,9 +316,16 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   }
 
   Widget _buildHeaderSection() {
+    // Obtener el tamaño de la pantalla para hacer el widget responsive
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isSmallScreen = screenWidth < 360;
+    
     return Container(
-      margin: const EdgeInsets.all(20),
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+      margin: EdgeInsets.all(isSmallScreen ? 12 : 20),
+      padding: EdgeInsets.symmetric(
+        horizontal: isSmallScreen ? 16 : 24, 
+        vertical: isSmallScreen ? 24 : 32
+      ),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
@@ -337,26 +344,27 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           ),
         ],
       ),
-      child: const Column(
+      child: Column(
         children: [
           Text(
             'Nativox',
             style: TextStyle(
-              fontSize: 28,
+              fontSize: isSmallScreen ? 24 : 28,
               fontWeight: FontWeight.bold,
               color: Colors.white,
               letterSpacing: 0.5,
             ),
           ),
-          SizedBox(height: 8),
+          SizedBox(height: isSmallScreen ? 6 : 8),
           Text(
             'Preservando nuestras raíces',
             style: TextStyle(
-              fontSize: 16,
+              fontSize: isSmallScreen ? 14 : 16,
               color: Colors.white,
               fontWeight: FontWeight.w500,
               letterSpacing: 0.3,
             ),
+            textAlign: TextAlign.center,
           ),
         ],
       ),
@@ -376,9 +384,13 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   }
 
   Widget _buildProgressSection() {
+    // Obtener el tamaño de la pantalla para hacer el widget responsive
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isSmallScreen = screenWidth < 360;
+    
     return Container(
-      margin: const EdgeInsets.all(20),
-      padding: const EdgeInsets.all(24),
+      margin: EdgeInsets.all(isSmallScreen ? 12 : 20),
+      padding: EdgeInsets.all(isSmallScreen ? 16 : 24),
       decoration: BoxDecoration(
         color: _surfaceColor,
         borderRadius: BorderRadius.circular(20),
@@ -397,8 +409,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           Row(
             children: [
               Container(
-                width: 48,
-                height: 48,
+                width: isSmallScreen ? 40 : 48,
+                height: isSmallScreen ? 40 : 48,
                 decoration: BoxDecoration(
                   color: _primaryColor.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(14),
@@ -410,10 +422,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 child: Icon(
                   Icons.trending_up_rounded,
                   color: _primaryColor,
-                  size: 24,
+                  size: isSmallScreen ? 20 : 24,
                 ),
               ),
-              const SizedBox(width: 16),
+              SizedBox(width: isSmallScreen ? 12 : 16),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -421,17 +433,17 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     Text(
                       'Tu Progreso',
                       style: TextStyle(
-                        fontSize: 18,
+                        fontSize: isSmallScreen ? 16 : 18,
                         fontWeight: FontWeight.bold,
                         color: _textPrimary,
                         letterSpacing: 0.2,
                       ),
                     ),
-                    const SizedBox(height: 2),
+                    SizedBox(height: isSmallScreen ? 1 : 2),
                     Text(
                       'Sigue aprendiendo cada día',
                       style: TextStyle(
-                        fontSize: 14,
+                        fontSize: isSmallScreen ? 12 : 14,
                         color: _textSecondary,
                         fontWeight: FontWeight.w500,
                       ),
@@ -441,16 +453,17 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               ),
             ],
           ),
-          const SizedBox(height: 24),
+          SizedBox(height: isSmallScreen ? 16 : 24),
           // Círculo de progreso CENTRADO
           Center(
             child: SizedBox(
-              width: 160,
-              height: 160,
+              width: isSmallScreen ? 120 : 160,
+              height: isSmallScreen ? 120 : 160,
               child: ProgressCircleWidget(
                 progress: _userProgress!.overallProgress,
                 percentage: _userProgress!.progressPercentage,
                 level: _userProgress!.currentLevel,
+                size: isSmallScreen ? 120 : 160,
               ),
             ),
           ),
@@ -599,14 +612,19 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       );
     }
 
+    // Obtener el tamaño de la pantalla para hacer el grid responsive
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isSmallScreen = screenWidth < 360;
+    final isMediumScreen = screenWidth < 600;
+
     return SliverPadding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
+      padding: EdgeInsets.symmetric(horizontal: isSmallScreen ? 12 : 20),
       sliver: SliverGrid(
         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2, // Siempre 2 columnas para mayor consistencia
-          childAspectRatio: 0.9, // Proporción más balanceada
-          crossAxisSpacing: 16, // Espaciado consistente
-          mainAxisSpacing: 16,
+          crossAxisCount: isSmallScreen ? 1 : 2, // 1 columna en pantallas muy pequeñas
+          childAspectRatio: isSmallScreen ? 1.2 : 0.9, // Proporción ajustada para pantallas pequeñas
+          crossAxisSpacing: isSmallScreen ? 12 : 16, // Espaciado ajustado
+          mainAxisSpacing: isSmallScreen ? 12 : 16,
         ),
         delegate: SliverChildBuilderDelegate(
           (context, index) {

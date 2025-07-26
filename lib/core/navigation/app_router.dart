@@ -18,10 +18,11 @@ import 'package:integrador/screens/home_screen.dart';
 import 'package:integrador/screens/cuentos_screen.dart';
 import 'package:integrador/games/lecciones/lesson_screen.dart';
 import 'package:integrador/games/practicas/practice_screen.dart';
+import 'package:integrador/core/utils/screens/download_pdf.dart';
 
 class AppRouter {
   static final GoRouter _router = GoRouter(
-    initialLocation: '/splash',
+    initialLocation: '/lessons',
     navigatorKey: NavigationService.navigatorKey,
     routes: [
       // Rutas sin navbar
@@ -38,6 +39,10 @@ class AppRouter {
       GoRoute(
         path: RouteNames.register,
         builder: (context, state) => const RegistrationActivity(),
+      ),
+      GoRoute(
+        path: RouteNames.downloadPdf,
+        builder: (context, state) => const DownloadPdfScreen(),
       ),
 
       GoRoute(
