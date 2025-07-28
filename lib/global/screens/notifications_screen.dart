@@ -1,7 +1,8 @@
-// lib/core/screens/notifications_screen.dart
+// lib/global/screens/notifications_screen.dart
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:integrador/global/services/notification_service.dart';
+import 'package:integrador/global/services/notification_service.dart' show NotificationModel;
 import 'package:intl/intl.dart';
 
 class NotificationsScreen extends StatefulWidget {
@@ -132,23 +133,38 @@ class _NotificationsScreenState extends State<NotificationsScreen> with TickerPr
 
   Future<void> _markAsRead(NotificationModel notification) async {
     if (notification.leido) return;
-    
+    // Deshabilitar temporalmente el botón para evitar doble tap
+    setState(() {
+      _notifications = _notifications.map((n) {
+        if (n.id == notification.id) {
+          return n.copyWith(leido: true);
+        }
+        return n;
+      }).toList();
+    });
     try {
-      print('📖 Marking notification as read: ${notification.id}');
+      print('📖 Marking notification as read:  [${notification.id}');
       final success = await _notificationService.markAsRead(notification.id);
-      
-      if (success && mounted) {
+      if (!success && mounted) {
+        // Si falla, revertir el cambio local
         setState(() {
           final index = _notifications.indexWhere((n) => n.id == notification.id);
           if (index != -1) {
-            _notifications[index] = notification.copyWith(leido: true);
+            _notifications[index] = notification.copyWith(leido: false);
           }
         });
-        
-        print('✅ Notification marked as read locally');
+        _showError('No se pudo marcar como leída. Intenta de nuevo.');
       }
     } catch (e) {
       print('❌ Error marking notification as read: $e');
+      // Revertir el cambio local si hay error
+      setState(() {
+        final index = _notifications.indexWhere((n) => n.id == notification.id);
+        if (index != -1) {
+          _notifications[index] = notification.copyWith(leido: false);
+        }
+      });
+      _showError('Ocurrió un error al marcar como leída.');
     }
   }
 
@@ -182,7 +198,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> with TickerPr
 
   void _showError(String message) {
     if (!mounted) return;
-    
+    final texto = message.isNotEmpty ? message : 'Ocurrió un error inesperado.';
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Row(
@@ -191,7 +207,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> with TickerPr
             const SizedBox(width: 12),
             Expanded(
               child: Text(
-                message,
+                texto,
                 style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
               ),
             ),

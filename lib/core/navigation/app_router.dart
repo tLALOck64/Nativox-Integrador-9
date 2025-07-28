@@ -6,6 +6,7 @@ import 'package:integrador/core/navigation/guards/auth_guard.dart';
 import 'package:integrador/core/navigation/navigation_service.dart';
 import 'package:integrador/core/services/storage_service.dart';
 import 'package:integrador/core/layouts/main_layout.dart';
+import 'package:integrador/core/utils/screens/audio_player_screen.dart';
 import 'package:integrador/games/lecciones/screens/lesson_detail_screen.dart';
 import 'package:integrador/games/practicas/screen/audio_translate_screen.dart';
 import 'package:integrador/games/practicas/screen/memorama_menu_screen.dart';
@@ -91,7 +92,7 @@ class AppRouter {
           ),
            GoRoute(
             path: RouteNames.audio,
-            builder: (context, state) => const AudioTranslatorScreen(),
+            builder: (context, state) => const AudioPlayerScreen(),
             redirect: AuthGuard.redirectIfNotAuthenticated,
           ),
 

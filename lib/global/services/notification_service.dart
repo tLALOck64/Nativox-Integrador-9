@@ -178,16 +178,19 @@ class NotificationService {
     }
   }
 
-  // ✅ MARCAR NOTIFICACIÓN COMO LEÍDA
+  // ✅ MARCAR NOTIFICACIÓN COMO LEÍDA (ENDPOINT CORREGIDO)
   Future<bool> markAsRead(String notificationId) async {
     try {
       print('📖 Marking notification as read: $notificationId');
       
       final headers = await _getHeaders();
       final response = await http.put(
-        Uri.parse('$_baseUrl/notificaciones/$notificationId/leer'),
+        Uri.parse('$_baseUrl/notificaciones/marcar-leida/$notificationId'),
         headers: headers,
       ).timeout(const Duration(seconds: 15));
+
+      print('📊 Response status: ${response.statusCode}');
+      print('📊 Response body: ${response.body}');
 
       if (response.statusCode == 200) {
         print('✅ Notification marked as read successfully');
