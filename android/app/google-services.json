@@ -1,0 +1,70 @@
+{
+  "project_info": {
+    "project_number": "1080795187806",
+    "project_id": "nativox-4f45c",
+    "storage_bucket": "nativox-4f45c.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1080795187806:android:cb738d45511b531f9702cf",
+        "android_client_info": {
+          "package_name": "com.example.integrador"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1080795187806-0ln65vgd1sesgnlco90q700aocsm9heo.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.integrador",
+            "certificate_hash": "f0f6d15c83e709430a0d27fc112de5cfe9c6794a"
+          }
+        },
+        {
+          "client_id": "1080795187806-3nlke8ermd0a066bv5irvb9c7gfp15nm.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.integrador",
+            "certificate_hash": "c7707058b4942d3604f837bf3e42f6ead3606da3"
+          }
+        },
+        {
+          "client_id": "1080795187806-rse9g9rehi1ecfi30as3jml4ujqnlr95.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.integrador",
+            "certificate_hash": "1cdd139cd5aff224e8a77ab985af5a5b93b0b95d"
+          }
+        },
+        {
+          "client_id": "1080795187806-fk152dds83srapj2sslbq4154n5k4ejq.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDS_0D8EMw9zkZjeGK3ALo7B4p6DY1qLrs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1080795187806-fk152dds83srapj2sslbq4154n5k4ejq.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "1080795187806-crggrcjf60df34kaojo4po26nj56e95r.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.integrador"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
