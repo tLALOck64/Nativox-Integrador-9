@@ -45,6 +45,11 @@ class SecureStorageService {
     return null;
   }
 
+  Future<String?> getUserId() async {
+    final userData = await getUserData();
+    return userData?['id']?.toString();
+  }
+
   // Generic methods
   Future<void> saveString(String key, String value) async {
     await _storage.write(key: key, value: value);
