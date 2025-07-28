@@ -804,6 +804,8 @@ class _RegistrationActivityState extends State<RegistrationActivity> {
           controller: controller,
           obscureText: obscureText,
           keyboardType: keyboardType,
+          enableSuggestions: false,    
+          autocorrect: false, 
           validator: validator,
           style: TextStyle(
             fontSize:

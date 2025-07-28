@@ -594,6 +594,8 @@ class _LoginActivityState extends State<LoginActivity> {
         TextFormField(
           controller: controller,
           keyboardType: keyboardType,
+          enableSuggestions: false,    
+          autocorrect: false, 
           obscureText: obscureText,
           validator: validator,
           style: TextStyle(
