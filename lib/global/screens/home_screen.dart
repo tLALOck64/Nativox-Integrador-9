@@ -257,7 +257,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     }
 
     // Navegar a la pantalla de detalles de la lección usando GoRouter
-    context.go('/lessons/${lesson.id}');
+    context.push('/lessons/${lesson.id}');
   }
 
   void _onFloatingButtonPressed() {

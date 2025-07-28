@@ -18,7 +18,7 @@ class LoginViewModel extends ChangeNotifier {
   final SignInOrRegisterWithGoogleUseCase _signInOrRegisterWithGoogleUseCase;
   final GetCurrentUserUseCase _getCurrentUserUseCase;
   final SignOutUseCase _signOutUseCase;
-  final SecureStorageService _storageService;
+  final StorageService _storageService;
 
   LoginState _state = LoginState.initial();
   LoginState get state => _state;
@@ -30,7 +30,7 @@ class LoginViewModel extends ChangeNotifier {
     signInOrRegisterWithGoogleUseCase,
     required GetCurrentUserUseCase getCurrentUserUseCase,
     required SignOutUseCase signOutUseCase,
-    required SecureStorageService storageService,
+    required StorageService storageService,
   }) : _signInWithEmailUseCase = signInWithEmailUseCase,
        _signInWithGoogleUseCase = signInWithGoogleUseCase,
        _signInOrRegisterWithGoogleUseCase = signInOrRegisterWithGoogleUseCase,
@@ -139,8 +139,7 @@ class LoginViewModel extends ChangeNotifier {
     });
 
     _updateState(_state.copyWith(status: LoginStatus.success, user: user));
-
-    NavigationService.pushAndClearStack(RouteNames.home);
+    // Navegación eliminada, la UI se encarga de redirigir al home
   }
 
   String _getErrorMessage(Failure failure) {

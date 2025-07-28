@@ -109,7 +109,7 @@ Future<void> initializeDependencies() async {
       signInOrRegisterWithGoogleUseCase: sl(),
       getCurrentUserUseCase: sl(),
       signOutUseCase: sl(),
-      storageService: sl<SecureStorageService>(),
+      storageService: sl<StorageService>(),
     );
   });
 

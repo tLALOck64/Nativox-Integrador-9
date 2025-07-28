@@ -35,7 +35,7 @@ class AuthGuard {
       final userData = await storageService.getUserData();
       
       if (userData != null) {
-        return RouteNames.profile; // ← Cambiar a profile
+        return RouteNames.home; // ← Cambiar a profile
       }
       
       return null; // No redirect needed

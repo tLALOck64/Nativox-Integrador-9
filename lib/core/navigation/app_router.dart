@@ -36,6 +36,7 @@ class AppRouter {
       GoRoute(
         path: RouteNames.login,
         builder: (context, state) => const LoginActivity(),
+        redirect: AuthGuard.redirectIfAuthenticated,
       ),
 
       GoRoute(
@@ -53,6 +54,7 @@ class AppRouter {
           final lessonId = state.pathParameters['lessonId']!;
           return LessonDetailScreen(lessonId: lessonId);
         },
+        redirect: AuthGuard.redirectIfNotAuthenticated,
       ),
 
       GoRoute(
@@ -80,43 +82,52 @@ class AppRouter {
           GoRoute(
             path: RouteNames.home,
             builder: (context, state) => const HomeScreen(),
+            redirect: AuthGuard.redirectIfNotAuthenticated,
           ),
            GoRoute(
             path: RouteNames.notifications,
             builder: (context, state) => const NotificationsScreen(),
+            redirect: AuthGuard.redirectIfNotAuthenticated,
           ),
 
           GoRoute(
             path: RouteNames.lessons,
             builder: (context, state) => const LessonsScreen(),
+            redirect: AuthGuard.redirectIfNotAuthenticated,
           ),
 
           GoRoute(
             path: RouteNames.practice,
             builder: (context, state) => const PracticeScreen(),
+            redirect: AuthGuard.redirectIfNotAuthenticated,
           ),
 
           GoRoute(
             path: RouteNames.traductor,
             builder: (context, state) => const TraductorScreen(),
+            redirect: AuthGuard.redirectIfNotAuthenticated,
           ),
 
           GoRoute(
             path: RouteNames.game,
             builder: (context, state) => const MemoramaMenuScreen(),
+            redirect: AuthGuard.redirectIfNotAuthenticated,
           ),
 
           GoRoute(path: RouteNames.audioTranslate,
             builder: (context, state) => const AudioTranslatorScreen(),
+            redirect: AuthGuard.redirectIfNotAuthenticated,
           ),
 
           GoRoute(
             path: RouteNames.profile,
             builder: (context, state) => const ProfileActivity(),
+            redirect: AuthGuard.redirectIfNotAuthenticated,
           ),
           GoRoute(
             path: RouteNames.cuentos,
             builder: (context, state) => const CuentosScreen(),
+            redirect: AuthGuard.redirectIfNotAuthenticated,
           ),
         ],
       ),
