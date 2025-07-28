@@ -263,12 +263,16 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   void _onFloatingButtonPressed() {
     if (_lessons.isEmpty) return;
     
-    final nextLesson = _lessons.firstWhere(
-      (lesson) => !lesson.isCompleted && !lesson.isLocked,
-      orElse: () => _lessons.first,
-    );
+    try {
+      final nextLesson = _lessons.firstWhere(
+        (lesson) => !lesson.isCompleted && !lesson.isLocked,
+        orElse: () => _lessons.firstWhere((lesson) => !lesson.isLocked, orElse: () => _lessons.first),
+      );
 
-    _onLessonTapped(nextLesson);
+      _onLessonTapped(nextLesson);
+    } catch (e) {
+      _showError('No se pudo cargar la siguiente lección');
+    }
   }
 
   void _onStreakBannerTapped() {
@@ -803,44 +807,40 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     );
   }
 
-  RenderObjectWidget _buildLessonsGrid() {
+  Widget _buildLessonsGrid() {
     if (_lessons.isEmpty) {
-      return SliverGrid(
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 1,
-        ),
-        delegate: SliverChildBuilderDelegate(
-          (context, index) => _buildEmptyLessonsState(),
-          childCount: 1,
-        ),
+      return SliverToBoxAdapter(
+        child: _buildEmptyLessonsState(),
       );
     }
 
     // Obtener el tamaño de la pantalla para hacer el grid responsive
     final screenWidth = MediaQuery.of(context).size.width;
     final isSmallScreen = screenWidth < 360;
-    final isMediumScreen = screenWidth < 600;
 
-    return SliverPadding(
-      padding: EdgeInsets.symmetric(horizontal: isSmallScreen ? 12 : 20),
-      sliver: SliverGrid(
-        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: isSmallScreen ? 1 : 2, // 1 columna en pantallas muy pequeñas
-          childAspectRatio: isSmallScreen ? 1.2 : 0.9, // Proporción ajustada para pantallas pequeñas
-          crossAxisSpacing: isSmallScreen ? 12 : 16, // Espaciado ajustado
-          mainAxisSpacing: isSmallScreen ? 12 : 16,
-        ),
-        delegate: SliverChildBuilderDelegate(
-          (context, index) {
-            final lesson = _lessons[index];
-            return LessonCardWidget(
+    // Crear el grid de lecciones
+    return SliverGrid(
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: isSmallScreen ? 1 : 2,
+        childAspectRatio: isSmallScreen ? 1.2 : 0.9,
+        crossAxisSpacing: isSmallScreen ? 12 : 16,
+        mainAxisSpacing: isSmallScreen ? 12 : 16,
+        mainAxisExtent: null,
+      ),
+      delegate: SliverChildBuilderDelegate(
+        (context, index) {
+          final lesson = _lessons[index];
+          return Padding(
+            padding: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 2.0),
+            child: LessonCardWidget(
+              key: ValueKey('lesson_${lesson.id}_${lesson.progress}'),
               lesson: lesson,
               onTap: () => _onLessonTapped(lesson),
               shouldAnimate: true,
-            );
-          },
-          childCount: _lessons.length,
-        ),
+            ),
+          );
+        },
+        childCount: _lessons.length,
       ),
     );
   }

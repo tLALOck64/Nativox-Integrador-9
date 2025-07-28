@@ -137,49 +137,67 @@ class _LessonsScreenState extends State<LessonsScreen> with TickerProviderStateM
 
   // ✅ MÉTODO MEJORADO PARA CARGAR DATOS CON PROGRESO ACTUALIZADO
   Future<void> _loadData() async {
+    if (!mounted) return;
+    
     try {
+      print('🔄 INICIANDO CARGA DE LECCIONES...');
       setState(() => _isLoading = true);
       
-      print('🔄 Cargando datos de lecciones...');
-      
-      // ✅ Obtener ID del usuario actual
+      // 1. OBTENER ID DEL USUARIO
+      print('🔍 Obteniendo ID de usuario...');
       final userId = await _getCurrentUserId();
+      if (userId.isEmpty) {
+        throw Exception('No se pudo obtener el ID del usuario');
+      }
       print('👤 Usuario ID: $userId');
 
-      // ✅ Cargar todas las lecciones primero
+      // 2. LIMPIAR CACHÉ ANTES DE CARGAR
+      print('🧹 Limpiando caché...');
+      _lessonService.clearCache();
+      
+      // 3. CARGAR LECCIONES
+      print('📥 Cargando lista de lecciones...');
       final allLessons = await _lessonService.getAllLessons();
-      print('📚 Lecciones cargadas: ${allLessons.length}');
+      if (allLessons.isEmpty) {
+        throw Exception('No se encontraron lecciones');
+      }
+      print('✅ Se cargaron ${allLessons.length} lecciones');
 
-      // ✅ CRUCIAL: Actualizar progreso de cada lección desde el servidor
+      // 4. ACTUALIZAR PROGRESO DE CADA LECCIÓN
+      print('🔄 Actualizando progreso de cada lección...');
       final updatedLessons = <LessonModel>[];
+      
       for (final lesson in allLessons) {
         try {
-          print('📊 Actualizando progreso para lección: ${lesson.id}');
+          print('\n📝 Procesando lección: ${lesson.title} (ID: ${lesson.id})');
           
-          // ✅ Obtener progreso actualizado del servidor
+          // Obtener progreso del servidor
+          print('  🔄 Obteniendo progreso del servidor...');
           final progress = await _lessonService.getLessonProgressForUser(
             userId: userId, 
             lessonId: lesson.id
           );
           
-          print('📊 Progreso obtenido: ${(progress * 100).toStringAsFixed(1)}%');
+          print('  📊 Progreso obtenido: ${(progress * 100).toStringAsFixed(1)}%');
           
-          // ✅ Crear lección actualizada con progreso real
+          // Crear lección actualizada
           final updatedLesson = lesson.copyWith(
             progress: progress,
             isCompleted: progress >= 1.0,
           );
           
           updatedLessons.add(updatedLesson);
+          print('  ✅ Lección actualizada correctamente');
           
         } catch (e) {
-          print('⚠️ Error actualizando progreso para ${lesson.id}: $e');
+          print('  ⚠️ Error al procesar lección ${lesson.id}: $e');
           // Si falla, usar la lección original
           updatedLessons.add(lesson);
         }
       }
 
-      // ✅ Agrupar lecciones por nivel con progreso actualizado
+      // 5. ORGANIZAR LECCIONES POR NIVEL
+      print('\n📂 Organizando lecciones por nivel...');
       final Map<String, List<LessonModel>> groupedLessons = {};
       for (final lesson in updatedLessons) {
         if (!groupedLessons.containsKey(lesson.level)) {
@@ -188,12 +206,14 @@ class _LessonsScreenState extends State<LessonsScreen> with TickerProviderStateM
         groupedLessons[lesson.level]!.add(lesson);
       }
       
-      // ✅ Ordenar lecciones por número dentro de cada nivel
+      // Ordenar lecciones por número dentro de cada nivel
       groupedLessons.forEach((level, lessons) {
         lessons.sort((a, b) => a.lessonNumber.compareTo(b.lessonNumber));
+        print('  📂 Nivel "$level": ${lessons.length} lecciones');
       });
 
-      // ✅ Calcular estadísticas actualizadas
+      // 6. CALCULAR ESTADÍSTICAS
+      print('\n📈 Calculando estadísticas...');
       final completedLessons = updatedLessons.where((lesson) => lesson.isCompleted).length;
       final inProgressLessons = updatedLessons.where(
         (lesson) => lesson.progress > 0 && lesson.progress < 1.0
@@ -210,18 +230,23 @@ class _LessonsScreenState extends State<LessonsScreen> with TickerProviderStateM
         'total': updatedLessons.length,
       };
 
+      // 7. ACTUALIZAR ESTADO
       if (mounted) {
+        print('\n🔄 Actualizando interfaz de usuario...');
         setState(() {
           _lessonsByLevel = groupedLessons;
           _lessonStats = updatedStats;
           _isLoading = false;
         });
 
-        print('✅ Datos actualizados exitosamente');
-        print('📊 Lecciones completadas: $completedLessons');
-        print('📊 Lecciones en progreso: $inProgressLessons');
+        print('✅ CARGA COMPLETADA CON ÉXITO');
+        print('📊 Resumen:');
+        print('   - Lecciones completadas: $completedLessons');
+        print('   - Lecciones en progreso: $inProgressLessons');
+        print('   - Palabras aprendidas: $totalWords');
+        print('   - Total de lecciones: ${updatedLessons.length}');
 
-        // ✅ Animar entrada
+        // Animar entrada
         _fadeController.forward();
         await Future.delayed(const Duration(milliseconds: 200));
         if (mounted) {
@@ -229,11 +254,19 @@ class _LessonsScreenState extends State<LessonsScreen> with TickerProviderStateM
         }
       }
     } catch (e) {
-      print('❌ Error cargando datos: $e');
+      print('\n❌ ERROR CRÍTICO AL CARGAR DATOS');
+      print('Detalles del error: $e');
+      print('Stack trace: ${e is Error ? (e as Error).stackTrace : 'No disponible'}\n');
+      
       if (mounted) {
         setState(() => _isLoading = false);
-        _showError('Error al cargar las lecciones: ${e.toString()}');
+        _showError('Error al cargar las lecciones. Por favor, inténtalo de nuevo.');
       }
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+      print('🔚 Fin del proceso de carga de lecciones\n');
     }
   }
 
@@ -400,22 +433,91 @@ class _LessonsScreenState extends State<LessonsScreen> with TickerProviderStateM
 
   // ✅ MÉTODO MEJORADO PARA INICIAR LECCIÓN
   Future<void> _startLesson(LessonModel lesson) async {
+    if (!mounted) return;
+    
     final progressText = lesson.progress > 0 
         ? ' (${(lesson.progress * 100).toStringAsFixed(0)}% completada)'
         : '';
     
     _showMessage('Cargando "${lesson.title}"$progressText...');
     
-    await Future.delayed(const Duration(milliseconds: 500));
+    // Pequeña pausa para que se muestre el mensaje
+    await Future.delayed(const Duration(milliseconds: 300));
     
-    if (mounted) {
-      // ✅ Navegar a la lección
+    if (!mounted) return;
+    
+    try {
+      print('🚀 Iniciando navegación a la lección: ${lesson.id}');
+      
+      // 1. Navegar a la lección y esperar a que el usuario regrese
       final result = await context.push('/lessons/${lesson.id}');
       
-      // ✅ Cuando regresa de la lección, refrescar progreso
+      // 2. Verificar si la lección fue completada (result == true)
+      if (result == true) {
+        print('🎉 La lección fue completada - Actualizando progreso...');
+        
+        if (mounted) {
+          // Mostrar indicador de carga
+          setState(() => _isLoading = true);
+          
+          try {
+            // Limpiar caché para forzar recarga de datos
+            print('🔄 Limpiando caché del servicio de lecciones...');
+            _lessonService.clearCache();
+            
+            // Forzar recarga completa de datos
+            print('🔄 Forzando recarga completa de datos...');
+            await _loadData();
+            
+            // Mostrar mensaje de éxito
+            if (mounted) {
+              _showMessage('¡Progreso actualizado correctamente!');
+              
+              // Actualizar solo la lección específica que se completó
+              final updatedLessons = await _lessonService.getAllLessons();
+              final updatedLesson = updatedLessons.firstWhere(
+                (l) => l.id == lesson.id,
+                orElse: () => lesson,
+              );
+              
+              // Actualizar el estado local
+              setState(() {
+                final levelLessons = _lessonsByLevel[lesson.level] ?? [];
+                final index = levelLessons.indexWhere((l) => l.id == lesson.id);
+                if (index != -1) {
+                  levelLessons[index] = updatedLesson;
+                  _lessonsByLevel[lesson.level] = levelLessons;
+                }
+              });
+            }
+            
+            print('✅ Datos recargados exitosamente');
+            
+          } catch (e) {
+            print('❌ Error crítico al actualizar datos:');
+            print(e);
+            print(e is Error ? (e as Error).stackTrace : 'No hay stack trace disponible');
+            
+            if (mounted) {
+              _showError('Error al actualizar el progreso. Intenta deslizar hacia abajo para actualizar.');
+            }
+          } finally {
+            if (mounted) {
+              print('🔄 Finalizando proceso de actualización...');
+              setState(() => _isLoading = false);
+            }
+          }
+        }
+      } else {
+        print('ℹ️ El usuario regresó sin completar la lección');
+      }
+    } catch (e) {
+      print('❌ Error en la navegación a la lección:');
+      print(e);
+      print(e is Error ? (e as Error).stackTrace : 'No hay stack trace disponible');
+      
       if (mounted) {
-        print('🔄 Regresó de la lección, refrescando progreso...');
-        await _refreshProgressData();
+        _showError('No se pudo cargar la lección. Por favor, inténtalo de nuevo.');
       }
     }
   }

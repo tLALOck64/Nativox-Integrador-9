@@ -230,7 +230,7 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
                 child: ElevatedButton(
                   onPressed: () {
                     Navigator.of(context).pop();
-                    context.go('/lessons');
+                    Navigator.of(context).pop(true); // Retornar true para indicar que la lección fue completada
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.grey[300],
@@ -517,30 +517,8 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
         print('📊 Ejercicios correctos: $correctResults/$totalExercises');
         print('📊 Puntuación actual: $newScore%');
         
-        // ✅ ENVIAR PROGRESO ACTUALIZADO AL SERVIDOR (GLOBAL)
-        try {
-          final userData = await SecureStorageService().getUserData();
-          final userId = userData?['id'] ?? userData?['uid'] ?? '';
-          
-          if (userId.isNotEmpty) {
-            print('🌐 Actualizando progreso global en servidor...');
-            
-            final success = await LessonService().updateLessonProgressForUser(
-              userId: userId,
-              lessonId: widget.lessonId,
-              progress: newCompletionPercentage / 100.0, // Convertir a decimal
-            );
-            
-            if (success) {
-              print('✅ Progreso global actualizado en servidor');
-            } else {
-              print('⚠️ No se pudo actualizar progreso global en servidor');
-            }
-          }
-        } catch (e) {
-          print('❌ Error actualizando progreso global: $e');
-          // No bloquear la UI por errores de servidor
-        }
+        // ✅ NO ES NECESARIO ACTUALIZAR EL PROGRESO AQUÍ YA QUE SE MANEJA EN resolverEjercicio
+        print('📊 Progreso local actualizado. El progreso en servidor se actualizó en resolverEjercicio');
         
         // ✅ MOSTRAR NOTIFICACIÓN DE PROGRESO SI ES SIGNIFICATIVO
         if (newCompletionPercentage >= 100.0) {
@@ -1164,7 +1142,7 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
                 child: ElevatedButton(
                   onPressed: () {
                     Navigator.of(context).pop();
-                    context.go('/lessons');
+                    Navigator.of(context).pop(true); // Retornar true para indicar que la lección fue completada
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFFD4A574),
