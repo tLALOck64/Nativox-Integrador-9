@@ -95,4 +95,6 @@ class NotificationService {
   Future<String?> getFirebaseToken() async {
     return await _firebaseMessaging.getToken();
   }
+
+  getUnreadCount() {}
 }

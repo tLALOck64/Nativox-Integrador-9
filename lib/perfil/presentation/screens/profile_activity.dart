@@ -723,7 +723,7 @@ class _ProfileActivityState extends State<ProfileActivity> with TickerProviderSt
                   setting: setting,
                   isLast: isLast,
                   isLarge: true,
-                  onTap: () => viewModel.onSettingTapped(setting),
+                  onTap: () => viewModel.onSettingTapped(context, setting),
                 );
               }).toList(),
             ),
@@ -829,7 +829,7 @@ class _ProfileActivityState extends State<ProfileActivity> with TickerProviderSt
                 setting: setting,
                 isLast: isLast,
                 isLarge: isDesktop || isTablet,
-                onTap: () => viewModel.onSettingTapped(setting),
+                onTap: () => viewModel.onSettingTapped(context, setting),
               );
             }).toList(),
           ),

@@ -10,6 +10,7 @@ import 'package:integrador/games/lecciones/screens/lesson_detail_screen.dart';
 import 'package:integrador/games/practicas/screen/audio_translate_screen.dart';
 import 'package:integrador/games/practicas/screen/memorama_menu_screen.dart';
 import 'package:integrador/games/practicas/screen/traductor_screen.dart';
+import 'package:integrador/global/screens/notifications_screen.dart';
 import 'package:integrador/login/presentation/screens/login_activity.dart';
 import 'package:integrador/register/presentation/screens/resgistration_screen.dart';
 import 'package:integrador/perfil/presentation/screens/profile_activity.dart';
@@ -22,7 +23,7 @@ import 'package:integrador/core/utils/screens/download_pdf.dart';
 
 class AppRouter {
   static final GoRouter _router = GoRouter(
-    initialLocation: '/lessons',
+    initialLocation: '/splash',
     navigatorKey: NavigationService.navigatorKey,
     routes: [
       // Rutas sin navbar
@@ -30,6 +31,7 @@ class AppRouter {
         path: RouteNames.splash,
         builder: (context, state) => const SplashScreen(),
       ),
+    
 
       GoRoute(
         path: RouteNames.login,
@@ -78,6 +80,10 @@ class AppRouter {
           GoRoute(
             path: RouteNames.home,
             builder: (context, state) => const HomeScreen(),
+          ),
+           GoRoute(
+            path: RouteNames.notifications,
+            builder: (context, state) => const NotificationsScreen(),
           ),
 
           GoRoute(

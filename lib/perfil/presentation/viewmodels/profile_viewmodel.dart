@@ -10,6 +10,8 @@ import 'package:integrador/perfil/domain/usecases/get_user_profile_usecase.dart'
 import 'package:integrador/perfil/domain/usecases/get_achievements_usecase.dart';
 import 'package:integrador/perfil/domain/usecases/get_settings_usecase.dart';
 import 'package:integrador/perfil/presentation/states/profile_state.dart';
+import 'package:flutter/widgets.dart'; // Added for BuildContext
+import 'package:go_router/go_router.dart';
 
 class ProfileViewModel extends ChangeNotifier {
   final GetUserProfileUsecase _getUserProfileUseCase;
@@ -70,10 +72,10 @@ class ProfileViewModel extends ChangeNotifier {
     }
   }
 
-  void onSettingTapped(SettingItem setting) {
+  void onSettingTapped(BuildContext context, SettingItem setting) {
     switch (setting.type) {
       case SettingType.notifications:
-        NavigationService.push('${RouteNames.settings}/notifications');
+        context.go('/notifications');
         break;
       case SettingType.audio:
         NavigationService.push('${RouteNames.settings}/audio');

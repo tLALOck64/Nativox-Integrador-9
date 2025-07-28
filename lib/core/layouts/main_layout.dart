@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:integrador/core/navigation/route_names.dart';
-import 'package:integrador/global/nav.dart';
+import 'package:integrador/global/screens/nav.dart';
 
 class MainLayout extends StatelessWidget {
   final Widget child;
