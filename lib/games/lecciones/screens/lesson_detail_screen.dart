@@ -7,6 +7,8 @@ import 'package:integrador/games/lecciones/screens/completion_exercise_screen.da
 import 'package:integrador/games/lecciones/screens/selection_exercis_screen.dart';
 import 'package:integrador/games/lecciones/services/lesson_detail_service.dart';
 import 'package:integrador/core/services/secure_storage_service.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 class LessonDetailScreen extends StatefulWidget {
   final String lessonId;
@@ -1158,6 +1160,72 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
                   ),
                 ),
               ),
+              const SizedBox(height: 12),
+              Container(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () async {
+                    final userId = await _getCurrentUserId();
+                    String comentario = '';
+                    await showDialog(
+                      context: context,
+                      builder: (context) {
+                        return AlertDialog(
+                          title: const Text('Agregar comentario'),
+                          content: TextField(
+                            autofocus: true,
+                            maxLines: 3,
+                            onChanged: (value) {
+                              comentario = value;
+                            },
+                            decoration: const InputDecoration(
+                              hintText: 'Escribe tu comentario...',
+                            ),
+                          ),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.of(context).pop(),
+                              child: const Text('Cancelar'),
+                            ),
+                            ElevatedButton(
+                              onPressed: () async {
+                                if (comentario.trim().isEmpty) return;
+                                Navigator.of(context).pop();
+                                final ok = await LessonDetailService().enviarComentario(
+                                  usuarioId: userId,
+                                  texto: comentario.trim(),
+                                );
+                                if (ok) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(content: Text('¡Comentario enviado!')),
+                                  );
+                                } else {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(content: Text('Error al enviar comentario.')),
+                                  );
+                                }
+                              },
+                              child: const Text('Enviar'),
+                            ),
+                          ],
+                        );
+                      },
+                    );
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF4A90E2),
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: const Text(
+                    'Agregar comentario',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                  ),
+                ),
+              ),
             ],
           ),
         );
@@ -1199,6 +1267,12 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
     
     print('📊 ¿Puede avanzar?: ${_currentExerciseIndex < _lesson!.ejercicios.length - 1}');
     print('🔍 === FIN DEBUG ===');
+  }
+
+  // FUNCIÓN PARA OBTENER EL USUARIO ID (si no existe ya)
+  Future<String> _getCurrentUserId() async {
+    final userData = await SecureStorageService().getUserData();
+    return userData?['id'] ?? userData?['uid'] ?? '';
   }
 
   @override

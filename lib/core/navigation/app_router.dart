@@ -12,6 +12,7 @@ import 'package:integrador/games/practicas/screen/audio_translate_screen.dart';
 import 'package:integrador/games/practicas/screen/memorama_menu_screen.dart';
 import 'package:integrador/games/practicas/screen/traductor_screen.dart';
 import 'package:integrador/global/screens/notifications_screen.dart';
+import 'package:integrador/global/screens/support_screen.dart';
 import 'package:integrador/login/presentation/screens/login_activity.dart';
 import 'package:integrador/register/presentation/screens/resgistration_screen.dart';
 import 'package:integrador/perfil/presentation/screens/profile_activity.dart';
@@ -72,6 +73,12 @@ class AppRouter {
             builder: (context, state) => const ThemeSettingsScreen(),
           ),
         ],
+      ),
+
+      GoRoute(
+        path: RouteNames.support,
+        builder: (context, state) => const SupportScreen(),
+        redirect: AuthGuard.redirectIfNotAuthenticated,
       ),
 
       // Rutas con navbar usando ShellRoute

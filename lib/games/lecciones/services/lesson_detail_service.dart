@@ -272,4 +272,30 @@ class LessonDetailService {
       'cacheValidUntil': _lastFetch?.add(_cacheValidDuration).toIso8601String(),
     };
   }
+
+  // ✅ ENVIAR COMENTARIO DE USUARIO
+  Future<bool> enviarComentario({required String usuarioId, required String texto}) async {
+    const String comentariosUrl = 'https://a3pl892azf.execute-api.us-east-1.amazonaws.com/micro-user/api_user/usuarios/comentarios';
+    try {
+      final headers = await _getHeaders();
+      final response = await http.post(
+        Uri.parse(comentariosUrl),
+        headers: headers,
+        body: jsonEncode({
+          'usuarioId': usuarioId,
+          'texto': texto,
+        }),
+      );
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        print('✅ Comentario enviado correctamente');
+        return true;
+      } else {
+        print('❌ Error al enviar comentario: \n [31m${response.statusCode} - ${response.body}\u001b[0m');
+        return false;
+      }
+    } catch (e) {
+      print('❌ Error de red al enviar comentario: \n$e');
+      return false;
+    }
+  }
 }
