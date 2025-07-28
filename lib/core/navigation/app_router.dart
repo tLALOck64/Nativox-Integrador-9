@@ -13,9 +13,9 @@ import 'package:integrador/games/practicas/screen/traductor_screen.dart';
 import 'package:integrador/login/presentation/screens/login_activity.dart';
 import 'package:integrador/register/presentation/screens/resgistration_screen.dart';
 import 'package:integrador/perfil/presentation/screens/profile_activity.dart';
-import 'package:integrador/screens/home_screen.dart';
+import 'package:integrador/global/screens/home_screen.dart';
 
-import 'package:integrador/screens/cuentos_screen.dart';
+import 'package:integrador/games/cuentos/cuentos_screen.dart';
 import 'package:integrador/games/lecciones/lesson_screen.dart';
 import 'package:integrador/games/practicas/practice_screen.dart';
 import 'package:integrador/core/utils/screens/download_pdf.dart';

@@ -1,6 +1,6 @@
 import '../models/user_progress_model.dart';
-import '../core/services/streak_manager.dart';
-import '../games/lecciones/lesson_service.dart';
+import '../../core/services/streak_manager.dart';
+import '../../games/lecciones/lesson_service.dart';
 
 class UserProgressService {
   static final UserProgressService _instance = UserProgressService._internal();

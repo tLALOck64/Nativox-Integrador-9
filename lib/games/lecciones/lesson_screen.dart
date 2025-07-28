@@ -3,8 +3,8 @@ import 'package:go_router/go_router.dart';
 import 'package:integrador/core/services/secure_storage_service.dart';
 import './lesson_model.dart';
 import './lesson_service.dart';
-import '../../widgets/lesson_stats_widget.dart';
-import '../../widgets/level_section_widget.dart';
+import '../../global/widgets/lesson_stats_widget.dart';
+import '../../global/widgets/level_section_widget.dart';
 import 'package:integrador/core/config/app_theme.dart';
 
 class LessonsScreen extends StatefulWidget {

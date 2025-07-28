@@ -4,7 +4,7 @@ import 'package:http/http.dart' as http;
 import 'package:integrador/core/services/secure_storage_service.dart'
     as secure_storage;
 import 'package:integrador/games/practicas/practice_screen.dart';
-import 'package:integrador/screens/story_quiz_screen.dart';
+import 'package:integrador/games/cuentos/story_quiz_screen.dart';
 import 'package:go_router/go_router.dart';
 
 class StoryModel {
