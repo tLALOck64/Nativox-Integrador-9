@@ -21,24 +21,31 @@ class _DownloadPdfScreenState extends State<DownloadPdfScreen> {
   // Lista de PDFs disponibles en assets
   final List<Map<String, String>> availablePDFs = [
     {
-      'title': 'Diccionario Tseltal',
+      'title': 'Diccionario Tzeltal',
       'asset': 'assets/pdfs/zai.pdf',
       'filename': 'diccionario_tseltal.pdf',
       'description': 'Diccionario completo del idioma Tseltal',
       'size': '2.5 MB'
     },
     {
-      'title': 'Manual de Aprendizaje',
-      'asset': 'assets/pdfs/manual.pdf',
-      'filename': 'manual_aprendizaje.pdf',
-      'description': 'Guía completa para aprender el idioma',
+      'title': 'Abecedario Zapoteco',
+      'asset': 'assets/pdfs/guia-abecedario-zapotecos.pdf',
+      'filename': 'guia-abecedarios-zapotecos.pdf',
+      'description': 'Abecedario y pronunciación del idioma Zapoteco',
       'size': '1.8 MB'
     },
     {
-      'title': 'Ejercicios Prácticos',
-      'asset': 'assets/pdfs/ejercicios.pdf',
-      'filename': 'ejercicios_practicos.pdf',
-      'description': 'Ejercicios y actividades para practicar',
+      'title': 'Guia Numeros Tzeltal',
+      'asset': 'assets/pdfs/guia-numeros-tzeltal.pdf',
+      'filename': 'guia-numeros-tzeltal.pdf',
+      'description': 'Aprende numeros en tzeltal',
+      'size': '3.2 MB'
+    },
+    {
+      'title': 'Guia Numeros Zapoteco',
+      'asset': 'assets/pdfs/guia-numeros-zapotecos.pdf',
+      'filename': 'guia-numeros-zapotecos.pdf',
+      'description': 'Aprende numeros en zapoteco',
       'size': '3.2 MB'
     },
   ];

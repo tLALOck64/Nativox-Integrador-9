@@ -30,6 +30,14 @@
           }
         },
         {
+          "client_id": "1080795187806-pfkregrrdvupmnp823tbbrpshc09nmvl.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.integrador",
+            "certificate_hash": "8f581d05f04500014cb1c7087e2efab0fa416762"
+          }
+        },
+        {
           "client_id": "1080795187806-rse9g9rehi1ecfi30as3jml4ujqnlr95.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {

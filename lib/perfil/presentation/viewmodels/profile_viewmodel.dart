@@ -78,7 +78,7 @@ class ProfileViewModel extends ChangeNotifier {
         context.go('/notifications');
         break;
       case SettingType.audio:
-        NavigationService.push('${RouteNames.settings}/audio');
+        context.go(RouteNames.audio);
         break;
       case SettingType.theme:
         NavigationService.push(RouteNames.downloadPdf);

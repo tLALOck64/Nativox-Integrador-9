@@ -89,6 +89,11 @@ class AppRouter {
             builder: (context, state) => const NotificationsScreen(),
             redirect: AuthGuard.redirectIfNotAuthenticated,
           ),
+           GoRoute(
+            path: RouteNames.audio,
+            builder: (context, state) => const AudioTranslatorScreen(),
+            redirect: AuthGuard.redirectIfNotAuthenticated,
+          ),
 
           GoRoute(
             path: RouteNames.lessons,

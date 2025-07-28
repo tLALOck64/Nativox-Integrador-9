@@ -20,6 +20,7 @@ class RouteNames {
   static const String onboarding = '/onboarding';
   static const String noInternet = '/no-internet';
   static const String notifications = '/notifications';
+  static const String audio = '/audios';
 
   //route games
   static const String game = '/memorama';
