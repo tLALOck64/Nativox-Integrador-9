@@ -21,6 +21,7 @@ class RouteNames {
   static const String noInternet = '/no-internet';
   static const String notifications = '/notifications';
   static const String audio = '/audios';
+  static const String support = '/support';
 
   //route games
   static const String game = '/memorama';

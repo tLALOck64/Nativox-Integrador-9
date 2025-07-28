@@ -84,7 +84,7 @@ class ProfileViewModel extends ChangeNotifier {
         NavigationService.push(RouteNames.downloadPdf);
         break;
       case SettingType.help:
-        NavigationService.push('${RouteNames.settings}/help');
+        context.go('/support');
         break;
     }
   }

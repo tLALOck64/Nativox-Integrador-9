@@ -175,77 +175,85 @@ class _MemoramaCardWidgetState extends State<MemoramaCardWidget>
         cardColor = Colors.grey;
     }
 
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 300),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(16),
-        color: cardColor,
-        boxShadow: [
-          BoxShadow(
-            color: widget.card.state == CardState.error 
-                ? Colors.red.withOpacity(0.3)
-                : Colors.black.withOpacity(0.1),
-            blurRadius: widget.card.state == CardState.error ? 12 : 8,
-            offset: const Offset(0, 4),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        double fontSize = 14;
+        if (constraints.maxWidth < 80) {
+          fontSize = 10;
+        } else if (constraints.maxWidth < 110) {
+          fontSize = 12;
+        }
+        return AnimatedContainer(
+          duration: const Duration(milliseconds: 300),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
+            color: cardColor,
+            boxShadow: [
+              BoxShadow(
+                color: widget.card.state == CardState.error 
+                    ? Colors.red.withOpacity(0.3)
+                    : Colors.black.withOpacity(0.1),
+                blurRadius: widget.card.state == CardState.error ? 12 : 8,
+                offset: const Offset(0, 4),
+              ),
+            ],
+            border: widget.isSelected 
+                ? Border.all(color: Colors.white, width: 3)
+                : widget.card.state == CardState.error
+                    ? Border.all(color: borderColor, width: 2)
+                    : null,
           ),
-        ],
-        border: widget.isSelected 
-            ? Border.all(color: Colors.white, width: 3)
-            : widget.card.state == CardState.error
-                ? Border.all(color: borderColor, width: 2)
-                : null,
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            // Emoji/Imagen con animación de error
-            AnimatedContainer(
-              duration: const Duration(milliseconds: 300),
-              transform: widget.card.state == CardState.error 
-                  ? (Matrix4.identity()..scale(1.1))
-                  : Matrix4.identity(),
-              child: Text(
-                widget.card.imageUrl,
-                style: const TextStyle(fontSize: 32),
-              ),
-            ),
-            const SizedBox(height: 12),
-            
-            // Texto principal
-            Text(
-              displayText,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 14,
-                fontWeight: FontWeight.w700,
-              ),
-              textAlign: TextAlign.center,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-            ),
-            
-            // Indicador de idioma
-            const SizedBox(height: 4),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.2),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Text(
-                isZapotecoCard ? 'Zapoteco' : 'Español',
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 10,
-                  fontWeight: FontWeight.w500,
+          child: Padding(
+            padding: EdgeInsets.all(constraints.maxWidth < 90 ? 6 : 12),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                // Emoji/Imagen con animación de error
+                AnimatedContainer(
+                  duration: const Duration(milliseconds: 300),
+                  transform: widget.card.state == CardState.error 
+                      ? (Matrix4.identity()..scale(1.1))
+                      : Matrix4.identity(),
+                  child: Text(
+                    widget.card.imageUrl,
+                    style: TextStyle(fontSize: constraints.maxWidth < 80 ? 22 : 32),
+                  ),
                 ),
-              ),
+                const SizedBox(height: 8),
+                // Texto principal
+                Text(
+                  displayText,
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: fontSize,
+                    fontWeight: FontWeight.w700,
+                  ),
+                  textAlign: TextAlign.center,
+                  maxLines: 3,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                // Indicador de idioma
+                const SizedBox(height: 4),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    isZapotecoCard ? 'Zapoteco' : 'Español',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: fontSize - 2,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+              ],
             ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 }
