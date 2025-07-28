@@ -1,9 +1,12 @@
 import '../models/user_progress_model.dart';
+import '../core/services/streak_manager.dart';
 
 class UserProgressService {
   static final UserProgressService _instance = UserProgressService._internal();
   factory UserProgressService() => _instance;
   UserProgressService._internal();
+
+  final StreakManager _streakManager = StreakManager();
 
   // Simulación de datos del usuario
   UserProgressModel _userProgress = UserProgressModel(
@@ -20,6 +23,12 @@ class UserProgressService {
   // Obtener progreso del usuario
   Future<UserProgressModel> getUserProgress() async {
     await Future.delayed(const Duration(milliseconds: 300));
+    // Obtener la racha real desde StreakManager
+    int streak = await _streakManager.getTotalDays(); // O usa otro método si tienes racha consecutiva
+    _userProgress = _userProgress.copyWith(
+      streakDays: streak,
+      lastActivity: DateTime.now(), // Opcional: puedes sincronizar también la última actividad
+    );
     return _userProgress;
   }
 
@@ -160,5 +169,22 @@ class UserProgressService {
     if (newProgress > 1.0) newProgress = 1.0;
     
     _userProgress = _userProgress.copyWith(overallProgress: newProgress);
+  }
+
+  Future<void> initStreak() async {
+    await _streakManager.registerFirstUse();
+    await _streakManager.registerNewDayIfNeeded();
+  }
+
+  Future<DateTime?> getFirstUseDate() async {
+    return await _streakManager.getFirstUseDate();
+  }
+
+  Future<int> getTotalDays() async {
+    return await _streakManager.getTotalDays();
+  }
+
+  Future<DateTime?> getLastStreakDay() async {
+    return await _streakManager.getLastDay();
   }
 }

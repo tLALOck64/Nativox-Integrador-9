@@ -7,6 +7,7 @@ import 'package:integrador/core/navigation/navigation_service.dart';
 import 'package:integrador/core/services/storage_service.dart';
 import 'package:integrador/core/layouts/main_layout.dart';
 import 'package:integrador/games/lecciones/screens/lesson_detail_screen.dart';
+import 'package:integrador/games/practicas/screen/audio_translate_screen.dart';
 import 'package:integrador/games/practicas/screen/memorama_menu_screen.dart';
 import 'package:integrador/games/practicas/screen/traductor_screen.dart';
 import 'package:integrador/login/presentation/screens/login_activity.dart';
@@ -17,6 +18,7 @@ import 'package:integrador/screens/home_screen.dart';
 import 'package:integrador/screens/cuentos_screen.dart';
 import 'package:integrador/games/lecciones/lesson_screen.dart';
 import 'package:integrador/games/practicas/practice_screen.dart';
+import 'package:integrador/core/utils/screens/download_pdf.dart';
 
 class AppRouter {
   static final GoRouter _router = GoRouter(
@@ -37,6 +39,10 @@ class AppRouter {
       GoRoute(
         path: RouteNames.register,
         builder: (context, state) => const RegistrationActivity(),
+      ),
+      GoRoute(
+        path: RouteNames.downloadPdf,
+        builder: (context, state) => const DownloadPdfScreen(),
       ),
 
       GoRoute(
@@ -94,12 +100,16 @@ class AppRouter {
             builder: (context, state) => const MemoramaMenuScreen(),
           ),
 
+          GoRoute(path: RouteNames.audioTranslate,
+            builder: (context, state) => const AudioTranslatorScreen(),
+          ),
+
           GoRoute(
             path: RouteNames.profile,
             builder: (context, state) => const ProfileActivity(),
           ),
           GoRoute(
-            path: '/cuentos',
+            path: RouteNames.cuentos,
             builder: (context, state) => const CuentosScreen(),
           ),
         ],

@@ -79,7 +79,7 @@ class ProfileViewModel extends ChangeNotifier {
         NavigationService.push('${RouteNames.settings}/audio');
         break;
       case SettingType.theme:
-        NavigationService.push('${RouteNames.settings}/theme');
+        NavigationService.push(RouteNames.downloadPdf);
         break;
       case SettingType.help:
         NavigationService.push('${RouteNames.settings}/help');

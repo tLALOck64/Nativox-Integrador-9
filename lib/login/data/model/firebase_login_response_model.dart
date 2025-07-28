@@ -62,4 +62,14 @@ class FirebaseUserModel {
       emailVerified: json['emailVerified'] ?? false,
     );
   }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'uid': uid,
+      'email': email,
+      'displayName': displayName,
+      'phoneNumber': phoneNumber,
+      'emailVerified': emailVerified,
+    };
+  }
 }

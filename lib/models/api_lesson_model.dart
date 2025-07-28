@@ -1,5 +1,6 @@
 // lessons/models/api_lesson_model.dart
-import 'package:integrador/models/lesson_model.dart';
+
+import 'package:integrador/games/lecciones/lesson_model.dart';
 
 class ApiLessonModel {
   final String id;
