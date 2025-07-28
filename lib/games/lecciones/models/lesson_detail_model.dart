@@ -166,6 +166,15 @@ class ExerciseResultModel {
     required this.isCorrect,
     required this.timestamp,
   });
+
+  factory ExerciseResultModel.fromJson(Map<String, dynamic> json) {
+    return ExerciseResultModel(
+      exerciseIndex: json['exerciseIndex'] ?? 0,
+      userAnswer: json['userAnswer'],
+      isCorrect: json['isCorrect'] ?? false,
+      timestamp: DateTime.tryParse(json['timestamp'] ?? '') ?? DateTime.now(),
+    );
+  }
 }
 
 class LessonProgressModel {
@@ -190,6 +199,34 @@ class LessonProgressModel {
       completionPercentage: 0.0,
       isCompleted: false,
       score: 0,
+    );
+  }
+
+  factory LessonProgressModel.fromJson(Map<String, dynamic> json) {
+    return LessonProgressModel(
+      lessonId: json['lessonId'] ?? '',
+      results: (json['results'] as List<dynamic>?)
+          ?.map((e) => ExerciseResultModel.fromJson(e as Map<String, dynamic>))
+          .toList() ?? [],
+      completionPercentage: (json['completionPercentage'] ?? 0.0).toDouble(),
+      isCompleted: json['isCompleted'] ?? false,
+      score: json['score'] ?? 0,
+    );
+  }
+
+  LessonProgressModel copyWith({
+    String? lessonId,
+    List<ExerciseResultModel>? results,
+    double? completionPercentage,
+    bool? isCompleted,
+    int? score,
+  }) {
+    return LessonProgressModel(
+      lessonId: lessonId ?? this.lessonId,
+      results: results ?? this.results,
+      completionPercentage: completionPercentage ?? this.completionPercentage,
+      isCompleted: isCompleted ?? this.isCompleted,
+      score: score ?? this.score,
     );
   }
 }

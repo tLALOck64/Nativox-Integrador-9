@@ -1,5 +1,6 @@
 import '../models/user_progress_model.dart';
 import '../core/services/streak_manager.dart';
+import '../games/lecciones/lesson_service.dart';
 
 class UserProgressService {
   static final UserProgressService _instance = UserProgressService._internal();
@@ -7,6 +8,7 @@ class UserProgressService {
   UserProgressService._internal();
 
   final StreakManager _streakManager = StreakManager();
+  final LessonService _lessonService = LessonService();
 
   // Simulación de datos del usuario
   UserProgressModel _userProgress = UserProgressModel(
@@ -23,13 +25,49 @@ class UserProgressService {
   // Obtener progreso del usuario
   Future<UserProgressModel> getUserProgress() async {
     await Future.delayed(const Duration(milliseconds: 300));
+    
     // Obtener la racha real desde StreakManager
-    int streak = await _streakManager.getTotalDays(); // O usa otro método si tienes racha consecutiva
+    int streak = await _streakManager.getTotalDays();
+    
+    // Calcular progreso basado en lecciones completadas vs total
+    double calculatedProgress = await _calculateProgressFromLessons();
+    
     _userProgress = _userProgress.copyWith(
       streakDays: streak,
-      lastActivity: DateTime.now(), // Opcional: puedes sincronizar también la última actividad
+      overallProgress: calculatedProgress,
+      lastActivity: DateTime.now(),
     );
+    
+    // Actualizar nivel basado en el progreso calculado
+    String newLevel = _calculateLevel(calculatedProgress);
+    if (newLevel != _userProgress.currentLevel) {
+      _userProgress = _userProgress.copyWith(currentLevel: newLevel);
+    }
+    
     return _userProgress;
+  }
+
+  // Nuevo método para calcular progreso basado en lecciones
+  Future<double> _calculateProgressFromLessons() async {
+    try {
+      // Obtener estadísticas de progreso desde el servicio de lecciones
+      final progressStats = await _lessonService.getProgressStats();
+      
+      final int completedLessons = progressStats['completedLessons'] ?? 0;
+      final int totalLessons = progressStats['totalLessons'] ?? 0;
+      
+      // Calcular progreso como porcentaje de lecciones completadas
+      if (totalLessons > 0) {
+        double progress = completedLessons / totalLessons;
+        // Asegurar que el progreso esté entre 0.0 y 1.0
+        return progress.clamp(0.0, 1.0);
+      }
+      
+      return 0.0;
+    } catch (e) {
+      print('Error calculating progress from lessons: $e');
+      return _userProgress.overallProgress; // Mantener progreso anterior si hay error
+    }
   }
 
   // Actualizar progreso general
@@ -87,13 +125,16 @@ class UserProgressService {
   Future<bool> completeLesson(String lessonId, int duration) async {
     await Future.delayed(const Duration(milliseconds: 300));
     try {
+      // Marcar la lección como completada en el servicio de lecciones
+      await _lessonService.completeLesson(lessonId);
+      
       _userProgress = _userProgress.copyWith(
         totalLessonsCompleted: _userProgress.totalLessonsCompleted + 1,
         totalTimeSpent: _userProgress.totalTimeSpent + duration,
         lastActivity: DateTime.now(),
       );
       
-      // Actualizar progreso general
+      // Recalcular progreso basado en lecciones actualizadas
       await _recalculateOverallProgress();
       
       // Actualizar racha
@@ -120,6 +161,9 @@ class UserProgressService {
   Future<Map<String, dynamic>> getUserStats() async {
     await Future.delayed(const Duration(milliseconds: 200));
     
+    // Obtener estadísticas actualizadas de lecciones
+    final lessonStats = await _lessonService.getProgressStats();
+    
     final hoursSpent = (_userProgress.totalTimeSpent / 60).round();
     final averageSessionTime = _userProgress.totalLessonsCompleted > 0
         ? (_userProgress.totalTimeSpent / _userProgress.totalLessonsCompleted).round()
@@ -129,18 +173,24 @@ class UserProgressService {
       'overallProgress': _userProgress.overallProgress,
       'currentLevel': _userProgress.currentLevel,
       'streakDays': _userProgress.streakDays,
-      'totalLessonsCompleted': _userProgress.totalLessonsCompleted,
+      'totalLessonsCompleted': lessonStats['completedLessons'] ?? _userProgress.totalLessonsCompleted,
+      'totalLessons': lessonStats['totalLessons'] ?? 0,
       'totalTimeSpent': _userProgress.totalTimeSpent,
       'hoursSpent': hoursSpent,
       'averageSessionTime': averageSessionTime,
       'nextLesson': _userProgress.nextLesson,
       'isStreakActive': _userProgress.isStreakActive,
+      'completionRate': lessonStats['completionRate'] ?? 0.0,
     };
   }
 
   // Reiniciar progreso del usuario
   Future<void> resetUserProgress() async {
     await Future.delayed(const Duration(milliseconds: 300));
+    
+    // Resetear progreso en el servicio de lecciones
+    await _lessonService.resetProgress();
+    
     _userProgress = UserProgressModel(
       userId: _userProgress.userId,
       overallProgress: 0.0,
@@ -162,11 +212,8 @@ class UserProgressService {
   }
 
   Future<void> _recalculateOverallProgress() async {
-    // Aquí podrías implementar una lógica más compleja
-    // basada en las lecciones completadas
-    // Por ahora, aumentamos el progreso de forma incremental
-    double newProgress = _userProgress.overallProgress + 0.1;
-    if (newProgress > 1.0) newProgress = 1.0;
+    // Calcular progreso basado en lecciones completadas vs total
+    double newProgress = await _calculateProgressFromLessons();
     
     _userProgress = _userProgress.copyWith(overallProgress: newProgress);
   }

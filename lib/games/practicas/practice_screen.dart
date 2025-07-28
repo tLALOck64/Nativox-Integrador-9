@@ -394,7 +394,7 @@ class _PracticeScreenState extends State<PracticeScreen> with TickerProviderStat
               borderRadius: BorderRadius.circular(14),
               child: InkWell(
                 borderRadius: BorderRadius.circular(14),
-                onTap: () => Navigator.of(context).pop(),
+                onTap: () => context.go('/home'),
                 child: const Icon(
                   Icons.arrow_back_rounded,
                   color: Colors.white,

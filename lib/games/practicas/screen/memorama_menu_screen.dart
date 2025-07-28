@@ -26,7 +26,7 @@ class MemoramaMenuScreen extends StatelessWidget {
                 Row(
                   children: [
                     IconButton(
-                      onPressed: () => context.pop(),
+                      onPressed: () => context.go('/practice'),
                       icon: const Icon(
                         Icons.arrow_back,
                         color: Color(0xFFD4A574),

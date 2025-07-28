@@ -138,11 +138,22 @@ class _ProgressCircleWidgetState extends State<ProgressCircleWidget>
                     );
                   },
                 ),
+                const SizedBox(height: 4),
                 Text(
                   widget.level,
                   style: TextStyle(
                     fontSize: widget.size * 0.1,
                     color: const Color(0xFF888888),
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  'Progreso',
+                  style: TextStyle(
+                    fontSize: widget.size * 0.08,
+                    color: const Color(0xFF666666),
+                    fontWeight: FontWeight.w400,
                   ),
                 ),
               ],

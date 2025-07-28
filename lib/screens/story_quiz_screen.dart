@@ -173,6 +173,16 @@ class _StoryQuizScreenState extends State<StoryQuizScreen> {
         backgroundColor: const Color(0xFFB8956A),
         foregroundColor: Colors.white,
         title: Text('Cuestionario: ${widget.storyTitle}'),
+        leading: Container(
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.2),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: IconButton(
+            icon: const Icon(Icons.arrow_back, color: Colors.white),
+            onPressed: () => Navigator.of(context).pop(),
+          ),
+        ),
       ),
       body: Container(
         decoration: const BoxDecoration(

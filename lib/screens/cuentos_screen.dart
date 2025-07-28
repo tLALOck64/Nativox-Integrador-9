@@ -101,12 +101,18 @@ class _CuentosScreenState extends State<CuentosScreen> {
         backgroundColor: const Color(0xFFB8956A),
         foregroundColor: Colors.white,
         title: const Text('Cuentos'),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () {
-            // Navegar a la pantalla de práctica
-            context.go('/practice');
-          },
+        leading: Container(
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.2),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: IconButton(
+            icon: const Icon(Icons.arrow_back, color: Colors.white),
+            onPressed: () {
+              // Navegar a la pantalla de práctica
+              context.go('/practice');
+            },
+          ),
         ),
       ),
       body: Container(
@@ -359,6 +365,16 @@ class _StoryDetailScreenState extends State<StoryDetailScreen> {
         backgroundColor: const Color(0xFFB8956A),
         foregroundColor: Colors.white,
         title: const Text('Detalle del cuento'),
+        leading: Container(
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.2),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: IconButton(
+            icon: const Icon(Icons.arrow_back, color: Colors.white),
+            onPressed: () => Navigator.of(context).pop(),
+          ),
+        ),
       ),
       body: Container(
         decoration: const BoxDecoration(

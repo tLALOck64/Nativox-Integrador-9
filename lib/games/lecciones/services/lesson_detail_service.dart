@@ -190,27 +190,53 @@ class LessonDetailService {
     }
   }
 
-  // ✅ OBTENER PROGRESO GUARDADO (TODO: Implementar cuando tengas endpoint)
-  Future<LessonProgressModel?> getProgress(String lessonId) async {
+  // ✅ OBTENER PROGRESO GUARDADO
+  Future<LessonProgressModel?> getProgress(String lessonId, String userId) async {
     try {
-      // TODO: Implementar cuando tengas endpoint para obtener progreso
-      /*
+      print('📱 Obteniendo progreso para lección: $lessonId, usuario: $userId');
+      final headers = await _getHeaders();
+      
       final response = await http.get(
-        Uri.parse('$_baseUrl/progreso/$lessonId'),
-        headers: _headers,
-      );
+        Uri.parse('$_baseUrl/lecciones/usuarios/$userId/lecciones/$lessonId/progreso'),
+        headers: headers,
+      ).timeout(const Duration(seconds: 15));
+      
+      print('📊 Response status: ${response.statusCode}');
+      print('📊 Response body: ${response.body}');
       
       if (response.statusCode == 200) {
         final json = jsonDecode(response.body);
-        return LessonProgressModel.fromJson(json);
+        final progress = LessonProgressModel.fromJson(json);
+        print('✅ Progreso obtenido: ${progress.score}%');
+        return progress;
+      } else if (response.statusCode == 404) {
+        print('📝 No se encontró progreso para esta lección');
+        return LessonProgressModel.empty(lessonId);
+      } else {
+        print('❌ Error al obtener progreso: ${response.statusCode} - ${response.body}');
+        return LessonProgressModel.empty(lessonId);
       }
-      */
-      
-      // Por ahora, retornar progreso vacío
-      return LessonProgressModel.empty(lessonId);
       
     } catch (e) {
       print('❌ Error getting progress: $e');
+      return LessonProgressModel.empty(lessonId);
+    }
+  }
+
+  // ✅ OBTENER PROGRESO PARA USUARIO ACTUAL
+  Future<LessonProgressModel?> getProgressForCurrentUser(String lessonId) async {
+    try {
+      final userData = await SecureStorageService().getUserData();
+      final userId = userData?['id'] ?? userData?['uid'] ?? '';
+      
+      if (userId.isEmpty) {
+        print('❌ No se pudo obtener el ID del usuario');
+        return LessonProgressModel.empty(lessonId);
+      }
+      
+      return await getProgress(lessonId, userId);
+    } catch (e) {
+      print('❌ Error getting current user progress: $e');
       return LessonProgressModel.empty(lessonId);
     }
   }

@@ -71,6 +71,19 @@ class _LessonsScreenState extends State<LessonsScreen> with TickerProviderStateM
     _loadData();
   }
 
+  // ✅ NUEVO: Listener para detectar cuando regresa de una lección
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    
+    // ✅ Refrescar datos cuando regresa de una lección
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted && !_isLoading) {
+        _refreshProgressData();
+      }
+    });
+  }
+
   void _initAnimations() {
     _fadeController = AnimationController(
       duration: const Duration(milliseconds: 800),
@@ -122,29 +135,93 @@ class _LessonsScreenState extends State<LessonsScreen> with TickerProviderStateM
     super.dispose();
   }
 
+  // ✅ MÉTODO MEJORADO PARA CARGAR DATOS CON PROGRESO ACTUALIZADO
   Future<void> _loadData() async {
     try {
       setState(() => _isLoading = true);
+      
+      print('🔄 Cargando datos de lecciones...');
+      
+      // ✅ Obtener ID del usuario actual
       final userId = await _getCurrentUserId();
+      print('👤 Usuario ID: $userId');
 
-      await _lessonService.getLessonsByLevel();
-      await _lessonService.getLessonStats();
-
+      // ✅ Cargar todas las lecciones primero
       final allLessons = await _lessonService.getAllLessons();
+      print('📚 Lecciones cargadas: ${allLessons.length}');
+
+      // ✅ CRUCIAL: Actualizar progreso de cada lección desde el servidor
+      final updatedLessons = <LessonModel>[];
       for (final lesson in allLessons) {
-        await _lessonService.getLessonProgressForUser(userId: userId, lessonId: lesson.id);
+        try {
+          print('📊 Actualizando progreso para lección: ${lesson.id}');
+          
+          // ✅ Obtener progreso actualizado del servidor
+          final progress = await _lessonService.getLessonProgressForUser(
+            userId: userId, 
+            lessonId: lesson.id
+          );
+          
+          print('📊 Progreso obtenido: ${(progress * 100).toStringAsFixed(1)}%');
+          
+          // ✅ Crear lección actualizada con progreso real
+          final updatedLesson = lesson.copyWith(
+            progress: progress,
+            isCompleted: progress >= 1.0,
+          );
+          
+          updatedLessons.add(updatedLesson);
+          
+        } catch (e) {
+          print('⚠️ Error actualizando progreso para ${lesson.id}: $e');
+          // Si falla, usar la lección original
+          updatedLessons.add(lesson);
+        }
       }
 
-      final lessonsByLevel = await _lessonService.getLessonsByLevel();
-      final lessonStats = await _lessonService.getLessonStats();
+      // ✅ Agrupar lecciones por nivel con progreso actualizado
+      final Map<String, List<LessonModel>> groupedLessons = {};
+      for (final lesson in updatedLessons) {
+        if (!groupedLessons.containsKey(lesson.level)) {
+          groupedLessons[lesson.level] = [];
+        }
+        groupedLessons[lesson.level]!.add(lesson);
+      }
+      
+      // ✅ Ordenar lecciones por número dentro de cada nivel
+      groupedLessons.forEach((level, lessons) {
+        lessons.sort((a, b) => a.lessonNumber.compareTo(b.lessonNumber));
+      });
+
+      // ✅ Calcular estadísticas actualizadas
+      final completedLessons = updatedLessons.where((lesson) => lesson.isCompleted).length;
+      final inProgressLessons = updatedLessons.where(
+        (lesson) => lesson.progress > 0 && lesson.progress < 1.0
+      ).length;
+      final totalWords = updatedLessons.fold<int>(
+        0,
+        (sum, lesson) => sum + (lesson.wordCount * lesson.progress).round(),
+      );
+
+      final updatedStats = {
+        'completed': completedLessons,
+        'inProgress': inProgressLessons,
+        'totalWords': totalWords,
+        'total': updatedLessons.length,
+      };
 
       if (mounted) {
         setState(() {
-          _lessonsByLevel = lessonsByLevel;
-          _lessonStats = lessonStats;
+          _lessonsByLevel = groupedLessons;
+          _lessonStats = updatedStats;
           _isLoading = false;
         });
 
+        print('✅ Datos actualizados exitosamente');
+        print('📊 Lecciones completadas: $completedLessons');
+        print('📊 Lecciones en progreso: $inProgressLessons');
+
+        // ✅ Animar entrada
         _fadeController.forward();
         await Future.delayed(const Duration(milliseconds: 200));
         if (mounted) {
@@ -152,10 +229,96 @@ class _LessonsScreenState extends State<LessonsScreen> with TickerProviderStateM
         }
       }
     } catch (e) {
+      print('❌ Error cargando datos: $e');
       if (mounted) {
         setState(() => _isLoading = false);
-        _showError('Error al cargar las lecciones');
+        _showError('Error al cargar las lecciones: ${e.toString()}');
       }
+    }
+  }
+
+  // ✅ NUEVO MÉTODO PARA REFRESCAR SOLO EL PROGRESO (MÁS RÁPIDO)
+  Future<void> _refreshProgressData() async {
+    if (_isLoading || _lessonsByLevel.isEmpty) return;
+    
+    try {
+      print('🔄 Refrescando progreso de lecciones...');
+      
+      final userId = await _getCurrentUserId();
+      bool hasChanges = false;
+      
+      // ✅ Actualizar progreso de todas las lecciones
+      final updatedLessonsByLevel = <String, List<LessonModel>>{};
+      
+      for (final entry in _lessonsByLevel.entries) {
+        final level = entry.key;
+        final lessons = entry.value;
+        final updatedLessons = <LessonModel>[];
+        
+        for (final lesson in lessons) {
+          try {
+            // ✅ Obtener progreso actualizado
+            final newProgress = await _lessonService.getLessonProgressForUser(
+              userId: userId, 
+              lessonId: lesson.id
+            );
+            
+            // ✅ Verificar si hay cambios
+            if ((newProgress - lesson.progress).abs() > 0.01) {
+              hasChanges = true;
+              print('📊 Progreso actualizado para ${lesson.title}: ${(lesson.progress * 100).toStringAsFixed(1)}% → ${(newProgress * 100).toStringAsFixed(1)}%');
+            }
+            
+            // ✅ Crear lección actualizada
+            final updatedLesson = lesson.copyWith(
+              progress: newProgress,
+              isCompleted: newProgress >= 1.0,
+            );
+            
+            updatedLessons.add(updatedLesson);
+            
+          } catch (e) {
+            print('⚠️ Error refrescando progreso para ${lesson.id}: $e');
+            updatedLessons.add(lesson);
+          }
+        }
+        
+        updatedLessonsByLevel[level] = updatedLessons;
+      }
+      
+      // ✅ Solo actualizar UI si hay cambios
+      if (hasChanges && mounted) {
+        // ✅ Recalcular estadísticas
+        final allLessons = updatedLessonsByLevel.values.expand((lessons) => lessons).toList();
+        final completedLessons = allLessons.where((lesson) => lesson.isCompleted).length;
+        final inProgressLessons = allLessons.where(
+          (lesson) => lesson.progress > 0 && lesson.progress < 1.0
+        ).length;
+        final totalWords = allLessons.fold<int>(
+          0,
+          (sum, lesson) => sum + (lesson.wordCount * lesson.progress).round(),
+        );
+
+        final updatedStats = {
+          'completed': completedLessons,
+          'inProgress': inProgressLessons,
+          'totalWords': totalWords,
+          'total': allLessons.length,
+        };
+        
+        setState(() {
+          _lessonsByLevel = updatedLessonsByLevel;
+          _lessonStats = updatedStats;
+        });
+        
+        print('✅ Progreso refrescado exitosamente');
+      } else {
+        print('📊 No hay cambios en el progreso');
+      }
+      
+    } catch (e) {
+      print('❌ Error refrescando progreso: $e');
+      // No mostrar error al usuario para el refresh silencioso
     }
   }
 
@@ -217,6 +380,7 @@ class _LessonsScreenState extends State<LessonsScreen> with TickerProviderStateM
     );
   }
 
+  // ✅ MÉTODO MEJORADO PARA MANEJAR TAP EN LECCIÓN
   void _onLessonTapped(LessonModel lesson) {
     if (lesson.isLocked) {
       _showMessage('Esta lección está bloqueada. Completa las anteriores primero.');
@@ -224,7 +388,9 @@ class _LessonsScreenState extends State<LessonsScreen> with TickerProviderStateM
     }
     
     if (lesson.isCompleted) {
-      _showMessage('Ya completaste esta lección. ¡Bien hecho! Puedes repetirla.');
+      _showMessage('Ya completaste esta lección. ¡Puedes repetirla!');
+    } else if (lesson.progress > 0) {
+      _showMessage('Continuando lección: ${lesson.title}');
     } else {
       _showMessage('Iniciando lección: ${lesson.title}');
     }
@@ -232,18 +398,37 @@ class _LessonsScreenState extends State<LessonsScreen> with TickerProviderStateM
     _startLesson(lesson);
   }
 
+  // ✅ MÉTODO MEJORADO PARA INICIAR LECCIÓN
   Future<void> _startLesson(LessonModel lesson) async {
-    _showMessage('Cargando lección "${lesson.title}"...');
+    final progressText = lesson.progress > 0 
+        ? ' (${(lesson.progress * 100).toStringAsFixed(0)}% completada)'
+        : '';
+    
+    _showMessage('Cargando "${lesson.title}"$progressText...');
     
     await Future.delayed(const Duration(milliseconds: 500));
     
     if (mounted) {
-      context.push('/lessons/${lesson.id}');
+      // ✅ Navegar a la lección
+      final result = await context.push('/lessons/${lesson.id}');
+      
+      // ✅ Cuando regresa de la lección, refrescar progreso
+      if (mounted) {
+        print('🔄 Regresó de la lección, refrescando progreso...');
+        await _refreshProgressData();
+      }
     }
   }
 
   void _onStatsBoxTapped() {
     _showMessage('Aquí podrías ver estadísticas detalladas');
+  }
+
+  // ✅ MÉTODO MEJORADO PARA RefreshIndicator
+  Future<void> _handleRefresh() async {
+    // ✅ Limpiar cache y recargar todo
+    _lessonService.clearCache();
+    await _loadData();
   }
 
   @override
@@ -338,7 +523,7 @@ class _LessonsScreenState extends State<LessonsScreen> with TickerProviderStateM
             // Content
             Expanded(
               child: RefreshIndicator(
-                onRefresh: _loadData,
+                onRefresh: _handleRefresh, // ✅ Usar método mejorado
                 color: _primaryColor,
                 backgroundColor: _surfaceColor,
                 strokeWidth: 3,
@@ -398,7 +583,7 @@ class _LessonsScreenState extends State<LessonsScreen> with TickerProviderStateM
               borderRadius: BorderRadius.circular(14),
               child: InkWell(
                 borderRadius: BorderRadius.circular(14),
-                onTap: () => Navigator.of(context).pop(),
+                onTap: () => context.go('/home'),
                 child: Icon(
                   Icons.arrow_back_rounded,
                   color: Colors.white,
@@ -467,6 +652,7 @@ class _LessonsScreenState extends State<LessonsScreen> with TickerProviderStateM
     );
   }
 
+  // ✅ MÉTODO MEJORADO PARA STATS SECTION CON PROGRESO ACTUALIZADO
   Widget _buildStatsSection() {
     final screenWidth = MediaQuery.of(context).size.width;
     final isSmallScreen = screenWidth < 360;

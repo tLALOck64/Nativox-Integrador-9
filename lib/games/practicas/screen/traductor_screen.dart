@@ -300,7 +300,7 @@ class _TraductorScreenState extends State<TraductorScreen>
               shape: const CircleBorder(),
               child: InkWell(
                 customBorder: const CircleBorder(),
-                onTap: () => context.pop(),
+                onTap: () => context.go('/practice'),
                 child: Icon(
                   Icons.arrow_back,
                   color: Colors.white,

@@ -340,24 +340,13 @@ class _AudioTranslatorScreenState extends State<AudioTranslatorScreen>
       child: Row(
         children: [
           Container(
-            width: 40,
-            height: 40,
             decoration: BoxDecoration(
-              shape: BoxShape.circle,
               color: Colors.white.withOpacity(0.2),
+              borderRadius: BorderRadius.circular(8),
             ),
-            child: Material(
-              color: Colors.transparent,
-              shape: const CircleBorder(),
-              child: InkWell(
-                customBorder: const CircleBorder(),
-                onTap: () => context.pop(),
-                child: const Icon(
-                  Icons.arrow_back,
-                  color: Colors.white,
-                  size: 20,
-                ),
-              ),
+            child: IconButton(
+              icon: const Icon(Icons.arrow_back, color: Colors.white),
+              onPressed: () => context.go('/practice'),
             ),
           ),
           const Expanded(

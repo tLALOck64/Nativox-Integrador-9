@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:integrador/games/lecciones/lesson_model.dart';
 import 'package:integrador/games/lecciones/lesson_service.dart';
 import '../models/user_progress_model.dart';
@@ -43,6 +44,25 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     super.initState();
     _initAnimations();
     _loadData();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Actualizar datos cuando la pantalla se vuelve activa
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        _refreshDataIfNeeded();
+      }
+    });
+  }
+
+  // Método para refrescar datos si es necesario
+  Future<void> _refreshDataIfNeeded() async {
+    // Solo refrescar si no está cargando y han pasado más de 30 segundos desde la última carga
+    if (!_isLoading) {
+      await _loadData();
+    }
   }
 
   void _initAnimations() {
@@ -113,6 +133,69 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     }
   }
 
+  // Nuevo método para obtener estadísticas de progreso detalladas
+  Map<String, dynamic> _getDetailedProgressStats() {
+    if (_lessons.isEmpty || _userProgress == null) {
+      return {
+        'completedLessons': 0,
+        'totalLessons': 0,
+        'completionRate': 0.0,
+        'inProgressLessons': 0,
+        'lockedLessons': 0,
+      };
+    }
+
+    final completedLessons = _lessons.where((lesson) => lesson.isCompleted).length;
+    final totalLessons = _lessons.length;
+    final inProgressLessons = _lessons.where(
+      (lesson) => lesson.progress > 0 && lesson.progress < 1.0 && !lesson.isCompleted
+    ).length;
+    final lockedLessons = _lessons.where((lesson) => lesson.isLocked).length;
+    final completionRate = totalLessons > 0 ? (completedLessons / totalLessons * 100).round() : 0;
+
+    return {
+      'completedLessons': completedLessons,
+      'totalLessons': totalLessons,
+      'completionRate': completionRate,
+      'inProgressLessons': inProgressLessons,
+      'lockedLessons': lockedLessons,
+    };
+  }
+
+  // Método para obtener mensaje de motivación basado en el progreso
+  String _getMotivationalMessage() {
+    if (_userProgress == null) return '¡Comienza tu viaje de aprendizaje!';
+    
+    final progress = _userProgress!.overallProgress;
+    
+    if (progress >= 0.8) {
+      return '¡Excelente! Estás muy cerca de completar todo el curso.';
+    } else if (progress >= 0.5) {
+      return '¡Gran trabajo! Has completado más de la mitad del curso.';
+    } else if (progress >= 0.2) {
+      return '¡Buen progreso! Sigue así, cada lección te acerca más a tu meta.';
+    } else if (progress > 0) {
+      return '¡Bien hecho! Has comenzado tu viaje de aprendizaje.';
+    } else {
+      return '¡Comienza tu aventura de aprendizaje hoy mismo!';
+    }
+  }
+
+  // Nuevo método para actualizar progreso cuando se complete una lección
+  Future<void> _updateProgressAfterLessonCompletion(String lessonId, int duration) async {
+    try {
+      // Completar la lección en el servicio de progreso
+      await _userProgressService.completeLesson(lessonId, duration);
+      
+      // Recargar datos para actualizar la UI
+      await _loadData();
+      
+      _showMessage('¡Lección completada! Tu progreso ha sido actualizado.');
+    } catch (e) {
+      _showError('Error al actualizar el progreso: $e');
+    }
+  }
+
   void _showError(String message) {
     if (!mounted) return;
     
@@ -173,8 +256,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       return;
     }
 
-    _showMessage('Iniciando lección: ${lesson.title}');
-    // Navigator.pushNamed(context, '/lesson', arguments: lesson);
+    // Navegar a la pantalla de detalles de la lección usando GoRouter
+    context.go('/lessons/${lesson.id}');
   }
 
   void _onFloatingButtonPressed() {
@@ -441,7 +524,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     ),
                     SizedBox(height: isSmallScreen ? 1 : 2),
                     Text(
-                      'Sigue aprendiendo cada día',
+                      _getMotivationalMessage(),
                       style: TextStyle(
                         fontSize: isSmallScreen ? 12 : 14,
                         color: _textSecondary,
@@ -467,7 +550,128 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               ),
             ),
           ),
+          // Información adicional de progreso
+          SizedBox(height: isSmallScreen ? 16 : 20),
+          _buildProgressDetails(),
         ],
+      ),
+    );
+  }
+
+  // Nuevo widget para mostrar detalles del progreso
+  Widget _buildProgressDetails() {
+    // Obtener estadísticas detalladas de progreso
+    final stats = _getDetailedProgressStats();
+    
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: _backgroundColor,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: _borderColor),
+      ),
+      child: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              _buildProgressStat(
+                icon: Icons.check_circle_outline,
+                label: 'Completadas',
+                value: '${stats['completedLessons']}',
+                color: _primaryColor,
+              ),
+              _buildProgressStat(
+                icon: Icons.library_books_outlined,
+                label: 'Total',
+                value: '${stats['totalLessons']}',
+                color: _textSecondary,
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              _buildProgressStat(
+                icon: Icons.percent,
+                label: 'Progreso',
+                value: '${stats['completionRate']}%',
+                color: _primaryColor,
+              ),
+              _buildProgressStat(
+                icon: Icons.timer_outlined,
+                label: 'Tiempo',
+                value: '${_userProgress?.totalTimeSpent ?? 0} min',
+                color: _textSecondary,
+              ),
+            ],
+          ),
+          if (stats['inProgressLessons'] > 0) ...[
+            const SizedBox(height: 12),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                _buildProgressStat(
+                  icon: Icons.pending_outlined,
+                  label: 'En Progreso',
+                  value: '${stats['inProgressLessons']}',
+                  color: Colors.orange,
+                ),
+                _buildProgressStat(
+                  icon: Icons.lock_outline,
+                  label: 'Bloqueadas',
+                  value: '${stats['lockedLessons']}',
+                  color: Colors.grey,
+                ),
+              ],
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildProgressStat({
+    required IconData icon,
+    required String label,
+    required String value,
+    required Color color,
+  }) {
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+        decoration: BoxDecoration(
+          color: _surfaceColor,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: _borderColor),
+        ),
+        child: Column(
+          children: [
+            Icon(
+              icon,
+              size: 20,
+              color: color,
+            ),
+            const SizedBox(height: 4),
+            Text(
+              value,
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: _textPrimary,
+              ),
+            ),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 12,
+                color: _textSecondary,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
