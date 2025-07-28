@@ -5,6 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:integrador/core/error/failure.dart';
 import 'package:integrador/core/utils/either.dart';
 import 'package:integrador/core/network/network_info.dart';
+import 'package:integrador/core/services/cache_cleaner_service.dart';
 import 'package:integrador/login/data/datasource/auth_datasource.dart';
 import 'package:integrador/login/domain/entities/user.dart' as domain;
 import 'package:integrador/login/domain/repository/auth_repository.dart';
@@ -95,7 +96,20 @@ class AuthRepositoryImpl implements AuthRepository {
   Future<Either<Failure, void>> signOut() async {
     try {
       print('🔄 AuthRepository: Signing out');
+      
+      // 1. Cerrar sesión en la fuente de autenticación
       await _authDataSource.signOut();
+      
+      // 2. Limpiar caché y almacenamiento local
+      try {
+        print('🔄 Limpiando caché y almacenamiento local...');
+        await CacheCleanerService.clearAllCache();
+        print('✅ Caché y almacenamiento local limpiados exitosamente');
+      } catch (cacheError) {
+        print('⚠️ Error al limpiar caché: $cacheError');
+        // No fallamos el cierre de sesión si hay error limpiando caché
+      }
+      
       print('✅ AuthRepository: Sign out successful');
       return const Right(null);
     } catch (e) {

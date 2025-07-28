@@ -116,12 +116,24 @@ class _SupportScreenState extends State<SupportScreen> {
           'Tu mensaje ha sido enviado exitosamente a nuestro equipo de soporte. Te responderemos por email lo antes posible.',
         ),
         actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+              _clearForm();
+              context.go('/support'); // Volver a la pantalla de soporte
+            },
+            child: const Text('Volver a Soporte'),
+          ),
           ElevatedButton(
             onPressed: () {
               Navigator.of(context).pop();
               _clearForm();
             },
-            child: const Text('Perfecto'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: _primaryColor,
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('Aceptar'),
           ),
         ],
       ),
@@ -155,6 +167,11 @@ class _SupportScreenState extends State<SupportScreen> {
         foregroundColor: Colors.white,
         title: const Text('Ayuda y Soporte'),
         elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, 
+          color: Colors.white, size: 20),
+          onPressed: () => context.go('/profile'),
+        ),
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())

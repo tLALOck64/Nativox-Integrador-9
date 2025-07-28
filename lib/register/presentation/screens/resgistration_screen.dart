@@ -320,8 +320,13 @@ class _RegistrationActivityState extends State<RegistrationActivity> {
                                       if (value == null || value.isEmpty) {
                                         return 'Ingresa tu teléfono';
                                       }
-                                      if (value.length < 10) {
-                                        return 'Mínimo 10 dígitos';
+                                      // Verificar que solo contenga números
+                                      if (!RegExp(r'^[0-9]+$').hasMatch(value)) {
+                                        return 'Solo se permiten números';
+                                      }
+                                      // Verificar que tenga exactamente 10 dígitos
+                                      if (value.length != 10) {
+                                        return 'El teléfono debe tener exactamente 10 dígitos';
                                       }
                                       return null;
                                     },
@@ -361,8 +366,17 @@ class _RegistrationActivityState extends State<RegistrationActivity> {
                                       if (value == null || value.isEmpty) {
                                         return 'Ingresa una contraseña';
                                       }
-                                      if (value.length < 6) {
-                                        return 'Mínimo 6 caracteres';
+                                      // Verificar longitud mínima de 8 caracteres
+                                      if (value.length < 8) {
+                                        return 'La contraseña debe tener al menos 8 caracteres';
+                                      }
+                                      // Verificar que contenga al menos una mayúscula
+                                      if (!RegExp(r'[A-Z]').hasMatch(value)) {
+                                        return 'La contraseña debe contener al menos una mayúscula';
+                                      }
+                                      // Verificar que contenga al menos un número
+                                      if (!RegExp(r'[0-9]').hasMatch(value)) {
+                                        return 'La contraseña debe contener al menos un número';
                                       }
                                       return null;
                                     },
@@ -890,8 +904,22 @@ class _RegistrationActivityState extends State<RegistrationActivity> {
             if (value == null || value.isEmpty) {
               return 'Ingresa tu email';
             }
-            if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
-              return 'Ingresa un email válido';
+            // Verificar que contenga @
+            if (!value.contains('@')) {
+              return 'El email debe contener @';
+            }
+            // Verificar formato básico de email
+            if (!RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$').hasMatch(value)) {
+              return 'Formato de email inválido (ejemplo: usuario@dominio.com)';
+            }
+            // Verificar que no termine en punto
+            if (value.endsWith('.')) {
+              return 'El email no puede terminar en punto';
+            }
+            // Verificar que el dominio tenga al menos un punto
+            String domain = value.split('@').last;
+            if (!domain.contains('.')) {
+              return 'El dominio debe contener al menos un punto';
             }
             if (!viewModel.state.isEmailAvailable &&
                 viewModel.state.isEmailChecked) {
