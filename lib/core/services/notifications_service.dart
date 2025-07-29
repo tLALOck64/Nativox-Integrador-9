@@ -1,4 +1,3 @@
-// core/services/notification_service.dart
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 
@@ -49,7 +48,6 @@ class NotificationService {
   }
 
   void _onNotificationTapped(NotificationResponse response) {
-    // Handle notification tap
   }
 
   void _handleForegroundMessage(RemoteMessage message) {
@@ -60,7 +58,6 @@ class NotificationService {
   }
 
   void _handleBackgroundMessage(RemoteMessage message) {
-    // Handle background message
   }
 
   Future<void> showLocalNotification({

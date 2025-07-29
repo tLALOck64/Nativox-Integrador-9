@@ -224,7 +224,6 @@ class _RegistrationActivityState extends State<RegistrationActivity> {
 
                             SizedBox(height: isSmallScreen ? 24 : 32),
 
-                            // Formulario responsivo
                             Container(
                               width: double.infinity,
                               margin: EdgeInsets.symmetric(
@@ -279,7 +278,6 @@ class _RegistrationActivityState extends State<RegistrationActivity> {
 
                                   SizedBox(height: isSmallScreen ? 16 : 20),
 
-                                  // Apellido
                                   _buildResponsiveTextField(
                                     controller: _apellidoController,
                                     label: 'Apellidos',
@@ -299,7 +297,6 @@ class _RegistrationActivityState extends State<RegistrationActivity> {
 
                                   SizedBox(height: isSmallScreen ? 16 : 20),
 
-                                  // Email con verificación
                                   _buildResponsiveEmailField(
                                     viewModel,
                                     isSmallScreen,
@@ -308,7 +305,6 @@ class _RegistrationActivityState extends State<RegistrationActivity> {
 
                                   SizedBox(height: isSmallScreen ? 16 : 20),
 
-                                  // Teléfono (requerido)
                                   _buildResponsiveTextField(
                                     controller: _phoneController,
                                     label: 'Teléfono',
@@ -320,11 +316,9 @@ class _RegistrationActivityState extends State<RegistrationActivity> {
                                       if (value == null || value.isEmpty) {
                                         return 'Ingresa tu teléfono';
                                       }
-                                      // Verificar que solo contenga números
                                       if (!RegExp(r'^[0-9]+$').hasMatch(value)) {
                                         return 'Solo se permiten números';
                                       }
-                                      // Verificar que tenga exactamente 10 dígitos
                                       if (value.length != 10) {
                                         return 'El teléfono debe tener exactamente 10 dígitos';
                                       }
@@ -366,15 +360,12 @@ class _RegistrationActivityState extends State<RegistrationActivity> {
                                       if (value == null || value.isEmpty) {
                                         return 'Ingresa una contraseña';
                                       }
-                                      // Verificar longitud mínima de 8 caracteres
                                       if (value.length < 8) {
                                         return 'La contraseña debe tener al menos 8 caracteres';
                                       }
-                                      // Verificar que contenga al menos una mayúscula
                                       if (!RegExp(r'[A-Z]').hasMatch(value)) {
                                         return 'La contraseña debe contener al menos una mayúscula';
                                       }
-                                      // Verificar que contenga al menos un número
                                       if (!RegExp(r'[0-9]').hasMatch(value)) {
                                         return 'La contraseña debe contener al menos un número';
                                       }
@@ -419,7 +410,6 @@ class _RegistrationActivityState extends State<RegistrationActivity> {
 
                                   SizedBox(height: isSmallScreen ? 24 : 32),
 
-                                  // Checkbox de términos y condiciones
                                   Container(
                                     width: double.infinity,
                                     child: Row(
@@ -512,7 +502,6 @@ class _RegistrationActivityState extends State<RegistrationActivity> {
                                                   RegistrationStatus.loading
                                               ? null
                                               : () async {
-                                                // Obtener el FCMToken antes de registrar
                                                 final fcmService = FCMService();
                                                 final fcmToken =
                                                     await fcmService
@@ -566,7 +555,6 @@ class _RegistrationActivityState extends State<RegistrationActivity> {
 
                             const Spacer(),
 
-                            // Footer responsivo
                             Padding(
                               padding: EdgeInsets.symmetric(
                                 vertical: isSmallScreen ? 16 : 20,
@@ -697,7 +685,6 @@ class _RegistrationActivityState extends State<RegistrationActivity> {
     );
   }
 
-  // Métodos helper
   Widget _buildStatusIndicator(RegistrationViewModel viewModel) {
     if (viewModel.state.status == RegistrationStatus.loading) {
       return Container(
@@ -904,19 +891,15 @@ class _RegistrationActivityState extends State<RegistrationActivity> {
             if (value == null || value.isEmpty) {
               return 'Ingresa tu email';
             }
-            // Verificar que contenga @
             if (!value.contains('@')) {
               return 'El email debe contener @';
             }
-            // Verificar formato básico de email
             if (!RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$').hasMatch(value)) {
               return 'Formato de email inválido (ejemplo: usuario@dominio.com)';
             }
-            // Verificar que no termine en punto
             if (value.endsWith('.')) {
               return 'El email no puede terminar en punto';
             }
-            // Verificar que el dominio tenga al menos un punto
             String domain = value.split('@').last;
             if (!domain.contains('.')) {
               return 'El dominio debe contener al menos un punto';
@@ -986,7 +969,6 @@ class _RegistrationActivityState extends State<RegistrationActivity> {
 
   void _handleRegistration(RegistrationViewModel viewModel, String? fcmToken) {
     if (_formKey.currentState!.validate()) {
-      // Verificar que se aceptaron los términos
       if (!_acceptedTerms) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -1017,17 +999,14 @@ class _RegistrationActivityState extends State<RegistrationActivity> {
     const url = 'https://nativox.lat/privacidad';
 
     try {
-      // Usar un enfoque más simple
       final Uri uri = Uri.parse(url);
 
-      // Intentar abrir sin verificar primero
       await launchUrl(uri, mode: LaunchMode.externalApplication);
 
       print('🔗 Privacy policy opened successfully');
     } catch (e) {
       print('❌ Error launching privacy policy: $e');
 
-      // Mostrar mensaje de error más amigable
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -1039,7 +1018,6 @@ class _RegistrationActivityState extends State<RegistrationActivity> {
             action: SnackBarAction(
               label: 'Copiar URL',
               onPressed: () {
-                // Aquí podrías implementar copiar al portapapeles
                 print('URL to copy: $url');
               },
             ),
@@ -1050,20 +1028,17 @@ class _RegistrationActivityState extends State<RegistrationActivity> {
   }
 
   void _launchTermsAndConditions() async {
-    const url = 'https://nativox.lat/privacidad'; // Por ahora usa la misma URL
+    const url = 'https://nativox.lat/privacidad';
 
     try {
-      // Usar un enfoque más simple
       final Uri uri = Uri.parse(url);
 
-      // Intentar abrir sin verificar primero
       await launchUrl(uri, mode: LaunchMode.externalApplication);
 
       print('🔗 Terms and conditions opened successfully');
     } catch (e) {
       print('❌ Error launching terms and conditions: $e');
 
-      // Mostrar mensaje de error más amigable
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -1075,7 +1050,6 @@ class _RegistrationActivityState extends State<RegistrationActivity> {
             action: SnackBarAction(
               label: 'Copiar URL',
               onPressed: () {
-                // Aquí podrías implementar copiar al portapapeles
                 print('URL to copy: $url');
               },
             ),

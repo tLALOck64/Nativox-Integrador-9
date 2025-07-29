@@ -17,7 +17,6 @@ class StorageService {
     _preferences = await SharedPreferences.getInstance();
   }
 
-  // Token management
   Future<void> saveToken(String token) async {
     await _preferences?.setString('auth_token', token);
   }
@@ -39,7 +38,6 @@ class StorageService {
     await _preferences?.remove('refresh_token');
   }
 
-  // User data
   Future<void> saveUserData(Map<String, dynamic> userData) async {
     await _preferences?.setString('user_data', jsonEncode(userData));
   }
@@ -52,7 +50,6 @@ class StorageService {
     return null;
   }
 
-  // Generic methods
   Future<void> saveString(String key, String value) async {
     await _preferences?.setString(key, value);
   }
@@ -86,11 +83,9 @@ class StorageService {
   }
 }
 
-/// Secure storage solo funciona en móvil/escritorio. En web, usar StorageService.
 class SecureStorageService {
   static final _storage = FlutterSecureStorage();
 
-  // Token management
   Future<void> saveToken(String token) async {
     await _storage.write(key: 'auth_token', value: token);
   }
@@ -112,7 +107,6 @@ class SecureStorageService {
     await _storage.delete(key: 'refresh_token');
   }
 
-  // User data
   Future<void> saveUserData(Map<String, dynamic> userData) async {
     final data = jsonEncode(userData);
     await _storage.write(key: 'user_data', value: data);
@@ -126,7 +120,6 @@ class SecureStorageService {
     return null;
   }
 
-  // Generic methods
   Future<void> saveString(String key, String value) async {
     await _storage.write(key: key, value: value);
   }

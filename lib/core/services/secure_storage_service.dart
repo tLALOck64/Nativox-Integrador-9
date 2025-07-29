@@ -9,7 +9,6 @@ class SecureStorageService {
 
   static final FlutterSecureStorage _storage = FlutterSecureStorage();
 
-  // Token management
   Future<void> saveToken(String token) async {
     await _storage.write(key: 'auth_token', value: token);
   }
@@ -31,7 +30,6 @@ class SecureStorageService {
     await _storage.delete(key: 'refresh_token');
   }
 
-  // User data
   Future<void> saveUserData(Map<String, dynamic> userData) async {
     final data = jsonEncode(userData);
     await _storage.write(key: 'user_data', value: data);
@@ -50,7 +48,6 @@ class SecureStorageService {
     return userData?['id']?.toString();
   }
 
-  // Generic methods
   Future<void> saveString(String key, String value) async {
     await _storage.write(key: key, value: value);
   }

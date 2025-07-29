@@ -4,7 +4,6 @@ import 'dart:io';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 
 class CacheCleanerService {
-  // Limpiar SharedPreferences
   static Future<void> clearSharedPreferences() async {
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -16,7 +15,6 @@ class CacheCleanerService {
     }
   }
 
-  // Limpiar caché de imágenes
   static Future<void> clearImageCache() async {
     try {
       await DefaultCacheManager().emptyCache();
@@ -27,7 +25,6 @@ class CacheCleanerService {
     }
   }
 
-  // Limpiar directorio de caché de la aplicación
   static Future<void> clearAppCacheDirectory() async {
     try {
       final cacheDir = await getTemporaryDirectory();
@@ -41,7 +38,6 @@ class CacheCleanerService {
     }
   }
 
-  // Limpiar todo el caché y almacenamiento
   static Future<void> clearAllCache() async {
     try {
       await Future.wait([

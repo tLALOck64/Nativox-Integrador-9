@@ -78,7 +78,6 @@ class _LoginActivityState extends State<LoginActivity> {
                           children: [
                             SizedBox(height: isSmallScreen ? 20 : 40),
 
-                            // Formulario responsivo
                             Container(
                               width: double.infinity,
                               margin: EdgeInsets.symmetric(
@@ -112,11 +111,9 @@ class _LoginActivityState extends State<LoginActivity> {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  // Logo y título centrado responsivo
                                   Center(
                                     child: Column(
                                       children: [
-                                        // Logo de Nativox
                                         Container(
                                           width:
                                               isSmallScreen
@@ -250,7 +247,6 @@ class _LoginActivityState extends State<LoginActivity> {
                                       ),
                                     ),
 
-                                  // ✅ MOSTRAR SUCCESS
                                   if (viewModel.state.status ==
                                       LoginStatus.success)
                                     Container(
@@ -282,7 +278,6 @@ class _LoginActivityState extends State<LoginActivity> {
                                       ),
                                     ),
 
-                                  // Error Message
                                   if (viewModel.state.status ==
                                       LoginStatus.error)
                                     Container(
@@ -317,7 +312,6 @@ class _LoginActivityState extends State<LoginActivity> {
                                       ),
                                     ),
 
-                                  // Email Field responsivo
                                   _buildResponsiveTextField(
                                     controller: _emailController,
                                     label: 'Correo electrónico',
@@ -408,7 +402,6 @@ class _LoginActivityState extends State<LoginActivity> {
 
                                   SizedBox(height: isSmallScreen ? 20 : 24),
 
-                                  // Divider responsivo
                                   Row(
                                     children: [
                                       Expanded(
@@ -435,7 +428,6 @@ class _LoginActivityState extends State<LoginActivity> {
 
                                   SizedBox(height: isSmallScreen ? 20 : 24),
 
-                                  // Google Button responsivo
                                   SizedBox(
                                     width: double.infinity,
                                     height: isSmallScreen ? 48 : 56,
@@ -493,8 +485,6 @@ class _LoginActivityState extends State<LoginActivity> {
                               ),
                             ),
 
-
-                            // Footer responsivo
                             Padding(
                               padding: EdgeInsets.symmetric(
                                 vertical: isSmallScreen ? 16 : 20,
@@ -503,7 +493,6 @@ class _LoginActivityState extends State<LoginActivity> {
                                 children: [
                                   TextButton(
                                     onPressed: () {
-                                      // Navegar a registro
                                       context.go(RouteNames.register);
                                     },
                                     child: RichText(
@@ -532,10 +521,8 @@ class _LoginActivityState extends State<LoginActivity> {
                                     ),
                                   ),
                                   SizedBox(height: isSmallScreen ? 6 : 8),
-                                  // Enlace de aviso de privacidad
                                   TextButton(
                                     onPressed: () {
-                                      // Abrir enlace de privacidad
                                       _launchPrivacyPolicy();
                                     },
                                     child: Text(
@@ -739,17 +726,14 @@ class _LoginActivityState extends State<LoginActivity> {
     const url = 'https://nativox.lat/privacidad';
 
     try {
-      // Usar un enfoque más simple
       final Uri uri = Uri.parse(url);
 
-      // Intentar abrir sin verificar primero
       await launchUrl(uri, mode: LaunchMode.externalApplication);
 
       print('🔗 Privacy policy opened successfully');
     } catch (e) {
       print('❌ Error launching privacy policy: $e');
 
-      // Mostrar mensaje de error más amigable
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -761,7 +745,6 @@ class _LoginActivityState extends State<LoginActivity> {
             action: SnackBarAction(
               label: 'Copiar URL',
               onPressed: () {
-                // Aquí podrías implementar copiar al portapapeles
                 print('URL to copy: $url');
               },
             ),
@@ -784,7 +767,6 @@ class _LoginActivityState extends State<LoginActivity> {
   }
 }
 
-// CulturalPatternPainter sin cambios...
 class CulturalPatternPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
