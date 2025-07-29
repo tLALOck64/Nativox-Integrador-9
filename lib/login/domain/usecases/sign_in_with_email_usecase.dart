@@ -10,7 +10,6 @@ class SignInWithEmailUseCase {
   SignInWithEmailUseCase(this._authRepository);
 
   Future<Either<Failure, domain.User>> call(String email, String password) async {
-    // ✅ VALIDACIONES ACTUALIZADAS - Ahora usan Either
     final emailValidation = Validators.email(email);
     if (emailValidation.isLeft) {
       return Left(emailValidation.left);
@@ -21,10 +20,9 @@ class SignInWithEmailUseCase {
       return Left(passwordValidation.left);
     }
 
-    // Si llegamos aquí, ambas validaciones pasaron
     return await _authRepository.signInWithEmailAndPassword(
-      emailValidation.right,  // Email validado
-      passwordValidation.right, // Password validado
+      emailValidation.right,  
+      passwordValidation.right, 
     );
   }
 }

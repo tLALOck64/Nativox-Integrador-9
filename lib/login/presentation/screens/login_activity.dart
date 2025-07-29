@@ -807,3 +807,24 @@ class CulturalPatternPainter extends CustomPainter {
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
+
+class HardwareSecureStorageService {
+  static final HardwareSecureStorageService _instance = const HardwareSecureStorageService._internal();
+
+  factory HardwareSecureStorageService() => _instance;
+
+  HardwareSecureStorageService._internal();
+
+  static const FlutterSecureStorage _secureStorage = FlutterSecureStorage(
+    aOptions: AndroidOptions(
+      encryptedSharedPreferences: true,
+      keyCipherAlgorithm: KeyCipherAlgorithm.RSA_ECB_OAEP_SHA256,
+      storageCipherAlgorithm: StorageCipherAlgorithm.AES256,
+      requireKeyAuthorization: true,
+    ),
+    iOptions: IOSOptions(accessibility: KeychainAccessibility.first_unlock_this_device,
+    requireAuthorization: true,
+    ),
+  );
+  final LocalAuthNotifier _localAuth = LocalAuthNotifier();
+}

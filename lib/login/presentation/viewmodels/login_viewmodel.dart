@@ -49,6 +49,25 @@ class LoginViewModel extends ChangeNotifier {
     );
   }
 
+  Future<void> loginUser() async {
+    String UserEmail = email;
+    String UserPassword = password;
+
+    Map<String, String> loginData = {
+      'email': UserEmail,
+      'password': UserPassword,
+    };
+
+    final response = await apiClient.post('/login', loginData);
+
+    if (response.statusCode == 200) {
+      final userData = response.data;
+      _handleSuccess(userData);
+    } else {
+      _handleFailure(AuthFailure('Error al iniciar sesión'));
+    }
+  }
+
   Future<void> signInWithGoogle() async {
     _updateState(_state.copyWith(status: LoginStatus.loading));
 
@@ -89,7 +108,6 @@ class LoginViewModel extends ChangeNotifier {
               );
             } catch (e) {
               print('❌ LoginViewModel: NavigationService failed: $e');
-              // Backup: usar navegación directa si NavigationService falla
               if (NavigationService.context != null) {
                 print(
                   '🔄 LoginViewModel: Trying direct navigation via context',
@@ -101,14 +119,12 @@ class LoginViewModel extends ChangeNotifier {
             }
           } catch (e) {
             print('❌ LoginViewModel: Error during cleanup: $e');
-            // Aún así intentar navegar
             NavigationService.pushAndClearStack(RouteNames.login);
           }
         },
       );
     } catch (e) {
       print('❌ LoginViewModel: Unexpected error during sign out: $e');
-      // En caso de error, limpiar datos y navegar de todas formas
       try {
         await _storageService.clearTokens();
         await _storageService.remove('user_data');
@@ -139,7 +155,6 @@ class LoginViewModel extends ChangeNotifier {
     });
 
     _updateState(_state.copyWith(status: LoginStatus.success, user: user));
-    // Navegación eliminada, la UI se encarga de redirigir al home
   }
 
   String _getErrorMessage(Failure failure) {
